@@ -7,6 +7,7 @@ import { Logo } from "@/components/brand/logo";
 import { ChildSwitcher } from "@/components/app/child-switcher";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { navItems } from "@/lib/nav";
 import { useAppStore } from "@/store/app-store";
 import { signOut, useSession } from "@/lib/auth-client";
@@ -20,6 +21,7 @@ export function Sidebar() {
   const { data: session } = useSession();
   const name = demo ? "Tamu Demo" : (session?.user?.name ?? "Pengguna");
   const email = demo ? "Mode demo" : (session?.user?.email ?? "");
+  const image = demo ? undefined : (session?.user?.image ?? undefined);
 
   async function handleExit() {
     if (demo) {
@@ -83,9 +85,12 @@ export function Sidebar() {
 
       <div className="border-t border-cream/10 p-3">
         <div className="flex items-center gap-3 rounded-xl px-2 py-2">
-          <div className="grid h-9 w-9 place-items-center rounded-full bg-cream/10 text-sm font-bold text-cream">
-            {initials(name)}
-          </div>
+          <Avatar className="h-9 w-9">
+            <AvatarImage src={image} alt={name} />
+            <AvatarFallback className="bg-cream/10 text-sm font-bold text-cream">
+              {initials(name)}
+            </AvatarFallback>
+          </Avatar>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-cream">{name}</p>
             <p className="truncate text-xs text-cream/50">{email}</p>
