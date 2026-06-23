@@ -18,6 +18,7 @@ export default function RegisterPage() {
   const [show, setShow] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -31,7 +32,7 @@ export default function RegisterPage() {
       return;
     }
     setLoading(true);
-    const { error } = await signUp.email({ name, email, password });
+    const { error } = await signUp.email({ name, email, password, phone: phone || undefined });
     setLoading(false);
     if (error) {
       toast.error("Gagal membuat akun", {
@@ -78,6 +79,18 @@ export default function RegisterPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="phone">
+            Nomor HP <span className="text-muted-foreground font-normal">(opsional)</span>
+          </Label>
+          <Input
+            id="phone"
+            type="tel"
+            placeholder="08xxxxxxxxxx"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
           />
         </div>
         <div className="space-y-1.5">
