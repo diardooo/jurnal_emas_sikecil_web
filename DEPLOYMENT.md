@@ -5,6 +5,28 @@ Target skala: **1–1.000 pengguna aktif**. Semua layanan gratis kecuali catatan
 
 ---
 
+## Status Deployment (per 23 Juni 2026)
+
+| Item | Status |
+|---|---|
+| App URL | ✅ `https://jurnal-emas-sikecil-web.vercel.app` (live) |
+| GitHub | ✅ `https://github.com/diardooo/jurnal_emas_sikecil_web` (public) |
+| Vercel | ✅ Hobby plan, akun `diardo`, auto-deploy dari branch `main` |
+| Neon Production | ✅ branch `ep-bold-river-aor9lijq` (dipakai Vercel) |
+| Neon Dev | ✅ branch `ep-billowing-cake-aoblqmk7` (dipakai `.env` lokal) |
+| Admin seed | ✅ `admin@jurnalemas.com` — password sudah diubah dari default |
+| **Bagian A** — Deploy dasar | ✅ SELESAI |
+| **B1** — Google OAuth | ✅ AKTIF (Google Cloud: `jurnal-emas-si-kecil`, mode External) |
+| **B2** — Resend email | ⬜ Belum — kode siap, tinggal isi env |
+| **B3** — Cloudinary upload | ⬜ Belum — kode siap, tinggal isi env |
+| **B4** — Midtrans payment | ⬜ Belum — kode siap, tinggal isi env + daftarkan webhook |
+
+> **Catatan Vercel Hobby:** pastikan setiap commit dibuat dari akun GitHub `diardooo`.
+> Commit dari akun lain akan diblokir (Hobby tidak support collaboration di private repo;
+> repo sudah dijadikan public untuk menghindari ini).
+
+---
+
 ## Daftar isi
 
 1. [Arsitektur deployment](#1-arsitektur-deployment)

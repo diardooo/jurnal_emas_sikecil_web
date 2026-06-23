@@ -1,7 +1,7 @@
 # PROJECT CONTEXT — Admin Dashboard
 
 Dokumen khusus untuk **Admin Dashboard** Jurnal Emas Si Kecil. Ringkas tapi rinci.
-Terakhir diperbarui: **21 Juni 2026**.
+Terakhir diperbarui: **23 Juni 2026**.
 
 > Untuk konteks app user (orang tua), lihat `PROJECT_CONTEXT.md` & `STATUS_FILES.md`.
 
@@ -18,7 +18,9 @@ Free vs Premium, kode diskon, broadcast notifikasi (in-app + WhatsApp), dan peng
   (warna brand inline), Recharts, lucide-react, Drizzle ORM (postgres-js) → **Neon**,
   **Better Auth** (email/password, sesi 30 hari).
 - **Status:** Frontend + Backend **selesai & wired ke API**. Teruji end-to-end (curl) ke Neon.
-- **Akun demo:** `admin@jurnalemas.com` / `admin12345` (role `superadmin`).
+  **App LIVE** di `https://jurnal-emas-sikecil-web.vercel.app/admin`.
+- **Akun:** `admin@jurnalemas.com` / *(password sudah diubah dari default `admin12345` via reset password flow)*.
+- **PENTING:** User demo `rara@email.com` masih ada di DB production — **hapus via /admin → Users**.
 
 ---
 

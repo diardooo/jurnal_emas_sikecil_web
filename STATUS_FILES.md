@@ -1,5 +1,7 @@
 # STATUS FILE — Jurnal Emas Si Kecil
 
+> Terakhir diperbarui: **23 Juni 2026**. App sudah live di `https://jurnal-emas-sikecil-web.vercel.app`.
+
 Legenda: ✅ selesai & berfungsi · ⚠️ ada tapi sebagian placeholder/mock · ❌ belum dibuat
 
 ## ✅ Konfigurasi & Tooling
@@ -25,11 +27,11 @@ Legenda: ✅ selesai & berfungsi · ⚠️ ada tapi sebagian placeholder/mock ·
 | File | Status |
 |---|---|
 | src/lib/auth.ts (server) | ✅ Better Auth (email/pass; Google opsional) |
-| src/lib/auth-client.ts | ✅ |
+| src/lib/auth-client.ts | ✅ + `inferAdditionalFields<typeof auth>()` plugin (agar field `phone` dikenali TypeScript) |
 | src/lib/api.ts | ✅ resource() factory + getUser + guard |
 | src/lib/api-client.ts | ✅ apiGet/Post/Patch/Delete, getMe, groupByChild |
 | src/lib/child-templates.ts | ✅ seed referensi anak baru |
-| src/middleware.ts | ✅ auth gate (lolos cookie demo) |
+| src/middleware.ts | ✅ auth gate; sesi nyata menang atas cookie demo (demo cookie dihapus otomatis saat login) |
 | src/app/api/auth/[...all]/route.ts, api/me/route.ts | ✅ |
 | src/app/api/children/route.ts | ✅ custom POST (seed referensi) + GET |
 | api/{tasks,todos,habits,milestones,goals,growth,immunizations,teeth,sleep,notifications,subscriptions,children}/* | ✅ CRUD generik |
@@ -73,7 +75,7 @@ Legenda: ✅ selesai & berfungsi · ⚠️ ada tapi sebagian placeholder/mock ·
 |---|---|
 | src/app/layout.tsx, globals.css | ✅ (globals: toast lift di mobile) |
 | src/app/page.tsx (landing) | ✅ 6 kartu fitur terbaru + tombol /demo |
-| src/app/(auth)/login, register | ✅ terhubung Better Auth |
+| src/app/(auth)/login, register | ✅ terhubung Better Auth; register kini punya field **Nomor HP (opsional)** |
 | src/app/onboarding/page.tsx | ✅ |
 | src/app/demo/page.tsx | ✅ set cookie demo + hydrateDemo → /dashboard |
 | src/app/(app)/layout.tsx | ✅ shell + StoreHydrator + DemoBanner |
@@ -99,7 +101,7 @@ Legenda: ✅ selesai & berfungsi · ⚠️ ada tapi sebagian placeholder/mock ·
 | components/ui/* (primitives shadcn; Tabs kini scroll-horizontal di mobile) | ✅ |
 | components/app/* (sidebar, topbar, mobile-nav, child-switcher, store-hydrator, demo-banner, dashboard-guide, page-header, notifications, task-overview, habit-heatmap, tooth-icon, who-growth-chart, growth-chart, semua *-dialog) | ✅ |
 | components/auth/auth-shell.tsx | ✅ |
-| components/auth/google-button.tsx | ⚠️ siap, butuh GOOGLE_CLIENT_ID/SECRET di .env |
+| components/auth/google-button.tsx | ✅ **AKTIF** — `GOOGLE_CLIENT_ID/SECRET` sudah di Vercel production |
 | components/marketing/* (header, footer, pricing), brand/logo | ✅ |
 
 ## ✅ Integrasi (scaffold env-gated — aktif begitu key diisi)
@@ -107,10 +109,10 @@ Legenda: ✅ selesai & berfungsi · ⚠️ ada tapi sebagian placeholder/mock ·
 
 | Item | Status |
 |---|---|
-| Mailer / reset password (Resend) | ✅ kode jadi; dev fallback log ke console; isi `RESEND_API_KEY` |
-| Upload foto (Cloudinary) | ✅ `/api/upload` + Settings "Ubah Foto"; isi `CLOUDINARY_*` |
-| Pembayaran (Midtrans Snap + webhook) | ✅ `/api/payment/*`; isi `MIDTRANS_*`; tanpa key → fallback demo trial |
-| Google OAuth | ✅ kondisional di auth.ts; isi `GOOGLE_CLIENT_ID/SECRET` |
+| Mailer / reset password (Resend) | ⬜ kode jadi; dev fallback log ke console; **belum aktif** — isi `RESEND_API_KEY` + `EMAIL_FROM` |
+| Upload foto (Cloudinary) | ⬜ `/api/upload` + Settings "Ubah Foto"; **belum aktif** — isi `CLOUDINARY_*` |
+| Pembayaran (Midtrans Snap + webhook) | ⬜ `/api/payment/*`; **belum aktif** — isi `MIDTRANS_*` + daftarkan webhook; tanpa key → fallback demo trial |
+| Google OAuth | ✅ **AKTIF** — `GOOGLE_CLIENT_ID/SECRET` sudah di Vercel; Google Cloud project `jurnal-emas-si-kecil` |
 | CI (lint+typecheck+build) | ✅ `.github/workflows/ci.yml` |
 
 ## ⚠️ Sengaja ditunda (sentuh store yang rapuh / butuh infra)

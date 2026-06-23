@@ -8,14 +8,19 @@
 - **Lokasi kode:** `…/Jurnal Emas Si Kecil/Website  Jurnal Emas Si Kecil - All in one parenting tracker/jurnal-emas-web`
   (folder induk pernah memakai `:` yang merusak PATH npm — sudah di-rename jadi `-`,
   jadi `npm run dev` & `npm run db:*` kini jalan normal di IDE).
-- **Status:** **client app + backend + admin dashboard + demo mode SEMUA jalan**,
-  terintegrasi ke Neon & terverifikasi. Build `tsc --noEmit` **clean**. Responsif
-  di mobile (diuji iPhone XR 414px).
+- **Status:** **PRODUCTION LIVE** di `https://jurnal-emas-sikecil-web.vercel.app`.
+  Client app + backend + admin dashboard + demo mode semua jalan, terintegrasi ke Neon & terverifikasi.
+  Build `tsc --noEmit` **clean**. Responsif di mobile (diuji iPhone XR 414px).
 - **Akun:**
-  - User demo: `rara@email.com` / `password123`
-  - Super Admin: `admin@jurnalemas.com` / `admin12345` (login di `/admin`)
-- **Database:** PostgreSQL di **Neon** (cloud, ap-southeast-1). `DATABASE_URL` aktif
-  di `.env` (gitignored). Tabel sudah dimigrasi + di-seed (user & admin).
+  - Super Admin: `admin@jurnalemas.com` / *(password sudah diubah dari default, lihat email/notes pribadi)*
+  - User demo DB (production): `rara@email.com` — **perlu dihapus via /admin panel** (data test)
+- **Database (Neon, ap-southeast-1):**
+  - **Production branch** (`ep-bold-river-aor9lijq`) — dipakai Vercel, JANGAN diubah sembarangan
+  - **Dev branch** (`ep-billowing-cake-aoblqmk7`) — dipakai `.env` lokal
+  - `DATABASE_URL` di `.env` → dev branch (gitignored)
+- **GitHub:** `https://github.com/diardooo/jurnal_emas_sikecil_web` (public repo)
+- **Vercel:** project `jurnal-emas-sikecil-web`, akun `diardo`. Setiap push ke `main` → auto-deploy.
+  Pastikan commit author = `diardooo` (bukan akun lain) agar Hobby plan tidak blokir.
 - **Node:** via **nvm** → `~/.nvm/versions/node/v24.17.0/bin`.
 - **Menjalankan command:** folder sudah tidak mengandung `:`, jadi di terminal IDE
   (Antigravity/VS Code) cukup `npm run dev`, `npm run db:migrate`, dst — selama nvm
@@ -179,25 +184,44 @@ bekerja normal. `.env` Neon aktif (gitignored). Tanpa `DATABASE_URL`, app jalan 
 
 ## 8. Status Implementasi
 
-**Selesai & terverifikasi:**
-- Landing page (refresh 6 fitur terbaru) + tombol "Lihat Demo Dashboard".
-- Auth (login/register/logout + tombol Google), onboarding, 8 halaman app, semua modul.
+**Selesai & terverifikasi (termasuk produksi):**
+- Landing page (6 fitur) + tombol "Lihat Demo Dashboard".
+- Auth: login/register/logout + **Google OAuth aktif** (env GOOGLE_CLIENT_ID/SECRET sudah di Vercel).
+- **Form register** kini punya field **Nomor HP (opsional)** — terhubung ke kolom `phone` di DB.
+- Onboarding, 8 halaman app, semua modul CRUD.
 - Backend CRUD user + admin, integrasi frontend↔API (hydrate + optimistic persist).
 - Multi-anak + seed data referensi otomatis; migrasi + seed user/admin + backfill ke Neon.
 - **Admin dashboard** (statistik, user, langganan, diskon, role, konten ref, broadcast, settings).
-- **Demo mode** read-only (tidak menulis ke DB) + toast persisten non-intrusif.
-- **Responsif mobile** (414px): tak ada overflow horizontal; tab Tumbuh Kembang scroll L/R;
-  toast tidak menutupi bottom nav.
+- **Demo mode** read-only + **bug fix**: middleware sekarang menghapus cookie demo otomatis saat user
+  login (sesi nyata selalu menang atas cookie demo — tidak ada lagi tampilan data demo untuk akun asli).
+- **Responsif mobile** (414px).
+- **Deployed ke Vercel** (production), **Neon branch terpisah** dev vs production.
+
+**Aktivasi integrasi (tambah env → Redeploy):**
+- ✅ **Google OAuth** — aktif, `GOOGLE_CLIENT_ID` & `GOOGLE_CLIENT_SECRET` sudah di Vercel
+- ⬜ **Resend (email)** — kode siap, tinggal isi `RESEND_API_KEY` + `EMAIL_FROM`
+- ⬜ **Cloudinary (upload foto)** — kode siap, tinggal isi `CLOUDINARY_*`
+- ⬜ **Midtrans (payment)** — kode siap, tinggal isi `MIDTRANS_*` + daftarkan webhook
 
 **Belum / placeholder:** lihat **§10**.
 
 ## 9. Langkah Berikutnya (urutan disarankan)
-1. Persist sisa client-only (kategori kustom, panduan, profil user via `updateUser`).
-2. Generator notifikasi + reminder otomatis (imunisasi/posyandu/deadline).
-3. Export PDF laporan nyata (Puppeteer/PDFKit per PRD).
-4. Pembayaran Midtrans + verifikasi email (mailer) + reset password.
-5. Pendalaman admin (audit log, analytics nyata) & RBAC granular bila perlu.
-6. Testing & CI/CD.
+
+**Aktivasi integrasi (mudah — tinggal env + Redeploy):**
+1. ⬜ **B2 Resend** — aktifkan email reset password nyata: daftar resend.com → isi `RESEND_API_KEY` + `EMAIL_FROM`
+2. ⬜ **B3 Cloudinary** — aktifkan upload foto anak & profil: daftar cloudinary.com → isi 3 env `CLOUDINARY_*`
+3. ⬜ **B4 Midtrans** — aktifkan payment premium (mulai sandbox): daftar midtrans.com → isi `MIDTRANS_*` + daftarkan webhook `/api/payment/notify`
+
+**Fitur baru / perbaikan kode:**
+4. Hapus user demo `rara@email.com` dari production via `/admin` panel.
+5. Persist profil user (nama, foto, sandi) di halaman Settings — `authClient.updateUser()` + `changePassword`.
+6. Generator notifikasi + reminder otomatis (imunisasi/posyandu/deadline).
+7. Export PDF laporan nyata (Puppeteer/PDFKit per PRD).
+8. Pendalaman admin (analytics nyata, audit log) & RBAC granular bila perlu.
+
+**Saat monetisasi aktif:**
+- Upgrade Vercel Hobby → Pro (ToS komersial).
+- Midtrans sandbox → production key + `IS_PRODUCTION=true`.
 
 ## 10. Loose Ends (Technical Debt) — Detail
 
@@ -223,8 +247,9 @@ Berfungsi di UI tapi belum dirapikan/di-persist. Format: lokasi → kondisi → 
 
 ### 10.4 Settings — simpan profil / ubah foto / ubah sandi
 - **Lokasi:** `settings/page.tsx` tab Akun → tombol hanya `toast`.
-- **Dibutuhkan:** `authClient.updateUser({name,image})`, `changePassword`, wire field
-  `phone` (sudah ada di schema), upload foto (lihat 10.9).
+- **Dibutuhkan:** `authClient.updateUser({name,image})`, `changePassword`, upload foto (lihat 10.9).
+- **Catatan:** field `phone` sudah ada di schema DB dan sudah di-collect saat register (form sudah ada).
+  Tinggal wire di Settings untuk edit.
 
 ### 10.5 Settings — toggle preferensi notifikasi (kosmetik)
 - **Lokasi:** `settings/page.tsx` (`notifSettings` Switch → toast).
@@ -249,7 +274,9 @@ Berfungsi di UI tapi belum dirapikan/di-persist. Format: lokasi → kondisi → 
 
 ### 10.10 Google OAuth
 - **Lokasi:** `lib/auth.ts` (aktif jika env ada), `auth/google-button.tsx`.
-- **Dibutuhkan:** isi `GOOGLE_CLIENT_ID` & `GOOGLE_CLIENT_SECRET` di `.env`.
+- **Status: ✅ AKTIF di produksi.** `GOOGLE_CLIENT_ID` & `GOOGLE_CLIENT_SECRET` sudah di Vercel.
+  Google Cloud project: `jurnal-emas-si-kecil`. Mode: External (testing). Untuk buka ke semua user:
+  Google Cloud Console → Audience → Publish App.
 
 ### 10.11 Upload media (foto anak & milestone)
 - **Lokasi:** `edit-child-dialog.tsx` (foto = URL/dicebear); milestone flag `hasPhoto` tanpa upload.
