@@ -24,16 +24,25 @@ export function middleware(req: NextRequest) {
   );
   if (!isProtected) return NextResponse.next();
 
-  // Demo mode: read-only sample data, no account needed.
-  if (req.cookies.get("demo")?.value === "1") return NextResponse.next();
-
   const sessionCookie = getSessionCookie(req);
-  if (!sessionCookie) {
-    const url = new URL("/login", req.url);
-    url.searchParams.set("redirect", pathname);
-    return NextResponse.redirect(url);
+  const hasDemoCookie = req.cookies.get("demo")?.value === "1";
+
+  // Real session takes priority — clear any stale demo cookie so the store
+  // hydrates with live data instead of mock data.
+  if (sessionCookie) {
+    const res = NextResponse.next();
+    if (hasDemoCookie) {
+      res.cookies.set("demo", "", { path: "/", maxAge: 0 });
+    }
+    return res;
   }
-  return NextResponse.next();
+
+  // Demo mode: read-only sample data, no account needed.
+  if (hasDemoCookie) return NextResponse.next();
+
+  const url = new URL("/login", req.url);
+  url.searchParams.set("redirect", pathname);
+  return NextResponse.redirect(url);
 }
 
 export const config = {
