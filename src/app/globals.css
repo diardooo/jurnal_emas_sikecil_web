@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Brand-mapped shadcn tokens (PRD §11.2)
+       gold   #C9A227 -> 45 67% 47%
+       navy   #1A1A2E -> 240 28% 14%
+       cream  #FFF8E7 -> 42 100% 95%
+       sage   #7BA05B -> 92 28% 49%
+       orange #F4A261 -> 27 87% 67%
+       red    #E63946 -> 355 78% 56% */
+    --background: 0 0% 100%;
+    --foreground: 240 28% 14%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 28% 14%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 28% 14%;
+
+    --primary: 45 67% 47%;
+    --primary-foreground: 240 28% 14%;
+
+    --secondary: 42 60% 96%;
+    --secondary-foreground: 240 28% 14%;
+
+    --muted: 40 30% 96%;
+    --muted-foreground: 240 8% 46%;
+
+    --accent: 42 100% 95%;
+    --accent-foreground: 240 28% 14%;
+
+    --destructive: 355 78% 56%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 40 25% 90%;
+    --input: 40 25% 90%;
+    --ring: 45 67% 47%;
+
+    --radius: 0.85rem;
+  }
+
+  .dark {
+    --background: 240 28% 10%;
+    --foreground: 42 100% 95%;
+    --card: 240 26% 14%;
+    --card-foreground: 42 100% 95%;
+    --popover: 240 26% 14%;
+    --popover-foreground: 42 100% 95%;
+    --primary: 45 67% 52%;
+    --primary-foreground: 240 28% 12%;
+    --secondary: 240 20% 20%;
+    --secondary-foreground: 42 100% 95%;
+    --muted: 240 18% 20%;
+    --muted-foreground: 240 10% 65%;
+    --accent: 240 20% 22%;
+    --accent-foreground: 42 100% 95%;
+    --destructive: 355 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 16% 24%;
+    --input: 240 16% 24%;
+    --ring: 45 67% 52%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  /* GitHub-style heatmap cells */
+  .heat-0 { @apply bg-muted; }
+  .heat-1 { background-color: #E6EFDD; }
+  .heat-2 { background-color: #B8D29A; }
+  .heat-3 { background-color: #95BC6F; }
+  .heat-4 { background-color: #7BA05B; }
+
+  .bg-grid {
+    background-image: radial-gradient(hsl(var(--border)) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+}
+
+/* On phones the fixed bottom nav (h-16) is present (<lg). Lift sonner toasts
+   above it + the home-indicator so nothing is covered. */
+@media (max-width: 1023px) {
+  [data-sonner-toaster][data-y-position="bottom"] {
+    bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px)) !important;
+    right: 0 !important;
+    left: 0 !important;
+    width: auto !important;
+  }
+}
