@@ -54,14 +54,20 @@ export interface Habit {
   childId?: string;
 }
 
-export type MilestoneDomain =
-  | "Motorik Kasar"
-  | "Motorik Halus"
-  | "Kognitif"
-  | "Bahasa & Komunikasi"
-  | "Sosial-Emosional"
-  | "Sensorik"
-  | "Nutrisi & Pertumbuhan";
+/** Canonical milestone domains — single source of truth (runtime + type).
+ *  The goals page maps each to an icon/color via `domainMeta`, so any value
+ *  stored in the DB MUST be one of these or the page can't render it. */
+export const MILESTONE_DOMAINS = [
+  "Motorik Kasar",
+  "Motorik Halus",
+  "Kognitif",
+  "Bahasa & Komunikasi",
+  "Sosial-Emosional",
+  "Sensorik",
+  "Nutrisi & Pertumbuhan",
+] as const;
+
+export type MilestoneDomain = (typeof MILESTONE_DOMAINS)[number];
 
 export type MilestoneStatus = "belum" | "dicoba" | "bisa";
 

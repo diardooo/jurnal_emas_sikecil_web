@@ -1,3 +1,4 @@
+import { MILESTONE_DOMAINS } from "./types";
 import type {
   AgePhaseId,
   AppNotification,
@@ -484,12 +485,4 @@ export const habitCategories = [
   "Perkembangan Orang Tua",
 ] as const;
 
-export const milestoneDomains = [
-  "Motorik Kasar",
-  "Motorik Halus",
-  "Kognitif",
-  "Bahasa & Komunikasi",
-  "Sosial-Emosional",
-  "Sensorik",
-  "Nutrisi & Pertumbuhan",
-] as const;
+export const milestoneDomains = MILESTONE_DOMAINS;

@@ -202,9 +202,16 @@ function PhaseGroup({
   );
 }
 
+/** Fallback for milestones whose admin-defined domain isn't in the known set. */
+const fallbackDomainMeta = {
+  icon: Target,
+  color: "bg-muted text-muted-foreground",
+  chip: "border-border bg-background text-navy-muted",
+};
+
 function MilestoneRow({ milestone: m }: { milestone: Milestone }) {
   const setStatus = useAppStore((s) => s.setMilestoneStatus);
-  const meta = domainMeta[m.domain];
+  const meta = domainMeta[m.domain] ?? fallbackDomainMeta;
   const cycle: MilestoneStatus[] = ["belum", "dicoba", "bisa"];
 
   return (

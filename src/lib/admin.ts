@@ -3,7 +3,7 @@ import { asc, eq, getTableColumns } from "drizzle-orm";
 import type { PgTable } from "drizzle-orm/pg-core";
 import { db } from "@/db";
 import { user } from "@/db/schema/auth";
-import { getUser, notFound } from "@/lib/api";
+import { badRequest, getUser, notFound } from "@/lib/api";
 
 const ADMIN_ROLES = new Set(["admin", "superadmin"]);
 
@@ -41,12 +41,21 @@ function sanitize(table: PgTable, body: Record<string, unknown>) {
 
 type AnyTable = PgTable & { id: any; sortOrder?: any; createdAt?: any };
 
+interface AdminResourceOptions {
+  /**
+   * Validate a write payload before it hits the DB. Return an error message to
+   * reject the request (400), or `null`/`undefined` to allow it. Receives the
+   * raw body; for PATCH only the fields being changed are present.
+   */
+  validate?: (body: Record<string, unknown>) => string | null | undefined;
+}
+
 /**
  * Admin-scoped CRUD for a global (non-user-owned) table. Every handler is gated
  * behind {@link getAdmin}. Mirrors `resource()` in lib/api.ts but without the
  * per-user ownership filter.
  */
-export function adminResource(table: AnyTable) {
+export function adminResource(table: AnyTable, opts: AdminResourceOptions = {}) {
   const cols = getTableColumns(table) as Record<string, unknown>;
   const hasSort = "sortOrder" in cols;
   const hasCreatedAt = "createdAt" in cols;
@@ -61,6 +70,8 @@ export function adminResource(table: AnyTable) {
   async function POST(req: NextRequest) {
     if (!(await getAdmin(req))) return forbidden();
     const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
+    const err = opts.validate?.(body);
+    if (err) return badRequest(err);
     const [row] = await db.insert(table).values(sanitize(table, body)).returning();
     return NextResponse.json(row, { status: 201 });
   }
@@ -69,6 +80,8 @@ export function adminResource(table: AnyTable) {
     if (!(await getAdmin(req))) return forbidden();
     const { id } = await ctx.params;
     const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
+    const err = opts.validate?.(body);
+    if (err) return badRequest(err);
     const [row] = await db
       .update(table)
       .set(sanitize(table, body))

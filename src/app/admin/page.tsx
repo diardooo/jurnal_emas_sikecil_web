@@ -13,6 +13,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
 import { signIn, signOut, useSession } from "@/lib/auth-client";
+import { MILESTONE_DOMAINS } from "@/lib/types";
 import {
   adminApi,
   type AdminUser, type AdminChild, type AdminStats, type AdminMe,
@@ -1024,9 +1025,9 @@ function ModalAddUser({ reload, onClose, showToast }: { reload: () => Promise<vo
   );
 }
 
-const CONTENT_FIELDS: Record<string, { key: string; label: string; type?: string; full?: boolean }[]> = {
+const CONTENT_FIELDS: Record<string, { key: string; label: string; type?: string; full?: boolean; options?: readonly string[] }[]> = {
   milestones: [
-    { key: "title", label: "Judul Milestone", full: true }, { key: "domain", label: "Domain" }, { key: "reference", label: "Referensi" },
+    { key: "title", label: "Judul Milestone", full: true }, { key: "domain", label: "Domain", options: MILESTONE_DOMAINS }, { key: "reference", label: "Referensi" },
     { key: "ageMinMonths", label: "Usia Min (bln)", type: "number" }, { key: "ageMaxMonths", label: "Usia Maks (bln)", type: "number" },
   ],
   immunizations: [
@@ -1079,7 +1080,16 @@ function ModalAddContent({ kind, item, reload, onClose, showToast }: { kind: str
       <div className="grid grid-cols-2 gap-3">
         {fields.map((f) => (
           <div key={f.key} className={f.full ? "col-span-2" : ""}>
-            <FormGroup label={f.label}><Input type={f.type ?? "text"} value={form[f.key] ?? ""} onChange={(e) => set(f.key, e.target.value)} /></FormGroup>
+            <FormGroup label={f.label}>
+              {f.options ? (
+                <Select value={form[f.key] ?? ""} onChange={(e) => set(f.key, e.target.value)}>
+                  <option value="" disabled>Pilih {f.label}</option>
+                  {f.options.map((o) => <option key={o} value={o}>{o}</option>)}
+                </Select>
+              ) : (
+                <Input type={f.type ?? "text"} value={form[f.key] ?? ""} onChange={(e) => set(f.key, e.target.value)} />
+              )}
+            </FormGroup>
           </div>
         ))}
       </div>
