@@ -156,8 +156,9 @@ Scripts: `seed.ts`, `seed-admin.ts`, `backfill-children.ts`. Migrasi: `drizzle/`
 `platform_settings`, `ref_milestones`, `ref_immunizations`, `ref_teeth` (master
 konten yang dikelola admin).
 
-Anak baru otomatis di-seed: **50 milestone** (status belum), **jadwal imunisasi
-IDAI**, **8 gigi susu** (lihat custom `POST /api/children`).
+Anak baru otomatis di-seed: **53 milestone** (status belum; termasuk 3 skrining CDC),
+**jadwal imunisasi IDAI**, **8 gigi susu** (lihat custom `POST /api/children`).
+`ref_milestones` diturunkan dari satu sumber `mockMilestones` (lihat §11 M4b).
 
 ## 6. API
 
@@ -395,27 +396,18 @@ npm run db:generate   # bila ada perubahan schema (additive)
 - `lib/red-flags.ts` kini menggabung **regresi** (segala usia, didahulukan) + **telat** (kritis lewat window).
 - Skor audit naik dari ~62 → estimasi ~78–80 (Jurnal + screening + z-score + recommendation).
 
-**Berikutnya (belum dikerjakan): M4b — tambah milestone CDC baru**
-(responds-to-name ~9bln, menunjuk/joint-attention ~12–18bln, dua-langkah ~24bln).
-
-⚠️ **TEMUAN PENTING saat inspeksi (harus dibereskan dulu di M4b):** sumber milestone
-**ada dua dan divergen** —
-1. `lib/mock-data.ts` `mockMilestones` = **50 item**, domain kanonik (`MILESTONE_DOMAINS`),
-   dipakai demo + fallback `childReferenceRows` (anak baru saat `ref_milestones` kosong).
-2. `scripts/seed-admin.ts` const `MILESTONES` = **hanya 6 item**, domain non-kanonik
-   (`"Bahasa"` ≠ `"Bahasa & Komunikasi"`), ada field `reference`. Ini yang mengisi
-   tabel `ref_milestones` (katalog anak baru di produksi via `referenceRowsFromDb`).
-
-Konsekuensi: bila produksi sudah `db:seed:admin`, anak baru mungkin hanya dapat 6 milestone
-dgn domain "Bahasa" (jatuh ke `fallbackDomainMeta`). **Langkah M4b yang benar:**
-- (a) Jadikan **satu sumber**: `ref_milestones` seed sebaiknya diturunkan dari `mockMilestones`
-  (50 item, domain kanonik) — bukan list 6 item terpisah. Perbaiki `seed-admin.ts`.
-- (b) Tambah 3 milestone CDC ke `mockMilestones` (id m51–m53).
-- (c) Skrip **backfill idempotent baru** (mis. `scripts/add-cdc-milestones.ts`) yang INSERT
-  hanya milestone yang BELUM dimiliki tiap anak (match by `title`) — `backfill-children.ts`
-  existing **tidak cukup** karena hanya seed anak yg milestone-nya kosong.
-- (d) Verifikasi domain semua baris ∈ `MILESTONE_DOMAINS` (hindari fallback).
-- Aksi deploy: `db:seed:admin` ulang (refresh `ref_milestones`) + jalankan skrip backfill.
+**M4b — milestone CDC baru + rekonsiliasi sumber — ✅ SELESAI**
+- Tambah 3 milestone skrining CDC ke `mockMilestones` (m51 menoleh saat dipanggil nama
+  6–9 kritis, m52 menunjuk/joint-attention 12–18 kritis, m53 perintah 2-langkah 24–36) —
+  domain kanonik (`MILESTONE_DOMAINS`). Total **53** milestone.
+- **Divergensi 6-vs-50 dibereskan:** `seed-admin.ts` const `MILESTONES` kini **diturunkan
+  dari `mockMilestones`** (53, kanonik, ber-`description`) — bukan lagi list 6-item domain
+  "Bahasa". `ref_milestones` = satu sumber kebenaran.
+- Skrip backfill **idempotent** `scripts/add-cdc-milestones.ts` (`npm run db:cdc`):
+  (1) refresh `ref_milestones` ke 53 kanonik; (2) sisipkan milestone CDC yg belum dimiliki
+  tiap anak (match by `title`, status "belum"). Terverifikasi di dev: run#1 +3/anak, run#2 +0.
+- **AKSI DEPLOY (ops, setelah migrate produksi):** jalankan `npm run db:cdc` dgn
+  `DATABASE_URL` **produksi** → refresh katalog + backfill anak existing. Additive & aman diulang.
 
 Sesudah M4b: roadmap v1.2 (AI coach grounded) & seterusnya.
 

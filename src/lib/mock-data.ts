@@ -283,6 +283,11 @@ export const mockMilestones: Milestone[] = [
   { id: "m48", title: "Menulis namanya", description: "Menyalin/menulis huruf namanya.", domain: "Motorik Halus", ageMinMonths: 60, ageMaxMonths: 72, isCritical: false, status: "belum" },
   { id: "m49", title: "Mengenal huruf A–Z", description: "Mengenali sebagian besar huruf.", domain: "Kognitif", ageMinMonths: 60, ageMaxMonths: 72, isCritical: true, status: "belum" },
   { id: "m50", title: "Memakai baju sendiri", description: "Berpakaian mandiri termasuk kancing.", domain: "Sosial-Emosional", ageMinMonths: 60, ageMaxMonths: 72, isCritical: false, status: "belum" },
+
+  // — Tambahan skrining CDC "Learn the Signs. Act Early." (indikator dini penting) —
+  { id: "m51", title: "Menoleh saat dipanggil nama", description: "Menoleh atau bereaksi saat namanya dipanggil.", domain: "Sosial-Emosional", ageMinMonths: 6, ageMaxMonths: 9, isCritical: true, status: "bisa", achievedAt: "2026-03-20" },
+  { id: "m52", title: "Menunjuk untuk berbagi perhatian", description: "Menunjuk benda untuk menunjukkan ketertarikan kepada orang lain (joint attention).", domain: "Sosial-Emosional", ageMinMonths: 12, ageMaxMonths: 18, isCritical: true, status: "belum" },
+  { id: "m53", title: "Mengikuti perintah 2 langkah", description: "Mengikuti instruksi dua langkah, mis. 'ambil sepatu lalu taruh di rak'.", domain: "Bahasa & Komunikasi", ageMinMonths: 24, ageMaxMonths: 36, isCritical: false, status: "belum" },
 ];
 
 export const mockSleepLogs: Record<string, SleepLog[]> = {

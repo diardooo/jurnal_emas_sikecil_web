@@ -13,7 +13,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx scripts/seed.ts",
-    "db:seed:admin": "tsx scripts/seed-admin.ts"
+    "db:seed:admin": "tsx scripts/seed-admin.ts",
+    "db:cdc": "tsx scripts/add-cdc-milestones.ts"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.1",

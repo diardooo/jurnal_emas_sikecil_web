@@ -12,6 +12,7 @@ import {
   refTeeth,
   rolePermissions,
 } from "../src/db/schema/admin";
+import { mockMilestones } from "../src/lib/mock-data";
 
 const ADMIN = {
   name: "Diardo",
@@ -80,14 +81,21 @@ const SLEEP = [
   { groupName: "Usia sekolah", ageLabel: "6 thn+", totalLabel: "9–12 jam", nightLabel: "9–11 jam", napLabel: "Tidak rutin", note: "Tidur malam sumber utama istirahat" },
 ];
 
-const MILESTONES = [
-  { domain: "Motorik Kasar", title: "Mengangkat kepala saat tengkurap", ageMinMonths: 0, ageMaxMonths: 3, isCritical: true, reference: "WHO, DDST-II" },
-  { domain: "Bahasa", title: "Mengucapkan suara vokal (aah, ooh)", ageMinMonths: 2, ageMaxMonths: 4, isCritical: false, reference: "IDAI, KPSP" },
-  { domain: "Kognitif", title: "Meraih dan menggenggam mainan", ageMinMonths: 4, ageMaxMonths: 6, isCritical: false, reference: "DDST-II" },
-  { domain: "Sosial-Emosional", title: "Kecemasan terhadap orang asing", ageMinMonths: 6, ageMaxMonths: 9, isCritical: true, reference: "WHO, IDAI" },
-  { domain: "Motorik Halus", title: "Mengambil benda kecil (pincer grasp)", ageMinMonths: 9, ageMaxMonths: 12, isCritical: true, reference: "DDST-II, KPSP" },
-  { domain: "Bahasa", title: "Mengucapkan 3 kata bermakna", ageMinMonths: 12, ageMaxMonths: 15, isCritical: true, reference: "WHO, IDAI" },
-];
+/**
+ * Katalog `ref_milestones` diturunkan dari SATU sumber kebenaran `mockMilestones`
+ * (50 item 0–6 th + tambahan skrining CDC = 53), domain kanonik (`MILESTONE_DOMAINS`)
+ * dan ber-`description`. Dulu di sini ada list 6-item terpisah dgn domain non-kanonik
+ * ("Bahasa") — itu menyebabkan divergensi data; sekarang disatukan.
+ */
+const MILESTONES = mockMilestones.map((m) => ({
+  domain: m.domain,
+  title: m.title,
+  description: m.description,
+  ageMinMonths: m.ageMinMonths,
+  ageMaxMonths: m.ageMaxMonths,
+  isCritical: m.isCritical,
+  reference: "WHO / IDAI (KPSP) / Denver II / CDC",
+}));
 
 const SETTINGS: Record<string, string> = {
   platform_name: "Jurnal Emas Si Kecil",
