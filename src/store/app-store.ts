@@ -51,6 +51,18 @@ const persist = (p: Promise<unknown>) =>
     }),
   );
 
+/**
+ * Resilient list fetch for hydrate(): a single failing or not-yet-migrated
+ * endpoint (e.g. a new column/table before the DB migration is applied) must
+ * not break the whole app load. Logs and degrades to an empty list. Identity
+ * (`getMe`) and the gating `children` list stay strict on purpose.
+ */
+const safeList = <T>(label: string, p: Promise<T[]>): Promise<T[]> =>
+  p.catch((e) => {
+    console.warn(`[hydrate] gagal memuat "${label}", memakai data kosong:`, e);
+    return [] as T[];
+  });
+
 function recomputeProgress(goal: Goal): Goal {
   if (goal.subGoals.length === 0) return goal;
   const done = goal.subGoals.filter((s) => s.done).length;
@@ -200,19 +212,17 @@ export const useAppStore = create<AppState>((set, get) => {
       ] = await Promise.all([
         getMe(),
         apiGet<Child[]>("children"),
-        apiGet<Task[]>("tasks"),
-        apiGet<TodoItem[]>("todos"),
-        apiGet<Habit[]>("habits"),
-        apiGet<Milestone[]>("milestones"),
-        apiGet<Goal[]>("goals"),
-        apiGet<AppNotification[]>("notifications"),
-        apiGet<GrowthRecord[]>("growth"),
-        apiGet<Immunization[]>("immunizations"),
-        apiGet<ToothRecord[]>("teeth"),
-        apiGet<SleepLog[]>("sleep"),
-        // Defensive: a missing/lagging journal_entries table (e.g. before the
-        // migration runs) must not break the whole app load — degrade to empty.
-        apiGet<JournalEntry[]>("journal").catch(() => [] as JournalEntry[]),
+        safeList("tasks", apiGet<Task[]>("tasks")),
+        safeList("todos", apiGet<TodoItem[]>("todos")),
+        safeList("habits", apiGet<Habit[]>("habits")),
+        safeList("milestones", apiGet<Milestone[]>("milestones")),
+        safeList("goals", apiGet<Goal[]>("goals")),
+        safeList("notifications", apiGet<AppNotification[]>("notifications")),
+        safeList("growth", apiGet<GrowthRecord[]>("growth")),
+        safeList("immunizations", apiGet<Immunization[]>("immunizations")),
+        safeList("teeth", apiGet<ToothRecord[]>("teeth")),
+        safeList("sleep", apiGet<SleepLog[]>("sleep")),
+        safeList("journal", apiGet<JournalEntry[]>("journal")),
       ]);
 
       const grouped = groupByChild(growth);

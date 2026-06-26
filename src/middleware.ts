@@ -3,6 +3,7 @@ import { getSessionCookie } from "better-auth/cookies";
 
 const PROTECTED = [
   "/dashboard",
+  "/journal",
   "/growth",
   "/goals",
   "/tasks",
@@ -48,6 +49,7 @@ export function middleware(req: NextRequest) {
 export const config = {
   matcher: [
     "/dashboard/:path*",
+    "/journal/:path*",
     "/growth/:path*",
     "/goals/:path*",
     "/tasks/:path*",

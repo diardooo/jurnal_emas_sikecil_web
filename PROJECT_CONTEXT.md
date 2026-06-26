@@ -369,6 +369,23 @@ npm run db:generate   # bila ada perubahan schema (additive)
   (milestones.regressed). Keduanya **additive & reversible**; tanpa migrasi,
   hydrate jurnal sudah aman (defensif → kosong), tapi fitur jurnal/regresi belum jalan.
 
+**Hotfix alur auth (register→signout) — sesi lanjutan:**
+- **Penyebab error "Gagal memuat data" setelah register/login:** `hydrate()` dulu
+  *all-or-nothing* (12 fetch tanpa catch). Kalau **satu** endpoint gagal — mis.
+  `GET /api/milestones` error karena kolom `regressed` belum ada di **DB yang di-query**
+  (branch produksi Neon belum di-migrate, sementara `db:migrate` lokal hanya kena branch dev)
+  — seluruh `Promise.all` reject → app brick.
+- **Fix kode:** `hydrate()` kini resilient per-resource via `safeList()` (catch→[] + warn);
+  `getMe()` & `children` tetap strict. Satu migrasi telat tak lagi mematikan login semua user.
+- **Fix kode:** route `/journal` ditambahkan ke `middleware.ts` (PROTECTED + matcher) —
+  sebelumnya kelewat saat menambah halaman Jurnal.
+- **WAJIB (ops):** **migrate branch PRODUKSI Neon** (yang dipakai Vercel), bukan cuma dev.
+  Pastikan `DATABASE_URL` di Vercel menunjuk branch yang sudah punya `journal_entries`
+  + `milestones.regressed`. Tanpa ini, login jalan tapi milestone/jurnal tampil kosong.
+- **Catatan latent (belum difix):** onboarding `finish()` `addChild()` (POST async) lalu
+  langsung `router.push("/dashboard")` → ada race vs `hydrate()` (bisa bounce balik ke
+  onboarding bila POST belum selesai). Pre-existing; kandidat siklus tersendiri.
+
 **Catatan teknik untuk sesi lanjutan:**
 - **Lint** sekarang ESLint 9 flat config; warning React-Compiler (`set-state-in-effect`,
   `use-memo`, `exhaustive-deps` pada pola GOTCHA #1 `?? []`) sengaja **warn** (kode lama,
