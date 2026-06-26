@@ -481,6 +481,21 @@ npm run db:generate   # bila ada perubahan schema (additive)
   Input URL tetap sebagai fallback. Tanpa migrasi/endpoint/store baru. Gate hijau.
 - Lihat §10.11. **Foto milestone** masih tersisa (perlu kolom `photoUrl` + migrasi).
 
+**M19 (UI/UX + bugfix, 3 siklus) — ✅ SELESAI**
+- **(A) Bug "Goal Orang Tua" kosong:** backend goals lengkap tapi tak ada UI buat goal +
+  tak ada empty-state → akun nyata selalu blank. Tambah `components/app/goal-dialog.tsx`
+  (judul/kategori/target/deskripsi/sub-goal dinamis → `addGoal`) + empty-state "Buat Goal
+  Pertama" + tombol tambah di `goals` tab "goal".
+- **(B) Polish panel sambutan dashboard:** `dashboard-guide.tsx` jadi **checklist progres
+  nyata** — tiap langkah auto-tercentang dari data (profil terisi BB/TB lahir, ada growth,
+  ada milestone "bisa", ada task/habit, report-ready) + progress bar + "X/5 selesai" +
+  state hijau + perayaan saat 5/5. Selector baca ref store stabil; derivasi di render.
+- **(C) Foto di jurnal:** `lib/image-compress.ts` (Canvas: `createImageBitmap`→resize 1280px
+  →JPEG q0.8, ambil yang lebih kecil; tanpa dependency → hemat Cloudinary/S3). `journal-dialog`
+  tambah picker foto multi (kompres→`/api/upload`→`media[]`, thumbnail+hapus). List jurnal
+  tampilkan grid foto (klik→buka penuh) + badge kamera di ikon mood. Thumbnail pakai `Avatar`
+  (lint-clean). Gate hijau ketiganya; tanpa migrasi.
+
 **M18 (v1.2) — AI Coach: riwayat chat tersimpan — ✅ SELESAI**
 - Percakapan dulu hilang saat reload/pindah halaman. Tabel additive
   `coach_messages(user_id, child_id→cascade, role, content)` (migrasi `0007`).
