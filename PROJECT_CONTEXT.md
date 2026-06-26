@@ -318,10 +318,15 @@ Berfungsi di UI tapi belum dirapikan/di-persist. Format: lokasi → kondisi → 
 - **Lokasi:** `reports/page.tsx` (Export PDF/Bagikan/Cetak → toast/`window.print()`).
 - **Dibutuhkan:** generate PDF nyata (Puppeteer/PDFKit) + link share ber-token.
 
-### 10.7 Notifikasi — data statis, belum ada generator
-- **Lokasi:** tabel `notifications` di-seed; dibaca `notifications.tsx`.
-- **Dibutuhkan:** generator otomatis (imunisasi by usia, posyandu, deadline task/habit) —
-  kemungkinan cron/scheduled route. (Admin punya `broadcast` untuk kirim manual.)
+### 10.7 Notifikasi — generator otomatis — ✅ SELESAI (M14, v1.1)
+- **Sekarang:** `POST /api/notifications/generate` menurunkan reminder dari data nyata:
+  imunisasi jatuh-usia (belum "selesai"), red-flag milestone (reuse `evaluateRedFlags`),
+  task tenggat ≤3 hari. **Idempotent tanpa cron:** tiap baris ber-id deterministik
+  (`auto:<kind>:…`) + `onConflictDoNothing` → dipanggil tiap login (dari `hydrate()`,
+  sebelum fetch notifications) tanpa duplikat. Inti logika murni di `lib/notifications-gen.ts`
+  (`buildReminders`, unit-tested). UI `notifications.tsx` sudah memetakan `type`→ikon.
+- **Tersisa (opsional):** pembersihan reminder yang sudah selesai, reminder habit, &
+  honor preferensi notifikasi (§10.5, kini per-perangkat) saat pindah ke DB.
 
 ### 10.8 Pembayaran Midtrans (subscription)
 - **Lokasi:** `settings/page.tsx` `setPlan` → `PATCH /api/subscriptions/:id`. Tanpa pembayaran nyata.
@@ -470,6 +475,13 @@ npm run db:generate   # bila ada perubahan schema (additive)
   `POST /api/upload` → set `photoUrl` lokal → persist saat "Simpan" (`updateChild`).
   Input URL tetap sebagai fallback. Tanpa migrasi/endpoint/store baru. Gate hijau.
 - Lihat §10.11. **Foto milestone** masih tersisa (perlu kolom `photoUrl` + migrasi).
+
+**M14 (v1.1) — Generator notifikasi otomatis — ✅ SELESAI**
+- Lihat §10.7. `lib/notifications-gen.ts` (`buildReminders`, murni & unit-tested) +
+  `POST /api/notifications/generate` (Promise.all baca children/imun/milestone/task →
+  upsert `onConflictDoNothing` dgn id deterministik). `hydrate()` generate-lalu-fetch
+  (dibungkus `safeList`). Tanpa migrasi/dependency baru. Gate hijau; smoke-test logika
+  PASS (imun jatuh-usia + 2 red-flag + task H-2; done/belum-usia/lewat di-skip).
 
 **M13 (admin) — Hapus user di panel admin — ✅ SELESAI**
 - Backend hapus user sudah ada (`DELETE /api/admin/users/[id]` + `POST .../bulk` action

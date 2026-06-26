@@ -250,7 +250,14 @@ export const useAppStore = create<AppState>((set, get) => {
         safeList("habits", apiGet<Habit[]>("habits")),
         safeList("milestones", apiGet<Milestone[]>("milestones")),
         safeList("goals", apiGet<Goal[]>("goals")),
-        safeList("notifications", apiGet<AppNotification[]>("notifications")),
+        // Generate reminder notifications from real data, then read them back.
+        // Idempotent server-side; failure degrades to just reading existing.
+        safeList(
+          "notifications",
+          apiPost("notifications/generate", {})
+            .catch(() => null)
+            .then(() => apiGet<AppNotification[]>("notifications")),
+        ),
         safeList("growth", apiGet<GrowthRecord[]>("growth")),
         safeList("immunizations", apiGet<Immunization[]>("immunizations")),
         safeList("teeth", apiGet<ToothRecord[]>("teeth")),
