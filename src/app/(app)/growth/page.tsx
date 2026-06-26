@@ -31,7 +31,7 @@ import { useAppStore } from "@/store/app-store";
 import { sleepIdeal } from "@/lib/mock-data";
 import { classifyWho, type WhoMetric } from "@/lib/who";
 import { cn, formatDateID, getAge } from "@/lib/utils";
-import type { GrowthRecord, ImmunizationStatus } from "@/lib/types";
+import type { Gender, GrowthRecord, ImmunizationStatus } from "@/lib/types";
 
 /** Recommended total sleep range (hours) by age in months. */
 function idealSleepRange(months: number): [number, number] {
@@ -80,7 +80,9 @@ export default function GrowthPage() {
         {metricMeta.map((m) => {
           const val = latest ? valueOf(latest, m.key) : undefined;
           const status =
-            val != null ? classifyWho(m.key, age.months, val) : undefined;
+            val != null
+              ? classifyWho(m.key, age.months, val, child.gender)
+              : undefined;
           return (
             <Card key={m.key}>
               <CardContent className="p-5">
@@ -96,6 +98,11 @@ export default function GrowthPage() {
                   {val != null ? `${val} ${m.unit}` : "—"}
                 </p>
                 <p className="text-xs text-navy-muted">{m.label}</p>
+                {status?.percentile != null && (
+                  <p className="mt-1 text-[11px] font-medium text-muted-foreground">
+                    Persentil ke-{Math.round(status.percentile)} • Z {status.z!.toFixed(1)}
+                  </p>
+                )}
               </CardContent>
             </Card>
           );
@@ -119,7 +126,7 @@ export default function GrowthPage() {
         </TabsList>
 
         <TabsContent value="pertumbuhan">
-          <GrowthTab records={records} childId={activeId} dob={child.dob} />
+          <GrowthTab records={records} childId={activeId} dob={child.dob} gender={child.gender} />
         </TabsContent>
         <TabsContent value="imunisasi">
           <ImmunizationTab />
@@ -171,10 +178,12 @@ function GrowthTab({
   records,
   childId,
   dob,
+  gender,
 }: {
   records: GrowthRecord[];
   childId: string;
   dob: string;
+  gender: Gender;
 }) {
   const deleteRecord = useAppStore((s) => s.deleteGrowthRecord);
 
@@ -201,7 +210,7 @@ function GrowthTab({
             </TabsList>
             {metricMeta.map((m) => (
               <TabsContent key={m.key} value={m.key}>
-                <WhoGrowthChart data={records} metric={m.key} />
+                <WhoGrowthChart data={records} metric={m.key} sex={gender} />
                 <Legend />
               </TabsContent>
             ))}

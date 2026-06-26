@@ -14,6 +14,7 @@ import {
   mockGoals,
   mockGrowth,
   mockHabits,
+  mockJournal,
   mockImmunizations,
   mockMilestones,
   mockNotifications,
@@ -31,6 +32,7 @@ import type {
   Habit,
   Immunization,
   ImmunizationStatus,
+  JournalEntry,
   Milestone,
   MilestoneStatus,
   SleepLog,
@@ -57,6 +59,10 @@ function recomputeProgress(goal: Goal): Goal {
 
 const sortGrowth = (a: GrowthRecord, b: GrowthRecord) =>
   a.ageMonths - b.ageMonths;
+
+/** Newest entries first for the journal timeline. */
+const sortJournal = (a: JournalEntry, b: JournalEntry) =>
+  b.date.localeCompare(a.date);
 
 /** Build per-child milestone groups from the master list (for demo mode). */
 function demoMilestones(): Record<string, Milestone[]> {
@@ -86,11 +92,11 @@ interface AppState {
   immunizations: Record<string, Immunization[]>;
   teeth: Record<string, ToothRecord[]>;
   sleepLogs: Record<string, SleepLog[]>;
+  journal: Record<string, JournalEntry[]>;
   taskCategories: string[];
   habitCategories: string[];
   plan: SubscriptionPlan;
   subscriptionId?: string;
-  streak: number;
   showGuide: boolean;
 
   hydrate: () => Promise<void>;
@@ -111,6 +117,13 @@ interface AppState {
   toggleTooth: (childId: string, toothId: string) => void;
   setToothDate: (childId: string, toothId: string, date: string) => void;
   addSleepLog: (childId: string, log: SleepLog) => void;
+  addJournalEntry: (childId: string, entry: JournalEntry) => void;
+  updateJournalEntry: (
+    childId: string,
+    id: string,
+    patch: Partial<JournalEntry>,
+  ) => void;
+  deleteJournalEntry: (childId: string, id: string) => void;
   dismissGuide: () => void;
   setShowGuide: (show: boolean) => void;
 
@@ -130,6 +143,7 @@ interface AppState {
   deleteHabit: (id: string) => void;
 
   setMilestoneStatus: (id: string, status: MilestoneStatus) => void;
+  setMilestoneRegressed: (id: string, regressed: boolean) => void;
 
   addGoal: (goal: Goal) => void;
   toggleSubGoal: (goalId: string, subId: string) => void;
@@ -162,10 +176,10 @@ export const useAppStore = create<AppState>((set, get) => {
     immunizations: {},
     teeth: {},
     sleepLogs: {},
+    journal: {},
     taskCategories: [...taskCategories],
     habitCategories: [...habitCategories],
     plan: "free",
-    streak: 12,
     showGuide: true,
 
     hydrate: async () => {
@@ -182,6 +196,7 @@ export const useAppStore = create<AppState>((set, get) => {
         immunizations,
         teeth,
         sleep,
+        journal,
       ] = await Promise.all([
         getMe(),
         apiGet<Child[]>("children"),
@@ -195,6 +210,9 @@ export const useAppStore = create<AppState>((set, get) => {
         apiGet<Immunization[]>("immunizations"),
         apiGet<ToothRecord[]>("teeth"),
         apiGet<SleepLog[]>("sleep"),
+        // Defensive: a missing/lagging journal_entries table (e.g. before the
+        // migration runs) must not break the whole app load — degrade to empty.
+        apiGet<JournalEntry[]>("journal").catch(() => [] as JournalEntry[]),
       ]);
 
       const grouped = groupByChild(growth);
@@ -217,6 +235,7 @@ export const useAppStore = create<AppState>((set, get) => {
         immunizations: groupByChild(immunizations),
         teeth: groupByChild(teeth),
         sleepLogs: groupByChild(sleep),
+        journal: groupByChild(journal),
       });
     },
 
@@ -226,7 +245,6 @@ export const useAppStore = create<AppState>((set, get) => {
         hydrated: true,
         demo: true,
         plan: "premium",
-        streak: 12,
         showGuide: true,
         children: mockChildren,
         activeChildId: mockChildren[0].id,
@@ -240,6 +258,7 @@ export const useAppStore = create<AppState>((set, get) => {
         immunizations: mockImmunizations,
         teeth: mockTeeth,
         sleepLogs: mockSleepLogs,
+        journal: mockJournal,
       }),
 
     setActiveChild: (id) => set({ activeChildId: id }),
@@ -407,6 +426,52 @@ export const useAppStore = create<AppState>((set, get) => {
         ),
       );
     },
+    addJournalEntry: (childId, entry) => {
+      const { id: _omit, ...payload } = entry;
+      const temp = { ...entry, id: `tmp-${Date.now()}` };
+      set((s) => ({
+        journal: {
+          ...s.journal,
+          [childId]: [temp, ...(s.journal[childId] ?? [])].sort(sortJournal),
+        },
+      }));
+      save(() =>
+        apiPost<JournalEntry>("journal", { ...payload, childId }).then((real) =>
+          set((s) => ({
+            journal: {
+              ...s.journal,
+              [childId]: (s.journal[childId] ?? [])
+                .map((j) => (j.id === temp.id ? real : j))
+                .sort(sortJournal),
+            },
+          })),
+        ),
+      );
+    },
+    updateJournalEntry: (childId, id, patch) => {
+      set((s) => ({
+        journal: {
+          ...s.journal,
+          [childId]: (s.journal[childId] ?? [])
+            .map((j) => (j.id === id ? { ...j, ...patch } : j))
+            .sort(sortJournal),
+        },
+      }));
+      save(() =>
+        id.startsWith("tmp-") ? Promise.resolve() : apiPatch("journal", id, patch),
+      );
+    },
+    deleteJournalEntry: (childId, id) => {
+      set((s) => ({
+        journal: {
+          ...s.journal,
+          [childId]: (s.journal[childId] ?? []).filter((j) => j.id !== id),
+        },
+      }));
+      save(() =>
+        id.startsWith("tmp-") ? Promise.resolve() : apiDelete("journal", id),
+      );
+    },
     dismissGuide: () => set({ showGuide: false }),
     setShowGuide: (show) => set({ showGuide: show }),
 
@@ -530,6 +595,19 @@ export const useAppStore = create<AppState>((set, get) => {
       save(() =>
         apiPatch("milestones", id, { status, achievedAt: achievedAt ?? null }),
       );
+    },
+
+    setMilestoneRegressed: (id, regressed) => {
+      set((s) => {
+        const next: Record<string, Milestone[]> = {};
+        for (const [cid, list] of Object.entries(s.milestones)) {
+          next[cid] = list.map((m) =>
+            m.id === id ? { ...m, regressed } : m,
+          );
+        }
+        return { milestones: next };
+      });
+      save(() => apiPatch("milestones", id, { regressed }));
     },
 
     addGoal: (goal) => {

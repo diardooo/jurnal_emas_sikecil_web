@@ -3,14 +3,17 @@
 import Link from "next/link";
 import {
   ArrowRight,
+  BookHeart,
   CalendarHeart,
   CheckCircle2,
   Circle,
   ClipboardList,
   Flame,
+  Lightbulb,
   ListTodo,
   Plus,
   Repeat,
+  Sparkles,
   Syringe,
   Target,
   TrendingUp,
@@ -23,7 +26,9 @@ import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DashboardGuide } from "@/components/app/dashboard-guide";
 import { useAppStore } from "@/store/app-store";
-import { getAge, initials } from "@/lib/utils";
+import { MOOD_META, resurfaceMemory } from "@/lib/journal";
+import { dailyActivity } from "@/lib/daily-activities";
+import { cn, formatDateID, getAge, initials } from "@/lib/utils";
 
 const priorityLabel: Record<string, string> = {
   tinggi: "Tinggi",
@@ -39,7 +44,9 @@ export default function DashboardPage() {
   const habits = useAppStore((s) => s.habits);
   const milestonesMap = useAppStore((s) => s.milestones);
   const goals = useAppStore((s) => s.goals);
-  const streak = useAppStore((s) => s.streak);
+  const immunizationsMap = useAppStore((s) => s.immunizations);
+  const growthMap = useAppStore((s) => s.growth);
+  const journalMap = useAppStore((s) => s.journal);
   const setTaskStatus = useAppStore((s) => s.setTaskStatus);
   const checkInHabit = useAppStore((s) => s.checkInHabit);
   const toggleTodo = useAppStore((s) => s.toggleTodo);
@@ -48,6 +55,10 @@ export default function DashboardPage() {
   const age = getAge(child.dob);
   const milestones = milestonesMap[activeId] ?? [];
 
+  // Daily ritual: one age-appropriate activity + a resurfaced journal memory.
+  const activity = dailyActivity(age.months);
+  const memory = resurfaceMemory(journalMap[activeId] ?? []);
+
   const childTasks = tasks.filter((t) => !t.childId || t.childId === activeId);
   const openTasks = childTasks.filter((t) => t.status !== "done");
   const childTodos = todos.filter((t) => !t.childId || t.childId === activeId);
@@ -55,6 +66,17 @@ export default function DashboardPage() {
   const childHabits = habits.filter((h) => !h.childId || h.childId === activeId);
   const habitsDone = childHabits.filter((h) => h.history[h.history.length - 1]).length;
   const achieved = milestones.filter((m) => m.status === "bisa").length;
+
+  // streak = best active-habit streak (replaces the former hard-coded constant)
+  const streak = childHabits.reduce((m, h) => Math.max(m, h.streak), 0);
+
+  // priority reminders derived from real data (no hard-coded placeholders)
+  const childImmunizations = immunizationsMap[activeId] ?? [];
+  const nextImmun = [...childImmunizations]
+    .filter((im) => im.status !== "selesai")
+    .sort((a, b) => a.ageMonths - b.ageMonths)[0];
+  const childGrowth = growthMap[activeId] ?? [];
+  const lastGrowth = childGrowth[childGrowth.length - 1];
 
   // upcoming milestones: not yet achieved, nearest to current age
   const upcoming = [...milestones]
@@ -133,6 +155,80 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Daily ritual */}
+      <Card className="border-gold-200 bg-gradient-to-br from-gold-50 to-background">
+        <CardContent className="space-y-3 p-5">
+          <p className="flex items-center gap-2 font-display font-bold text-navy">
+            <Sparkles className="h-5 w-5 text-gold-600" /> Momen Hari Ini
+          </p>
+
+          {/* One age-appropriate activity */}
+          <div className="flex items-start gap-3 rounded-xl border bg-background p-4">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-sage-soft text-sage">
+              <Lightbulb className="h-[18px] w-[18px]" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-bold uppercase tracking-wide text-sage">
+                Ide stimulasi 2 menit • {activity.domain}
+              </p>
+              <p className="text-sm font-semibold text-navy">{activity.title}</p>
+              <p className="text-xs text-navy-muted">{activity.detail}</p>
+            </div>
+          </div>
+
+          {/* A resurfaced memory (or a nudge to write the first one) */}
+          {memory ? (
+            <Link
+              href="/journal"
+              className="flex items-start gap-3 rounded-xl border bg-background p-4 transition-colors hover:border-gold-300"
+            >
+              <span
+                className={cn(
+                  "grid h-9 w-9 shrink-0 place-items-center rounded-lg text-lg",
+                  memory.entry.mood
+                    ? MOOD_META[memory.entry.mood].cls
+                    : "bg-gold-100 text-gold-700",
+                )}
+              >
+                {memory.entry.mood ? (
+                  MOOD_META[memory.entry.mood].emoji
+                ) : (
+                  <BookHeart className="h-[18px] w-[18px]" />
+                )}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-bold uppercase tracking-wide text-gold-700">
+                  {memory.label} • {formatDateID(memory.entry.date)}
+                </p>
+                <p className="truncate text-sm font-semibold text-navy">
+                  {memory.entry.title ?? memory.entry.body}
+                </p>
+                <p className="truncate text-xs text-navy-muted">
+                  {memory.entry.title ? memory.entry.body : "Buka Jurnal Emas →"}
+                </p>
+              </div>
+            </Link>
+          ) : (
+            <Link
+              href="/journal"
+              className="flex items-center gap-3 rounded-xl border border-dashed bg-background p-4 transition-colors hover:border-gold-300"
+            >
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-gold-100 text-gold-700">
+                <BookHeart className="h-[18px] w-[18px]" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-navy">
+                  Tulis kenangan pertamamu
+                </p>
+                <p className="text-xs text-navy-muted">
+                  Abadikan momen kecil {child.name} hari ini di Jurnal Emas →
+                </p>
+              </div>
+            </Link>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -219,22 +315,56 @@ export default function DashboardPage() {
               <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-soft-orange">
                 <Syringe className="h-4 w-4" /> Imunisasi
               </p>
-              <p className="mt-1 text-sm font-semibold text-navy">
-                Campak Rubella (MR 1)
-              </p>
-              <p className="text-xs text-navy-muted">Dalam 3 hari • 22 Jun 2026</p>
+              {nextImmun ? (
+                <>
+                  <p className="mt-1 text-sm font-semibold text-navy">
+                    {nextImmun.vaccine}
+                  </p>
+                  <p className="text-xs text-navy-muted">
+                    Usia {nextImmun.ageLabel}
+                    {nextImmun.date ? ` • ${formatDateID(nextImmun.date)}` : ""}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="mt-1 text-sm font-semibold text-navy">
+                    Imunisasi terkini ✓
+                  </p>
+                  <p className="text-xs text-navy-muted">
+                    Tidak ada jadwal yang menunggu
+                  </p>
+                </>
+              )}
             </Link>
             <Link
               href="/growth"
               className="block rounded-xl border border-gold-200 bg-gold-50 p-4 transition-colors hover:border-gold-400"
             >
               <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-gold-700">
-                <CalendarHeart className="h-4 w-4" /> Posyandu
+                <CalendarHeart className="h-4 w-4" /> Penimbangan
               </p>
-              <p className="mt-1 text-sm font-semibold text-navy">
-                Penimbangan rutin
-              </p>
-              <p className="text-xs text-navy-muted">Posyandu Melati • 24 Jun 2026</p>
+              {lastGrowth ? (
+                <>
+                  <p className="mt-1 text-sm font-semibold text-navy">
+                    Pemantauan pertumbuhan
+                  </p>
+                  <p className="text-xs text-navy-muted">
+                    Terakhir:{" "}
+                    {lastGrowth.date
+                      ? formatDateID(lastGrowth.date)
+                      : `usia ${lastGrowth.ageMonths} bln`}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="mt-1 text-sm font-semibold text-navy">
+                    Belum ada penimbangan
+                  </p>
+                  <p className="text-xs text-navy-muted">
+                    Tambah pengukuran pertama
+                  </p>
+                </>
+              )}
             </Link>
           </CardContent>
         </Card>

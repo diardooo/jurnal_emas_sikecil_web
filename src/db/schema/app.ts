@@ -92,6 +92,8 @@ export const milestones = pgTable("milestones", {
   ageMaxMonths: integer("age_max_months").notNull(),
   isCritical: boolean("is_critical").notNull().default(false),
   status: text("status").notNull().default("belum"),
+  /** True when a previously-acquired skill is lost again (developmental regression). */
+  regressed: boolean("regressed").notNull().default(false),
   achievedAt: timestamp("achieved_at"),
   note: text("note"),
   hasPhoto: boolean("has_photo").notNull().default(false),
@@ -167,6 +169,21 @@ export const sleepLogs = pgTable("sleep_logs", {
   date: date("date").notNull(),
   nightHours: doublePrecision("night_hours").notNull().default(0),
   napHours: doublePrecision("nap_hours").notNull().default(0),
+  createdAt: createdAt(),
+});
+
+export const journalEntries = pgTable("journal_entries", {
+  id: id(),
+  userId: userId(),
+  childId: text("child_id")
+    .notNull()
+    .references(() => children.id, { onDelete: "cascade" }),
+  date: date("date").notNull(),
+  mood: text("mood"), // 'senang' | 'biasa' | 'rewel' | 'sakit' | 'bangga' | null
+  title: text("title"),
+  body: text("body").notNull().default(""),
+  tags: jsonb("tags").$type<string[]>().notNull().default([]),
+  media: jsonb("media").$type<string[]>().notNull().default([]),
   createdAt: createdAt(),
 });
 

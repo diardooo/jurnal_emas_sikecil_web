@@ -1,4 +1,5 @@
 import {
+  BookHeart,
   CalendarCheck,
   FileText,
   LayoutDashboard,
@@ -12,6 +13,7 @@ import {
 
 export const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Jurnal", href: "/journal", icon: BookHeart },
   { label: "Tumbuh Kembang", href: "/growth", icon: LineChart },
   { label: "Goal & Milestone", href: "/goals", icon: Target },
   { label: "Task Manager", href: "/tasks", icon: ClipboardList },

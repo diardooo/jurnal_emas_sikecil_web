@@ -39,6 +39,7 @@ Buka http://localhost:3000
 | `/login` `/register` | Autentikasi (email + Google, demo)               |
 | `/onboarding`   | Wizard 3 langkah setup profil anak                    |
 | `/dashboard`    | Overview harian + **panduan 5 langkah** (bisa disembunyikan) |
+| `/journal`      | **Jurnal Emas** — timeline kenangan (catatan + mood + tag), cari & filter |
 | `/growth`       | Tumbuh Kembang — kurva BB/TB/lingkar kepala vs WHO + input pengukuran, imunisasi (IDAI) + input, gigi, tidur + catatan |
 | `/goals`        | Goal & Milestone — milestone 0–6 th **dikelompokkan per fase usia** + filter domain (WHO/IDAI/Denver) |
 | `/tasks`        | Task Manager — urusan sekali-jadi + mini-dashboard (progress per kategori), alert tenggat, kategori kustom |

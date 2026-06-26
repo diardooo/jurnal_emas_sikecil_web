@@ -74,6 +74,11 @@ Denver II**. Bahasa UI: **Indonesia**. Dibangun dari 3 PRD (.docx) di folder ind
 > **Catatan toolchain:** upgrade ke Next 16 + React 19 (dari Next 14.2 + React 18).
 > Beberapa peer dep (better-auth, Radix, dll) masih konservatif → ada `.npmrc`
 > berisi `legacy-peer-deps=true` agar `npm install` sukses. drizzle-kit 0.31.10.
+> **Lint:** Next 16 menghapus `next lint`; kini ESLint 9 + **flat config**
+> (`eslint.config.mjs`, ganti `.eslintrc.json` lama) via `npm run lint` (`eslint .`).
+> Aturan react-hooks era React Compiler (`set-state-in-effect`, `use-memo`)
+> di-set **warn** (kode lama memakai pola intentional) — gate hijau, hint tetap terlihat.
+> Gate verifikasi: `tsc --noEmit` + `npm run build` + `npm run lint` semuanya bersih.
 
 ## 3. Arsitektur & Alur Data
 
@@ -126,7 +131,11 @@ lib/
   auth.ts (server) / auth-client.ts ; api.ts (resource() + getUser) / api-client.ts ;
   admin.ts (getAdmin + adminResource()) / admin-client.ts ;
   child-templates.ts (seed referensi anak), mock-data.ts (master+template),
-  types.ts, who.ts (kurva WHO), domains.ts, nav.ts, utils.ts
+  types.ts, who.ts (kurva WHO + z-score LMS sex-spesifik), who-lms.ts (data LMS WHO 0–60 bln
+    L/P, auto-generated dari tabel resmi WHO), red-flags.ts (deteksi milestone kritis
+    terlambat — CDC act early), journal.ts (mood/tag meta + resurfaceMemory),
+    daily-activities.ts (ide stimulasi per fase usia — seed recommendation engine),
+    domains.ts, nav.ts, utils.ts
 store/app-store.ts   — Zustand: hydrate()/hydrateDemo() + aksi optimistic+persist(save gate)
 middleware.ts        — auth gate (lolos demo cookie)
 ```
@@ -136,7 +145,8 @@ Scripts: `seed.ts`, `seed-admin.ts`, `backfill-children.ts`. Migrasi: `drizzle/`
 
 **User-owned (`schema/app.ts`):** `children` · `tasks` · `todos` ·
 `habits`(history jsonb) · `milestones`(per-anak) · `goals`(subGoals jsonb) ·
-`growth_records` · `immunizations` · `teeth` · `sleep_logs` · `notifications` ·
+`growth_records` · `immunizations` · `teeth` · `sleep_logs` ·
+`journal_entries`(mood/tags jsonb/media jsonb, per-anak) · `notifications` ·
 `subscriptions`.
 
 **Auth (`schema/auth.ts`):** `user` (+ `role` 'user'|'admin'|'superadmin', + `status`
@@ -185,6 +195,38 @@ bekerja normal. `.env` Neon aktif (gitignored). Tanpa `DATABASE_URL`, app jalan 
 ## 8. Status Implementasi
 
 **Selesai & terverifikasi (termasuk produksi):**
+- **Ide Stimulasi (recommendation surface)** — tab ke-3 di halaman Goal & Milestone
+  menampilkan **semua aktivitas stimulasi** untuk fase usia anak (dari `daily-activities.ts`,
+  sumber yang sama dengan ritual harian), tiap kartu pakai ikon/warna domain (`domainMeta`).
+  Additive, tanpa DB/API. (Personalisasi ke milestone yang sedang dikerjakan = lanjutan.)
+- **Ritual Harian (kartu "Momen Hari Ini")** — di dashboard: 1 ide stimulasi 2 menit
+  sesuai fase usia anak (`daily-activities.ts`, deterministik per hari) + 1 kenangan
+  jurnal yang dimunculkan ulang (`resurfaceMemory`: "Setahun lalu" jika ada, kalau tidak
+  kenangan terakhir); bila jurnal kosong → ajakan menulis catatan pertama. Additive UI,
+  tanpa DB/API. Pondasi habit harian + seed untuk recommendation engine.
+- **Jurnal Emas (fitur namesake)** — timeline kenangan per anak: catatan + suasana hati
+  (mood) + tag + tanggal, dengan cari & filter (mood/tag). Tabel additive `journal_entries`
+  (migrasi `0002_*`), API `/api/journal` (+`[id]`) via `resource()`, store optimistic
+  (`addJournalEntry`/`updateJournalEntry`/`deleteJournalEntry`), halaman `/journal` +
+  `journal-dialog.tsx`, nav item "Jurnal". **Hydrate defensif** (`.catch(()=>[])`) agar
+  tabel yang belum termigrasi tidak mematahkan load app. Lampiran foto/voice = milestone
+  lanjutan (butuh Cloudinary aktif); kolom `media` sudah disiapkan.
+- **Deteksi "perlu diperhatikan" (red flag milestone)** — `lib/red-flags.ts` menandai
+  milestone **kritis** yang belum tercapai padahal anak sudah melewati `ageMaxMonths`
+  (buffer alami dari completed-months, selaras CDC "act early"). Tampil sebagai kartu
+  **amber non-alarming** di tab Milestone (`goals/page.tsx`): bahasa menenangkan, tegas
+  "bukan diagnosis", ajakan diskusi dengan bidan/dokter, daftar dibatasi 3 + "N lain".
+- **Deteksi regresi milestone (red flag terkuat — CDC)** — kolom additive
+  `milestones.regressed` (migrasi `0003_*`, default false). Orang tua menandai
+  keterampilan yang **sempat bisa tapi kini hilang** lewat tombol di tiap milestone
+  (`setMilestoneRegressed`); `red-flags.ts` memunculkannya **di usia berapa pun**
+  (`reason: "regression"`, didahulukan di atas item telat). Badge "Keterampilan hilang".
+  Backward-compatible (baris lama `false`).
+- **Tumbuh kembang sex-spesifik (WHO z-score, LMS)** — klasifikasi BB/TB/lingkar kepala
+  kini memakai standar WHO **per jenis kelamin** (`who-lms.ts` + `who.ts`), menampilkan
+  **persentil & z-score** dan mendeteksi **stunting** (TB/U z<-2) serta berat kurang.
+  `classifyWho`/`buildChartData` backward-compatible (param `sex` opsional → fallback band lama
+  untuk usia >60 bln). Data LMS di-generate dari tabel resmi WHO (anthro + zscorer), bukan ditebak.
 - Landing page (6 fitur) + tombol "Lihat Demo Dashboard".
 - Auth: login/register/logout + **Google OAuth aktif** (env GOOGLE_CLIENT_ID/SECRET sudah di Vercel).
 - **Form register** kini punya field **Nomor HP (opsional)** — terhubung ke kolom `phone` di DB.
@@ -234,11 +276,13 @@ Berfungsi di UI tapi belum dirapikan/di-persist. Format: lokasi → kondisi → 
 - **Dibutuhkan:** tabel `categories (id,user_id,kind,name)` + `GET/POST /api/categories`;
   isi store saat `hydrate()`.
 
-### 10.2 Streak global "12 hari" (statis)
-- **Lokasi:** `store/app-store.ts` (`streak: 12`); tampil di banner `dashboard/page.tsx`.
-- **Sekarang:** konstanta. (Streak **per-habit** di `habits.streak` nyata & tersimpan.)
-- **Dibutuhkan:** hitung dari aktivitas harian (tabel `daily_activity`) atau derive dari
-  `max(habit.streak)`; set di `hydrate()`.
+### 10.2 Streak global "12 hari" (statis) — ✅ SELESAI
+- **Dulu:** konstanta `streak: 12` di store, tampil di banner dashboard.
+- **Sekarang:** field `streak` store **dihapus**; banner derive `max(habit.streak)` per anak aktif
+  di `dashboard/page.tsx` (pola sama seperti `bestStreak` di `routines/page.tsx`).
+  Kartu "Pengingat Prioritas" (imunisasi & penimbangan) juga kini **derive dari data nyata**
+  (imunisasi terdekat belum-selesai + pengukuran growth terakhir), tidak lagi hard-coded.
+- **Lanjutan opsional:** streak harian lintas-fitur (tabel `daily_activity`) bila ingin lebih kaya.
 
 ### 10.3 Panel panduan dashboard (showGuide)
 - **Lokasi:** `store/app-store.ts` (`showGuide`); `dashboard-guide.tsx`; toggle di settings.
@@ -292,6 +336,71 @@ Berfungsi di UI tapi belum dirapikan/di-persist. Format: lokasi → kondisi → 
 - "Ingat saya 30 hari" di login = kosmetik (session memang 30 hari).
 - Testimoni & angka di landing = statis (wajar untuk marketing).
 - Onboarding "Lewati" → user tanpa anak sudah di-handle (`StoreHydrator` redirect `/onboarding`).
+
+## 11. Progress Log — Audit → Roadmap → Delivery (sesi 2026-06-26)
+
+Setelah audit produk (skor awal **62/100**) + visi 5 tahun + roadmap, dikerjakan
+**per-milestone, satu fitur per siklus**, masing-masing lewat 9 langkah
+(Analisis → Desain → DB → API → UI → Implementasi → Test → Self-review → Docs).
+
+**Gerbang verifikasi tiap milestone (wajib hijau sebelum lanjut):**
+```bash
+npx tsc --noEmit      # typecheck — harus bersih
+npm run lint          # eslint . (flat config) — exit 0
+npm run build         # next build — Compiled successfully
+npm run db:generate   # bila ada perubahan schema (additive)
+```
+
+**Milestone selesai & terverifikasi sesi ini (8):**
+
+| # | Milestone | Inti perubahan | Migrasi | File baru kunci |
+|---|---|---|---|---|
+| M1 | WHO z-score sex-spesifik + stunting | `who.ts` z-score LMS + gender; status BB/TB/LK pakai persentil; band chart per-sex | — | `lib/who-lms.ts` (autogenerated WHO) |
+| M2 | De-mock dashboard | streak = `max(habit.streak)`; kartu pengingat dari data nyata; hapus `streak` konstan | — | — |
+| M3 | Red-flag milestone telat | `evaluateRedFlags` (kritis lewat `ageMaxMonths`) + kartu amber non-alarming | — | `lib/red-flags.ts` |
+| Mx | Perbaiki gerbang Lint | ESLint 8→9 + **flat config** (`eslint.config.mjs`, ganti `.eslintrc.json`); `next lint`→`eslint .`; rule React-Compiler baru = warn | — | `eslint.config.mjs` |
+| M6 | **Jurnal Emas** (namesake) | tabel `journal_entries`; CRUD `/api/journal`; halaman timeline + dialog; hydrate **defensif** `.catch(()=>[])` | `0002_*` | `app/(app)/journal/`, `api/journal/`, `journal-dialog.tsx`, `lib/journal.ts` |
+| — | Ritual Harian | kartu "Momen Hari Ini" di dashboard (1 ide stimulasi + 1 kenangan jurnal) | — | `lib/daily-activities.ts` |
+| M5 | Ide Stimulasi (recommendation surface) | tab ke-3 di `goals` menampilkan semua aktivitas fase usia (reuse `daily-activities.ts`) | — | — |
+| M4a | **Deteksi regresi** milestone | kolom additive `milestones.regressed`; `setMilestoneRegressed`; `red-flags.ts` `reason: regression|overdue` | `0003_*` | — |
+
+**⚠️ AKSI DEPLOY TERTUNDA (jalankan di produksi saat rilis):**
+- `npm run db:migrate` untuk menerapkan **`0002`** (journal_entries) **dan `0003`**
+  (milestones.regressed). Keduanya **additive & reversible**; tanpa migrasi,
+  hydrate jurnal sudah aman (defensif → kosong), tapi fitur jurnal/regresi belum jalan.
+
+**Catatan teknik untuk sesi lanjutan:**
+- **Lint** sekarang ESLint 9 flat config; warning React-Compiler (`set-state-in-effect`,
+  `use-memo`, `exhaustive-deps` pada pola GOTCHA #1 `?? []`) sengaja **warn** (kode lama,
+  bukan regresi) → gate tetap exit 0. Jangan call fungsi impur (`Date.now()`) langsung di
+  render — sembunyikan di fungsi lib (lihat `dailyActivity` default param).
+- `lib/daily-activities.ts` = **seed recommendation engine**; dipakai ritual (1) & tab Ide (semua).
+- `lib/red-flags.ts` kini menggabung **regresi** (segala usia, didahulukan) + **telat** (kritis lewat window).
+- Skor audit naik dari ~62 → estimasi ~78–80 (Jurnal + screening + z-score + recommendation).
+
+**Berikutnya (belum dikerjakan): M4b — tambah milestone CDC baru**
+(responds-to-name ~9bln, menunjuk/joint-attention ~12–18bln, dua-langkah ~24bln).
+
+⚠️ **TEMUAN PENTING saat inspeksi (harus dibereskan dulu di M4b):** sumber milestone
+**ada dua dan divergen** —
+1. `lib/mock-data.ts` `mockMilestones` = **50 item**, domain kanonik (`MILESTONE_DOMAINS`),
+   dipakai demo + fallback `childReferenceRows` (anak baru saat `ref_milestones` kosong).
+2. `scripts/seed-admin.ts` const `MILESTONES` = **hanya 6 item**, domain non-kanonik
+   (`"Bahasa"` ≠ `"Bahasa & Komunikasi"`), ada field `reference`. Ini yang mengisi
+   tabel `ref_milestones` (katalog anak baru di produksi via `referenceRowsFromDb`).
+
+Konsekuensi: bila produksi sudah `db:seed:admin`, anak baru mungkin hanya dapat 6 milestone
+dgn domain "Bahasa" (jatuh ke `fallbackDomainMeta`). **Langkah M4b yang benar:**
+- (a) Jadikan **satu sumber**: `ref_milestones` seed sebaiknya diturunkan dari `mockMilestones`
+  (50 item, domain kanonik) — bukan list 6 item terpisah. Perbaiki `seed-admin.ts`.
+- (b) Tambah 3 milestone CDC ke `mockMilestones` (id m51–m53).
+- (c) Skrip **backfill idempotent baru** (mis. `scripts/add-cdc-milestones.ts`) yang INSERT
+  hanya milestone yang BELUM dimiliki tiap anak (match by `title`) — `backfill-children.ts`
+  existing **tidak cukup** karena hanya seed anak yg milestone-nya kosong.
+- (d) Verifikasi domain semua baris ∈ `MILESTONE_DOMAINS` (hindari fallback).
+- Aksi deploy: `db:seed:admin` ulang (refresh `ref_milestones`) + jalankan skrip backfill.
+
+Sesudah M4b: roadmap v1.2 (AI coach grounded) & seterusnya.
 
 ---
 Lihat `STATUS_FILES.md` untuk daftar status per-file.

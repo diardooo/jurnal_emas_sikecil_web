@@ -81,6 +81,8 @@ export interface Milestone {
   ageMaxMonths: number;
   isCritical: boolean;
   status: MilestoneStatus;
+  /** True when a previously-acquired skill is lost again (regression red flag). */
+  regressed?: boolean;
   achievedAt?: string;
   note?: string;
   hasPhoto?: boolean;
@@ -148,6 +150,22 @@ export type AgePhaseId =
   | "36-48"
   | "48-60"
   | "60-72";
+
+/** Mood of the child captured for a journal entry (optional). */
+export type JournalMood = "senang" | "biasa" | "rewel" | "sakit" | "bangga";
+
+export interface JournalEntry {
+  id: string;
+  childId?: string;
+  date: string; // ISO date
+  mood?: JournalMood;
+  title?: string;
+  body: string;
+  tags: string[];
+  /** Media URLs (photos/voice) — schema-ready; upload UI is a later milestone. */
+  media: string[];
+  createdAt?: string;
+}
 
 export interface AppNotification {
   id: string;

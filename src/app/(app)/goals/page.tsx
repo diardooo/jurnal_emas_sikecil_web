@@ -6,7 +6,10 @@ import {
   Camera,
   Check,
   ChevronDown,
+  Info,
+  Lightbulb,
   Target,
+  TrendingDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/app/page-header";
@@ -19,6 +22,8 @@ import { useAppStore } from "@/store/app-store";
 import { domainMeta } from "@/lib/domains";
 import { agePhases, milestoneDomains, phaseOf } from "@/lib/mock-data";
 import { cn, getAge } from "@/lib/utils";
+import { evaluateRedFlags, type RedFlag } from "@/lib/red-flags";
+import { activitiesForAge } from "@/lib/daily-activities";
 import type { Milestone, MilestoneStatus } from "@/lib/types";
 
 const statusMeta: Record<MilestoneStatus, { label: string; cls: string }> = {
@@ -43,6 +48,13 @@ export default function GoalsPage() {
     ? Math.round((achieved / milestones.length) * 100)
     : 0;
   const currentPhase = phaseOf(childMonths);
+
+  const redFlags = useMemo(
+    () => evaluateRedFlags(childMonths, milestones),
+    [childMonths, milestones],
+  );
+
+  const activities = activitiesForAge(childMonths);
 
   const filtered = useMemo(
     () =>
@@ -80,10 +92,15 @@ export default function GoalsPage() {
       <Tabs defaultValue="milestone">
         <TabsList>
           <TabsTrigger value="milestone">Milestone Anak</TabsTrigger>
+          <TabsTrigger value="ide">Ide Stimulasi</TabsTrigger>
           <TabsTrigger value="goal">Goal Orang Tua</TabsTrigger>
         </TabsList>
 
         <TabsContent value="milestone" className="space-y-4">
+          {redFlags.length > 0 && (
+            <RedFlagNotice flags={redFlags} childName={child.name} />
+          )}
+
           {/* Domain filter */}
           <div className="-mx-1 flex flex-wrap gap-2 px-1">
             <FilterChip active={domain === "all"} onClick={() => setDomain("all")}>
@@ -114,6 +131,52 @@ export default function GoalsPage() {
               />
             );
           })}
+        </TabsContent>
+
+        <TabsContent value="ide" className="space-y-4">
+          <Card className="bg-gradient-to-br from-sage-soft/40 to-background">
+            <CardContent className="p-5">
+              <p className="flex items-center gap-2 font-display font-bold text-navy">
+                <Lightbulb className="h-5 w-5 text-sage" /> Ide stimulasi untuk
+                usia ini
+              </p>
+              <p className="mt-1 text-xs text-navy-muted">
+                Aktivitas sederhana di rumah untuk mendukung perkembangan{" "}
+                {child.name}. Pilih 1–2 dan lakukan sambil bermain — konsistensi
+                lebih penting daripada durasi.
+              </p>
+            </CardContent>
+          </Card>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {activities.map((a) => {
+              const meta = domainMeta[a.domain];
+              return (
+                <Card key={a.title}>
+                  <CardContent className="flex items-start gap-3 p-4">
+                    <span
+                      className={cn(
+                        "grid h-9 w-9 shrink-0 place-items-center rounded-lg",
+                        meta.color,
+                      )}
+                    >
+                      <meta.icon className="h-[18px] w-[18px]" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+                        {a.domain}
+                      </p>
+                      <p className="text-sm font-semibold text-navy">
+                        {a.title}
+                      </p>
+                      <p className="mt-0.5 text-xs text-navy-muted">
+                        {a.detail}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         </TabsContent>
 
         <TabsContent value="goal" className="space-y-4">
@@ -147,6 +210,63 @@ function FilterChip({
     >
       {children}
     </button>
+  );
+}
+
+/** Calm, non-alarming advisory for overdue critical milestones (CDC "act early"). */
+function RedFlagNotice({
+  flags,
+  childName,
+}: {
+  flags: RedFlag[];
+  childName: string;
+}) {
+  const shown = flags.slice(0, 3);
+  const extra = flags.length - shown.length;
+
+  return (
+    <Card className="border-soft-orange/40 bg-soft-orange-soft/30">
+      <CardContent className="p-5">
+        <div className="flex items-start gap-3">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-soft-orange-soft text-soft-orange">
+            <Info className="h-[18px] w-[18px]" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="font-display font-bold text-navy">
+              Perlu diperhatikan bersama
+            </p>
+            <p className="mt-0.5 text-xs text-navy-muted">
+              Setiap anak tumbuh dengan ritmenya sendiri. Beberapa hal berikut
+              untuk {childName} baik <strong>didiskusikan dengan bidan atau
+              dokter</strong> pada kunjungan berikutnya. Ini{" "}
+              <strong>bukan diagnosis</strong>.
+            </p>
+            <ul className="mt-3 space-y-2">
+              {shown.map((f) => (
+                <li
+                  key={f.milestone.id}
+                  className="rounded-lg border border-soft-orange/30 bg-background px-3 py-2"
+                >
+                  <p className="text-sm font-semibold text-navy">
+                    {f.milestone.title}
+                  </p>
+                  <p className="text-[11px] text-navy-muted">
+                    {f.reason === "regression"
+                      ? "Sempat bisa, kini tampak hilang — sebaiknya segera dibahas."
+                      : `${f.milestone.domain} • umumnya tercapai sebelum ${f.milestone.ageMaxMonths} bulan`}
+                  </p>
+                </li>
+              ))}
+            </ul>
+            {extra > 0 && (
+              <p className="mt-2 text-[11px] font-medium text-navy-muted">
+                dan {extra} hal lain di daftar milestone di bawah.
+              </p>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -211,6 +331,7 @@ const fallbackDomainMeta = {
 
 function MilestoneRow({ milestone: m }: { milestone: Milestone }) {
   const setStatus = useAppStore((s) => s.setMilestoneStatus);
+  const setRegressed = useAppStore((s) => s.setMilestoneRegressed);
   const meta = domainMeta[m.domain] ?? fallbackDomainMeta;
   const cycle: MilestoneStatus[] = ["belum", "dicoba", "bisa"];
 
@@ -231,6 +352,11 @@ function MilestoneRow({ milestone: m }: { milestone: Milestone }) {
             {m.isCritical && (
               <Badge variant="destructive" className="gap-1">
                 <AlertTriangle className="h-3 w-3" /> Penting
+              </Badge>
+            )}
+            {m.regressed && (
+              <Badge variant="warning" className="gap-1">
+                <TrendingDown className="h-3 w-3" /> Keterampilan hilang
               </Badge>
             )}
           </div>
@@ -273,6 +399,21 @@ function MilestoneRow({ milestone: m }: { milestone: Milestone }) {
           </button>
         ))}
       </div>
+      {(m.status === "bisa" || m.regressed) && (
+        <button
+          onClick={() => {
+            const next = !m.regressed;
+            setRegressed(m.id, next);
+            if (next)
+              toast("Ditandai: keterampilan yang hilang", {
+                description: "Sebaiknya didiskusikan dengan dokter atau bidan.",
+              });
+          }}
+          className="mt-2 text-[11px] font-semibold text-muted-foreground underline-offset-2 transition-colors hover:text-soft-orange hover:underline"
+        >
+          {m.regressed ? "Tandai sudah pulih" : "Keterampilan ini hilang?"}
+        </button>
+      )}
     </div>
   );
 }

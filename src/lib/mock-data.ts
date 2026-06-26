@@ -7,6 +7,7 @@ import type {
   GrowthRecord,
   Habit,
   Immunization,
+  JournalEntry,
   Milestone,
   SleepLog,
   Task,
@@ -460,6 +461,52 @@ export const sleepIdeal = [
   { range: "1–2 tahun", hours: "11–14 jam" },
   { range: "3–5 tahun", hours: "10–13 jam" },
 ];
+
+export const mockJournal: Record<string, JournalEntry[]> = {
+  c1: [
+    {
+      id: "jr1",
+      childId: "c1",
+      date: "2026-06-18",
+      mood: "bangga",
+      title: "Menumpuk balok pertama!",
+      body: "Sore tadi Bintang berhasil menumpuk 2 balok untuk pertama kalinya. Ekspresinya bangga sekali waktu baloknya tidak roboh. Langsung tepuk tangan sendiri 👏",
+      tags: ["Milestone", "Main"],
+      media: [],
+    },
+    {
+      id: "jr2",
+      childId: "c1",
+      date: "2026-06-16",
+      mood: "senang",
+      title: "MPASI alpukat",
+      body: "Pertama kali coba alpukat. Awalnya ragu, tapi habis setengah mangkok. Catatan: teksturnya disukai kalau dilumat halus.",
+      tags: ["Makan"],
+      media: [],
+    },
+    {
+      id: "jr3",
+      childId: "c1",
+      date: "2026-06-13",
+      mood: "rewel",
+      body: "Semalam agak rewel, mungkin karena gigi bawah mau tumbuh — gusinya bengkak sedikit. Dipijat lembut & dikasih teether dingin, lebih tenang.",
+      tags: ["Tidur", "Sakit"],
+      media: [],
+    },
+  ],
+  c2: [
+    {
+      id: "jr4",
+      childId: "c2",
+      date: "2026-06-17",
+      mood: "bangga",
+      title: "Hafal warna",
+      body: "Sania sekarang bisa menyebut 5 warna dengan benar sambil menunjuk krayon. Belajar lewat menggambar pelangi.",
+      tags: ["Belajar"],
+      media: [],
+    },
+  ],
+};
 
 export const mockNotifications: AppNotification[] = [
   { id: "n1", type: "imunisasi", title: "Imunisasi DPT-HB-Hib", body: "Bintang dijadwalkan imunisasi lanjutan dalam 3 hari.", date: "2026-06-22", read: false },

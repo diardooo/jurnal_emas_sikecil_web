@@ -10,7 +10,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { buildChartData, type WhoMetric } from "@/lib/who";
+import { buildChartData, type WhoMetric, type WhoSex } from "@/lib/who";
 import type { GrowthRecord } from "@/lib/types";
 
 const meta: Record<WhoMetric, { color: string; unit: string; label: string }> = {
@@ -22,11 +22,14 @@ const meta: Record<WhoMetric, { color: string; unit: string; label: string }> = 
 export function WhoGrowthChart({
   data,
   metric,
+  sex,
 }: {
   data: GrowthRecord[];
   metric: WhoMetric;
+  /** Child sex — when given, the WHO band is drawn sex-specifically. */
+  sex?: WhoSex;
 }) {
-  const rows = buildChartData(metric, data);
+  const rows = buildChartData(metric, data, sex);
   const m = meta[metric];
 
   return (

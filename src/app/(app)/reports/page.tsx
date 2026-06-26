@@ -207,13 +207,13 @@ export default function ReportsPage() {
                     <p className="mb-1 text-xs font-semibold text-navy-muted">
                       Berat Badan
                     </p>
-                    <WhoGrowthChart data={growth} metric="weight" />
+                    <WhoGrowthChart data={growth} metric="weight" sex={child.gender} />
                   </div>
                   <div className="rounded-xl border bg-background p-3">
                     <p className="mb-1 text-xs font-semibold text-navy-muted">
                       Tinggi Badan
                     </p>
-                    <WhoGrowthChart data={growth} metric="height" />
+                    <WhoGrowthChart data={growth} metric="height" sex={child.gender} />
                   </div>
                 </div>
               </Section>

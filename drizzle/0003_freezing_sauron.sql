@@ -1,0 +1,1 @@
+ALTER TABLE "milestones" ADD COLUMN "regressed" boolean DEFAULT false NOT NULL;

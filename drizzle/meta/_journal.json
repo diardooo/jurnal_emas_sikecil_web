@@ -15,6 +15,20 @@
       "when": 1782000558026,
       "tag": "0001_parallel_shriek",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1782464718654,
+      "tag": "0002_curvy_james_howlett",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1782467113317,
+      "tag": "0003_freezing_sauron",
+      "breakpoints": true
     }
   ]
 }
