@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { badRequest, getUser, unauthorized } from "@/lib/api";
 import { db } from "@/db";
 import {
   children as childrenT,
+  coachUsage as coachUsageT,
   growthRecords as growthT,
   journalEntries as journalT,
   milestones as milestonesT,
@@ -45,6 +46,23 @@ export async function POST(req: NextRequest) {
     .limit(1);
   if (!child) return badRequest("Anak tidak valid");
 
+  // Per-user daily rate limit (fail fast before doing any heavy work / LLM call).
+  const today = new Date().toISOString().slice(0, 10);
+  const dailyLimit = Number(process.env.COACH_DAILY_LIMIT ?? 20);
+  const [usage] = await db
+    .select({ count: coachUsageT.count })
+    .from(coachUsageT)
+    .where(and(eq(coachUsageT.userId, user.id), eq(coachUsageT.date, today)))
+    .limit(1);
+  if ((usage?.count ?? 0) >= dailyLimit) {
+    return NextResponse.json(
+      {
+        error: `Batas harian ${dailyLimit} pertanyaan ke Pendamping Emas sudah tercapai. Silakan lanjut lagi besok.`,
+      },
+      { status: 429 },
+    );
+  }
+
   const [miles, grow, jour] = await Promise.all([
     db.select().from(milestonesT).where(and(eq(milestonesT.userId, user.id), eq(milestonesT.childId, childId))),
     db.select().from(growthT).where(and(eq(growthT.userId, user.id), eq(growthT.childId, childId))),
@@ -62,10 +80,29 @@ export async function POST(req: NextRequest) {
 
   try {
     const answer = await generateAnswer(COACH_SYSTEM_PROMPT, userMessage);
-    return NextResponse.json({ answer });
+    // Count only answered questions (failed calls don't consume the quota).
+    await db
+      .insert(coachUsageT)
+      .values({ userId: user.id, date: today, count: 1 })
+      .onConflictDoUpdate({
+        target: [coachUsageT.userId, coachUsageT.date],
+        set: { count: sql`${coachUsageT.count} + 1` },
+      });
+    const remaining = Math.max(0, dailyLimit - ((usage?.count ?? 0) + 1));
+    return NextResponse.json({ answer, remaining });
   } catch (e) {
     if (e instanceof AiNotConfiguredError) {
       return NextResponse.json(NOT_CONFIGURED, { status: 503 });
+    }
+    // Upstream rate/quota limit → calm "try again later", not a raw error.
+    if (e instanceof Error && e.message.includes("429")) {
+      return NextResponse.json(
+        {
+          error:
+            "Pendamping Emas sedang sibuk (kuota AI penuh). Coba lagi beberapa saat lagi.",
+        },
+        { status: 429 },
+      );
     }
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Gagal memanggil AI Coach" },

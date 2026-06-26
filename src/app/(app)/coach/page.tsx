@@ -50,13 +50,18 @@ export default function CoachPage() {
         answer?: string;
         error?: string;
       };
-      if (res.status === 503) {
+      // Not configured (503) or rate-limited (429, daily cap / AI busy) →
+      // show the server's calm message as a coach reply, not an error toast.
+      if (res.status === 503 || res.status === 429) {
         setThread((t) => [
           ...t,
           {
             role: "coach",
             text:
-              "AI Coach belum diaktifkan di aplikasi ini. Hubungi admin untuk menyalakannya.",
+              data.error ??
+              (res.status === 503
+                ? "AI Coach belum diaktifkan. Hubungi admin untuk menyalakannya."
+                : "Batas pemakaian tercapai. Coba lagi nanti."),
           },
         ]);
         return;

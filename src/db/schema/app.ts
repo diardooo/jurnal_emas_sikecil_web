@@ -7,6 +7,7 @@ import {
   pgTable,
   text,
   timestamp,
+  unique,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 
@@ -200,6 +201,23 @@ export const categories = pgTable("categories", {
   name: text("name").notNull(),
   createdAt: createdAt(),
 });
+
+/**
+ * Per-user daily AI-coach question counter (rate limiting). One row per
+ * user+day; incremented on each answered question. Unique(user, date) enables
+ * an atomic upsert. User-scoped, not child-scoped.
+ */
+export const coachUsage = pgTable(
+  "coach_usage",
+  {
+    id: id(),
+    userId: userId(),
+    date: date("date").notNull(),
+    count: integer("count").notNull().default(0),
+    createdAt: createdAt(),
+  },
+  (t) => [unique("coach_usage_user_date").on(t.userId, t.date)],
+);
 
 export const notifications = pgTable("notifications", {
   id: id(),

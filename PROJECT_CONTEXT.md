@@ -481,6 +481,15 @@ npm run db:generate   # bila ada perubahan schema (additive)
   Input URL tetap sebagai fallback. Tanpa migrasi/endpoint/store baru. Gate hijau.
 - Lihat §10.11. **Foto milestone** masih tersisa (perlu kolom `photoUrl` + migrasi).
 
+**M17 (v1.2) — AI Coach: rate-limit per-user + handling 429 — ✅ SELESAI**
+- **Kuota free terbukti ketat** (uji live: `gemini-2.0-flash` → 429; ganti default ke
+  `gemini-2.5-flash` yang jalan). Key Gemini valid & **panggilan LLM live terverifikasi**.
+- **Batas per-user/hari:** tabel additive `coach_usage(user_id, date, count, UNIQUE(user,date))`
+  (migrasi `0006`). Route `/api/coach` cek limit (fail-fast, default 20 via `COACH_DAILY_LIMIT`)
+  → 429 ramah; hitung **hanya pertanyaan terjawab** via upsert atomik `onConflictDoUpdate`
+  (`count + 1`). 429 dari Gemini → pesan "sedang sibuk, coba lagi". UI tampilkan 429/503
+  sebagai bubble tenang. Counter upsert smoke-test PASS.
+
 **M16 (v1.2) — AI Coach "Pendamping Emas" (grounded) — ✅ SELESAI (kode)**
 - **Grounded:** `lib/coach-context.ts` `buildCoachContext()` (murni, unit-tested) merangkum
   data SATU anak → profil/usia, pertumbuhan vs WHO (reuse `classifyWho` z-score), milestone
@@ -540,7 +549,9 @@ npm run db:generate   # bila ada perubahan schema (additive)
 (`origin/main` = `b3c0c99`) → Vercel auto-deploy. **Aksi prod yang masih perlu dijalankan
 user** (butuh `DATABASE_URL` produksi `ep-bold-river`):
 - `npm run db:migrate` → terapkan `0002` (journal), `0003` (regressed), `0004` (categories),
-  **`0005` (milestones.photoUrl)**.
+  `0005` (milestones.photoUrl), **`0006` (coach_usage)**.
+- **AI Coach prod:** set `GEMINI_API_KEY` (+ `GEMINI_MODEL=gemini-2.5-flash`, opsional
+  `COACH_DAILY_LIMIT`) di Vercel env. Tanpa key → `/coach` aman (pesan "belum aktif").
   - **INSIDEN 2026-06-26:** dikonfirmasi dari log prod, branch prod ada di **0003**
     (punya `regressed`, tak ada error) tapi **0004 & 0005 belum** → `GET /api/categories`
     (`relation "categories" does not exist`) & `GET /api/milestones`
