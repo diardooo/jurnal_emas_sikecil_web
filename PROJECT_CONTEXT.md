@@ -487,6 +487,13 @@ npm run db:generate   # bila ada perubahan schema (additive)
 user** (butuh `DATABASE_URL` produksi `ep-bold-river`):
 - `npm run db:migrate` → terapkan `0002` (journal), `0003` (regressed), `0004` (categories),
   **`0005` (milestones.photoUrl)**.
+  - **INSIDEN 2026-06-26:** dikonfirmasi dari log prod, branch prod ada di **0003**
+    (punya `regressed`, tak ada error) tapi **0004 & 0005 belum** → `GET /api/categories`
+    (`relation "categories" does not exist`) & `GET /api/milestones`
+    (`column "photo_url" does not exist`) 500 → `safeList` → milestone/jurnal/kategori
+    tampil kosong (akun+anak tetap OK). **Fix: jalankan `db:migrate` prod.**
+  - **ATURAN:** untuk milestone yang ubah skema, **migrate prod DULU, baru push** (Vercel
+    auto-deploy begitu push → ada jendela kode-baru-vs-DB-lama).
 - `npm run db:cdc` → rekonsiliasi anak existing ke 53 milestone.
 - (opsional) set env Cloudinary di Vercel agar upload foto aktif (else 503 + fallback URL).
 
