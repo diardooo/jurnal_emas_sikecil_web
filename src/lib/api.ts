@@ -24,11 +24,18 @@ const PROTECTED = new Set(["id", "userId", "createdAt"]);
 
 /** Whitelist only real, writable columns from an arbitrary JSON body. */
 function sanitize(table: PgTable, body: Record<string, unknown>) {
-  const cols = getTableColumns(table) as Record<string, unknown>;
+  const cols = getTableColumns(table) as Record<string, { columnType?: string }>;
   const out: Record<string, unknown> = {};
   for (const key of Object.keys(cols)) {
     if (PROTECTED.has(key)) continue;
-    if (key in body && body[key] !== undefined) out[key] = body[key];
+    if (!(key in body) || body[key] === undefined) continue;
+    let value = body[key];
+    // Timestamp columns expect a Date; JSON carries ISO strings → coerce, else
+    // postgres-js throws "value.toISOString is not a function".
+    if (typeof value === "string" && cols[key]?.columnType === "PgTimestamp") {
+      value = new Date(value);
+    }
+    out[key] = value;
   }
   return out;
 }
