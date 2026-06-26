@@ -1,13 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { BookHeart, Pencil, Search, Trash2, X } from "lucide-react";
+import { BookHeart, Image as ImageIcon, Pencil, Search, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/app/page-header";
 import { JournalDialog } from "@/components/app/journal-dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAppStore } from "@/store/app-store";
 import { MOODS, MOOD_META } from "@/lib/journal";
 import { cn, formatDateID } from "@/lib/utils";
@@ -168,14 +169,24 @@ function EntryCard({
     <Card>
       <CardContent className="p-5">
         <div className="flex items-start gap-3">
-          <span
-            className={cn(
-              "grid h-10 w-10 shrink-0 place-items-center rounded-xl text-lg",
-              mood?.cls ?? "bg-gold-100 text-gold-700",
+          <div className="relative shrink-0">
+            <span
+              className={cn(
+                "grid h-10 w-10 place-items-center rounded-xl text-lg",
+                mood?.cls ?? "bg-gold-100 text-gold-700",
+              )}
+            >
+              {mood ? mood.emoji : <BookHeart className="h-5 w-5" />}
+            </span>
+            {e.media.length > 0 && (
+              <span
+                className="absolute -bottom-1 -right-1 grid h-5 w-5 place-items-center rounded-full bg-gold-500 text-navy ring-2 ring-background"
+                title={`${e.media.length} foto`}
+              >
+                <ImageIcon className="h-3 w-3" />
+              </span>
             )}
-          >
-            {mood ? mood.emoji : <BookHeart className="h-5 w-5" />}
-          </span>
+          </div>
           <div className="min-w-0 flex-1">
             {e.title && (
               <p className="font-display font-bold text-navy">{e.title}</p>
@@ -184,6 +195,30 @@ function EntryCard({
               <p className="mt-0.5 whitespace-pre-wrap text-sm text-navy-muted">
                 {e.body}
               </p>
+            )}
+            {e.media.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {e.media.map((url, i) => (
+                  <a
+                    key={url}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="transition-transform hover:scale-[1.03]"
+                  >
+                    <Avatar className="h-24 w-24 rounded-xl border">
+                      <AvatarImage
+                        src={url}
+                        alt={`Foto ${i + 1}`}
+                        className="object-cover"
+                      />
+                      <AvatarFallback className="rounded-xl">
+                        <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                      </AvatarFallback>
+                    </Avatar>
+                  </a>
+                ))}
+              </div>
             )}
             {e.tags.length > 0 && (
               <div className="mt-3 flex flex-wrap gap-1.5">

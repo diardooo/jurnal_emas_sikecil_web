@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Plus } from "lucide-react";
+import { useRef, useState } from "react";
+import { ImagePlus, Loader2, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -16,8 +16,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAppStore } from "@/store/app-store";
 import { MOODS, MOOD_META, SUGGESTED_TAGS } from "@/lib/journal";
+import { compressImage } from "@/lib/image-compress";
 import { cn } from "@/lib/utils";
 import type { JournalEntry, JournalMood } from "@/lib/types";
 
@@ -45,6 +47,9 @@ export function JournalDialog({
   const [title, setTitle] = useState(entry?.title ?? "");
   const [body, setBody] = useState(entry?.body ?? "");
   const [tags, setTags] = useState<string[]>(entry?.tags ?? []);
+  const [media, setMedia] = useState<string[]>(entry?.media ?? []);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   function handleOpenChange(o: boolean) {
     if (o) {
@@ -54,8 +59,39 @@ export function JournalDialog({
       setTitle(entry?.title ?? "");
       setBody(entry?.body ?? "");
       setTags(entry?.tags ?? []);
+      setMedia(entry?.media ?? []);
     }
     setOpen(o);
+  }
+
+  // Compress each photo client-side, then upload to Cloudinary via /api/upload.
+  async function onPickPhotos(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = "";
+    if (files.length === 0) return;
+    setUploading(true);
+    try {
+      for (const file of files) {
+        const blob = await compressImage(file);
+        const fd = new FormData();
+        fd.append("file", blob, "journal.jpg");
+        fd.append("folder", "jurnal-emas/journal");
+        const res = await fetch("/api/upload", { method: "POST", body: fd });
+        const data = (await res.json().catch(() => ({}))) as {
+          url?: string;
+          error?: string;
+        };
+        if (!res.ok) throw new Error(data.error ?? `Gagal (${res.status})`);
+        if (data.url) setMedia((cur) => [...cur, data.url!]);
+      }
+      toast.success("Foto ditambahkan 📷");
+    } catch (err) {
+      toast.error("Upload gagal", {
+        description: err instanceof Error ? err.message : undefined,
+      });
+    } finally {
+      setUploading(false);
+    }
   }
 
   function toggleTag(t: string) {
@@ -75,6 +111,7 @@ export function JournalDialog({
       title: title.trim() || undefined,
       body: body.trim(),
       tags,
+      media,
     };
     if (isEdit) {
       updateEntry(activeId, entry!.id, fields);
@@ -83,7 +120,6 @@ export function JournalDialog({
       addEntry(activeId, {
         id: `jr-${Date.now()}`,
         childId: activeId,
-        media: [],
         ...fields,
       });
       toast.success("Catatan tersimpan 🌱");
@@ -186,6 +222,59 @@ export function JournalDialog({
                 );
               })}
             </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Foto (opsional)</Label>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              multiple
+              hidden
+              onChange={onPickPhotos}
+            />
+            <div className="flex flex-wrap items-center gap-2">
+              {media.map((url, i) => (
+                <div key={url} className="relative">
+                  <Avatar className="h-16 w-16 rounded-lg border">
+                    <AvatarImage
+                      src={url}
+                      alt={`Foto ${i + 1}`}
+                      className="object-cover"
+                    />
+                    <AvatarFallback className="rounded-lg">
+                      <ImagePlus className="h-4 w-4 text-muted-foreground" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <button
+                    type="button"
+                    aria-label="Hapus foto"
+                    onClick={() =>
+                      setMedia((cur) => cur.filter((_, idx) => idx !== i))
+                    }
+                    className="absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full bg-alert-red text-white"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                disabled={uploading}
+                onClick={() => fileRef.current?.click()}
+                className="grid h-16 w-16 place-items-center rounded-lg border-2 border-dashed border-border text-navy-muted transition-colors hover:border-gold-300 hover:text-gold-700 disabled:opacity-50"
+              >
+                {uploading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <ImagePlus className="h-5 w-5" />
+                )}
+              </button>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              Foto otomatis dikompres sebelum diunggah agar hemat & cepat.
+            </p>
           </div>
         </div>
         <DialogFooter>
