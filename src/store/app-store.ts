@@ -45,6 +45,21 @@ import type {
 } from "@/lib/types";
 
 const today = () => new Date().toISOString().slice(0, 10);
+
+/**
+ * Dashboard guide visibility is a per-device UI preference persisted in
+ * localStorage (not server state) so a dismissed guide stays dismissed across
+ * reloads. SSR-safe: defaults to shown when there's no window.
+ */
+const GUIDE_KEY = "je:show-guide";
+const readGuidePref = (): boolean => {
+  if (typeof window === "undefined") return true;
+  return window.localStorage.getItem(GUIDE_KEY) !== "0";
+};
+const writeGuidePref = (show: boolean) => {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(GUIDE_KEY, show ? "1" : "0");
+};
 const persist = (p: Promise<unknown>) =>
   p.catch((e) =>
     toast.error("Gagal menyimpan", {
@@ -265,6 +280,7 @@ export const useAppStore = create<AppState>((set, get) => {
         journal: groupByChild(journal),
         taskCategories: mergeCategories(taskCategories, categories, "task"),
         habitCategories: mergeCategories(habitCategories, categories, "habit"),
+        showGuide: readGuidePref(),
       });
     },
 
@@ -504,8 +520,14 @@ export const useAppStore = create<AppState>((set, get) => {
         id.startsWith("tmp-") ? Promise.resolve() : apiDelete("journal", id),
       );
     },
-    dismissGuide: () => set({ showGuide: false }),
-    setShowGuide: (show) => set({ showGuide: show }),
+    dismissGuide: () => {
+      set({ showGuide: false });
+      writeGuidePref(false);
+    },
+    setShowGuide: (show) => {
+      set({ showGuide: show });
+      writeGuidePref(show);
+    },
 
     addTask: (task) => {
       const { id: _omit, ...payload } = task;

@@ -292,15 +292,19 @@ Berfungsi di UI tapi belum dirapikan/di-persist. Format: lokasi → kondisi → 
 - **Lanjutan opsional:** streak harian lintas-fitur (tabel `daily_activity`) bila ingin lebih kaya.
 
 ### 10.3 Panel panduan dashboard (showGuide)
-- **Lokasi:** `store/app-store.ts` (`showGuide`); `dashboard-guide.tsx`; toggle di settings.
-- **Sekarang:** lokal, **reset `true` tiap reload**.
-- **Dibutuhkan:** persist via `localStorage` atau kolom `user.preferences` (jsonb).
+### 10.3 Panel panduan dashboard (showGuide) — ✅ SELESAI (M9, v1.1)
+- **Dulu:** lokal, reset `true` tiap reload (panduan muncul lagi walau sudah ditutup).
+- **Sekarang:** persist di `localStorage` (`je:show-guide`) via helper `readGuidePref`/
+  `writeGuidePref` di `store/app-store.ts`. `dismissGuide`/`setShowGuide` menulis;
+  `hydrate()` membaca → `showGuide`. SSR-safe (default tampil bila tak ada `window`);
+  tanpa flash karena guide hanya render setelah `hydrated`. Per-perangkat (preferensi
+  UI murni → sengaja tak ke DB).
 
-### 10.4 Settings — simpan profil / ubah foto / ubah sandi
-- **Lokasi:** `settings/page.tsx` tab Akun → tombol hanya `toast`.
-- **Dibutuhkan:** `authClient.updateUser({name,image})`, `changePassword`, upload foto (lihat 10.9).
-- **Catatan:** field `phone` sudah ada di schema DB dan sudah di-collect saat register (form sudah ada).
-  Tinggal wire di Settings untuk edit.
+### 10.4 Settings — simpan profil / ubah foto / ubah sandi — ✅ SELESAI
+- `settings/page.tsx` `AccountTab` sudah nyata (bukan toast-stub): `saveProfile` →
+  `authClient.updateUser({name,phone,image})`; `changePassword` → `authClient.changePassword`
+  (revokeOtherSessions); `onPickPhoto` → upload `/api/upload` lalu `updateUser({image})`.
+  `phone` = Better Auth `additionalField` (lihat `auth.ts`). Email read-only (by design).
 
 ### 10.5 Settings — toggle preferensi notifikasi (kosmetik)
 - **Lokasi:** `settings/page.tsx` (`notifSettings` Switch → toast).
@@ -319,9 +323,12 @@ Berfungsi di UI tapi belum dirapikan/di-persist. Format: lokasi → kondisi → 
 - **Lokasi:** `settings/page.tsx` `setPlan` → `PATCH /api/subscriptions/:id`. Tanpa pembayaran nyata.
 - **Dibutuhkan:** Midtrans Snap + webhook (PRD §FR-PAY), free trial, status transaksi.
 
-### 10.9 Mailer + verifikasi email + reset password
-- **Lokasi:** `lib/auth.ts` (`requireEmailVerification:false`); "Lupa sandi?" = `href="#"`.
-- **Dibutuhkan:** mailer (Resend/Nodemailer), aktifkan verifikasi & flow reset (Better Auth siap).
+### 10.9 Mailer + reset password — ✅ SEBAGIAN BESAR SELESAI
+- **Sekarang:** `lib/mailer.ts` ada; `auth.ts` `sendResetPassword` aktif (Resend bila
+  `RESEND_API_KEY`, else log ke console → tetap testable di dev). Halaman
+  `forgot-password` & `reset-password` ada. Flow "Lupa sandi" jalan.
+- **Tersisa (by design):** `requireEmailVerification:false` masih off untuk MVP —
+  aktifkan bila ingin verifikasi email wajib.
 
 ### 10.10 Google OAuth
 - **Lokasi:** `lib/auth.ts` (aktif jika env ada), `auth/google-button.tsx`.
@@ -329,9 +336,12 @@ Berfungsi di UI tapi belum dirapikan/di-persist. Format: lokasi → kondisi → 
   Google Cloud project: `jurnal-emas-si-kecil`. Mode: External (testing). Untuk buka ke semua user:
   Google Cloud Console → Audience → Publish App.
 
-### 10.11 Upload media (foto anak & milestone)
-- **Lokasi:** `edit-child-dialog.tsx` (foto = URL/dicebear); milestone flag `hasPhoto` tanpa upload.
-- **Dibutuhkan:** storage (Cloudinary/S3) + endpoint upload.
+### 10.11 Upload media (foto anak & milestone) — ⏳ SEBAGIAN
+- **Sekarang:** infra upload nyata ada — `lib/cloudinary.ts` + `POST /api/upload`
+  (auth, maks 5 MB, image-only, 503 bila env Cloudinary belum diset). **Foto profil
+  user** sudah ter-wire di Settings (`onPickPhoto`).
+- **Tersisa:** wiring upload untuk **foto anak** (`edit-child-dialog.tsx`) & **foto milestone**
+  (`hasPhoto`) belum memakai `/api/upload` (masih URL/dicebear). Kandidat siklus tersendiri.
 
 ### 10.12 Admin — sebagian masih dummy/perlu pendalaman
 - **Lokasi:** `app/admin/page.tsx` + `api/admin/stats`.
@@ -439,8 +449,19 @@ npm run db:generate   # bila ada perubahan schema (additive)
   `addChild` → `Promise<void>` (await-able); `finish()` async await + `router.replace`
   + guard `saving`. Gate hijau (tsc/lint/build).
 
-Sesudah M8: roadmap v1.2 (AI coach grounded) & item v1.1 lain (10.3 persist guide,
-10.4 settings profil/sandi).
+**M9 (v1.1) — Persist panel panduan + rekonsiliasi doc §10 — ✅ SELESAI**
+- **10.3:** `showGuide` kini persist di `localStorage` (`je:show-guide`) — lihat §10.3.
+  Tanpa migrasi/API. Gate hijau (tsc/lint/build).
+- **Rekonsiliasi doc-drift:** saat ambil 10.4 ternyata sudah diimplementasi di kode
+  (doc stale). Diverifikasi & ditandai SELESAI: **10.4** (updateUser/changePassword/upload
+  foto profil), **10.9** (mailer + reset password; verifikasi email tetap off by design),
+  **10.11** (infra upload Cloudinary + foto profil; foto anak/milestone masih tersisa).
+- **Pelajaran:** §10 sempat tertinggal dari kode (kedua kalinya, setelah M4b). Sebelum
+  ambil item §10, **cek kode dulu** — jangan percaya status doc buta.
+
+Sesudah M9: item v1.1 tersisa yang benar-benar open → **10.5** (persist toggle notifikasi),
+**10.6** (export PDF nyata), **10.7** (generator notifikasi), **10.11-lanjut** (foto anak/milestone),
+lalu roadmap **v1.2** (AI coach grounded).
 
 ---
 Lihat `STATUS_FILES.md` untuk daftar status per-file.
