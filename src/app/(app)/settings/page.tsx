@@ -36,6 +36,66 @@ const notifSettings = [
   { id: "email", label: "Notifikasi email", desc: "Ringkasan mingguan via email", on: false },
 ];
 
+// Per-device notification preferences. Persisted in localStorage for now; when
+// the server-side notification generator (§10.7) lands, move these to the DB so
+// the backend can honor them. Lazy-read so there's no SSR mismatch.
+const NOTIF_PREFS_KEY = "je:notif-prefs";
+function readNotifPrefs(): Record<string, boolean> {
+  const base = Object.fromEntries(notifSettings.map((n) => [n.id, n.on]));
+  if (typeof window === "undefined") return base;
+  try {
+    const raw = window.localStorage.getItem(NOTIF_PREFS_KEY);
+    return raw ? { ...base, ...(JSON.parse(raw) as Record<string, boolean>) } : base;
+  } catch {
+    return base;
+  }
+}
+
+function NotifTab() {
+  const [prefs, setPrefs] = useState<Record<string, boolean>>(readNotifPrefs);
+
+  function toggle(id: string, value: boolean) {
+    setPrefs((prev) => {
+      const next = { ...prev, [id]: value };
+      try {
+        window.localStorage.setItem(NOTIF_PREFS_KEY, JSON.stringify(next));
+      } catch {
+        /* storage unavailable — keep in-memory */
+      }
+      return next;
+    });
+    const label = notifSettings.find((n) => n.id === id)?.label;
+    toast(value ? "Notifikasi diaktifkan" : "Notifikasi dimatikan", {
+      description: label,
+    });
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Preferensi Notifikasi</CardTitle>
+      </CardHeader>
+      <CardContent className="divide-y">
+        {notifSettings.map((n) => (
+          <div
+            key={n.id}
+            className="flex items-center justify-between py-4 first:pt-0"
+          >
+            <div>
+              <p className="text-sm font-semibold text-navy">{n.label}</p>
+              <p className="text-xs text-navy-muted">{n.desc}</p>
+            </div>
+            <Switch
+              checked={prefs[n.id]}
+              onCheckedChange={(v) => toggle(n.id, v)}
+            />
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
 const premiumPerks = [
   "Hingga 5 profil anak",
   "Task & habit unlimited",
@@ -232,32 +292,7 @@ export default function SettingsPage() {
 
         {/* NOTIFICATIONS */}
         <TabsContent value="notif">
-          <Card>
-            <CardHeader>
-              <CardTitle>Preferensi Notifikasi</CardTitle>
-            </CardHeader>
-            <CardContent className="divide-y">
-              {notifSettings.map((n) => (
-                <div
-                  key={n.id}
-                  className="flex items-center justify-between py-4 first:pt-0"
-                >
-                  <div>
-                    <p className="text-sm font-semibold text-navy">{n.label}</p>
-                    <p className="text-xs text-navy-muted">{n.desc}</p>
-                  </div>
-                  <Switch
-                    defaultChecked={n.on}
-                    onCheckedChange={(v) =>
-                      toast(v ? "Notifikasi diaktifkan" : "Notifikasi dimatikan", {
-                        description: n.label,
-                      })
-                    }
-                  />
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+          <NotifTab />
         </TabsContent>
 
         {/* BILLING */}

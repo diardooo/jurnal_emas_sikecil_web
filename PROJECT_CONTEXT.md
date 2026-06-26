@@ -306,9 +306,13 @@ Berfungsi di UI tapi belum dirapikan/di-persist. Format: lokasi → kondisi → 
   (revokeOtherSessions); `onPickPhoto` → upload `/api/upload` lalu `updateUser({image})`.
   `phone` = Better Auth `additionalField` (lihat `auth.ts`). Email read-only (by design).
 
-### 10.5 Settings — toggle preferensi notifikasi (kosmetik)
-- **Lokasi:** `settings/page.tsx` (`notifSettings` Switch → toast).
-- **Dibutuhkan:** simpan preferensi (jsonb/ tabel) → dipakai generator notifikasi (10.7).
+### 10.5 Settings — toggle preferensi notifikasi — ✅ SELESAI (M11, v1.1)
+- **Sekarang:** komponen `NotifTab` di `settings/page.tsx`; 6 toggle persist di
+  `localStorage` (`je:notif-prefs`) via lazy initializer `readNotifPrefs` (tanpa
+  `useEffect` → tak menambah warning; tanpa SSR-mismatch karena di balik StoreHydrator).
+  Switch kini `checked` terkontrol (bukan `defaultChecked`) → state diingat antar reload.
+- **Tersisa (by design):** preferensi masih **per-perangkat**; saat generator notifikasi
+  server (§10.7) dibuat, pindahkan ke DB agar backend bisa menghormatinya.
 
 ### 10.6 Laporan — export PDF & share masih mock
 - **Lokasi:** `reports/page.tsx` (Export PDF/Bagikan/Cetak → toast/`window.print()`).
@@ -465,6 +469,11 @@ npm run db:generate   # bila ada perubahan schema (additive)
   `POST /api/upload` → set `photoUrl` lokal → persist saat "Simpan" (`updateChild`).
   Input URL tetap sebagai fallback. Tanpa migrasi/endpoint/store baru. Gate hijau.
 - Lihat §10.11. **Foto milestone** masih tersisa (perlu kolom `photoUrl` + migrasi).
+
+**M11 (v1.1) — Persist toggle preferensi notifikasi — ✅ SELESAI**
+- Lihat §10.5. `NotifTab` baru; 6 toggle persist `localStorage` (`je:notif-prefs`),
+  lazy initializer (tanpa `useEffect`/warning), Switch terkontrol. Tanpa migrasi/API.
+  Gate hijau (tsc/lint 15 warn lama/build). Per-perangkat; DB menyusul dgn §10.7.
 
 **STATUS DEPLOY (per 2026-06-27):** kode M7–M10 + hotfix sudah **di-push ke `main`**
 (`origin/main` = `b3c0c99`) → Vercel auto-deploy. **Aksi prod yang masih perlu dijalankan
