@@ -129,7 +129,8 @@ interface AppState {
   hydrateDemo: () => void;
 
   setActiveChild: (id: string) => void;
-  addChild: (child: Child) => void;
+  /** Resolves after the server write completes (await before navigating). */
+  addChild: (child: Child) => Promise<void>;
   updateChild: (id: string, patch: Partial<Child>) => void;
 
   addGrowthRecord: (childId: string, record: GrowthRecord) => void;
@@ -294,7 +295,10 @@ export const useAppStore = create<AppState>((set, get) => {
     addChild: (child) => {
       const { id: _omit, ...payload } = child;
       set((s) => ({ children: [...s.children, child], activeChildId: child.id }));
-      save(() =>
+      if (get().demo) return Promise.resolve();
+      // Returns a promise (always resolves; errors toast via `persist`) so the
+      // caller can await the create before navigating — see onboarding finish().
+      return persist(
         apiPost<Child>("children", payload).then(async (real) => {
           // server seeds milestone/immunization/teeth templates → pull them in
           const [milestones, immunizations, teeth] = await Promise.all([
@@ -310,7 +314,7 @@ export const useAppStore = create<AppState>((set, get) => {
             teeth: groupByChild(teeth),
           }));
         }),
-      );
+      ).then(() => undefined);
     },
     updateChild: (id, patch) => {
       set((s) => ({

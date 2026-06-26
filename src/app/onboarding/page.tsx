@@ -7,6 +7,7 @@ import {
   ArrowRight,
   Baby,
   Check,
+  Loader2,
   PartyPopper,
   Ruler,
 } from "lucide-react";
@@ -34,6 +35,7 @@ export default function OnboardingPage() {
   const [gender, setGender] = useState<Gender>("L");
   const [weight, setWeight] = useState("");
   const [height, setHeight] = useState("");
+  const [saving, setSaving] = useState(false);
 
   function next() {
     if (step === 1 && (!name || !dob)) {
@@ -43,8 +45,12 @@ export default function OnboardingPage() {
     if (step < 3) setStep(step + 1);
   }
 
-  function finish() {
-    addChild({
+  async function finish() {
+    if (saving) return;
+    setSaving(true);
+    // Wait for the create to commit before navigating — otherwise the dashboard
+    // re-hydrates and may read an empty children list, bouncing back here.
+    await addChild({
       id: `c-${Date.now()}`,
       name,
       dob,
@@ -57,7 +63,7 @@ export default function OnboardingPage() {
     toast.success("Profil si Kecil siap!", {
       description: "Selamat datang di Jurnal Emas Si Kecil.",
     });
-    router.push("/dashboard");
+    router.replace("/dashboard");
   }
 
   return (
@@ -248,8 +254,13 @@ export default function OnboardingPage() {
                   Lanjut <ArrowRight />
                 </Button>
               ) : (
-                <Button onClick={finish}>
-                  Masuk Dashboard <ArrowRight />
+                <Button onClick={finish} disabled={saving}>
+                  {saving ? "Menyimpan…" : "Masuk Dashboard"}
+                  {saving ? (
+                    <Loader2 className="animate-spin" />
+                  ) : (
+                    <ArrowRight />
+                  )}
                 </Button>
               )}
             </div>

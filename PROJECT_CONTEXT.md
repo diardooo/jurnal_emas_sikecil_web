@@ -393,9 +393,13 @@ npm run db:generate   # bila ada perubahan schema (additive)
 - **WAJIB (ops):** **migrate branch PRODUKSI Neon** (yang dipakai Vercel), bukan cuma dev.
   Pastikan `DATABASE_URL` di Vercel menunjuk branch yang sudah punya `journal_entries`
   + `milestones.regressed`. Tanpa ini, login jalan tapi milestone/jurnal tampil kosong.
-- **Catatan latent (belum difix):** onboarding `finish()` `addChild()` (POST async) lalu
-  langsung `router.push("/dashboard")` → ada race vs `hydrate()` (bisa bounce balik ke
-  onboarding bila POST belum selesai). Pre-existing; kandidat siklus tersendiri.
+- **Race onboarding → dashboard — ✅ FIXED (M8, v1.1):** dulu `finish()` memanggil
+  `addChild()` (POST async, fire-and-forget) lalu **langsung** `router.push` → dashboard
+  re-hydrate bisa baca `children: []` (POST belum commit) → bounce balik ke onboarding +
+  anak optimistik tertimpa. **Fix:** `addChild` kini kembalikan `Promise<void>` (demo →
+  `Promise.resolve()`; non-demo → rantai `persist` yg bisa di-await); `finish()` jadi async,
+  `await addChild()` lalu `router.replace` (+ guard double-submit `saving` + spinner di
+  tombol). Hanya onboarding pemanggil `addChild` → blast radius minimal, `save()` tak diubah.
 
 **Catatan teknik untuk sesi lanjutan:**
 - **Lint** sekarang ESLint 9 flat config; warning React-Compiler (`set-state-in-effect`,
@@ -430,8 +434,13 @@ npm run db:generate   # bila ada perubahan schema (additive)
   (tsc/lint/build), dev sudah di-migrate & tabel terverifikasi.
 - **AKSI DEPLOY (ops):** `db:migrate` produksi untuk menerapkan `0004`.
 
-Sesudah M7: roadmap v1.2 (AI coach grounded) & item v1.1 lain (10.3 persist guide,
-10.4 settings profil/sandi, fix race onboarding `finish()`).
+**M8 (v1.1) — Fix race onboarding `finish()` → dashboard — ✅ SELESAI**
+- Lihat catatan "Race onboarding → dashboard" di atas. Tanpa migrasi DB.
+  `addChild` → `Promise<void>` (await-able); `finish()` async await + `router.replace`
+  + guard `saving`. Gate hijau (tsc/lint/build).
+
+Sesudah M8: roadmap v1.2 (AI coach grounded) & item v1.1 lain (10.3 persist guide,
+10.4 settings profil/sandi).
 
 ---
 Lihat `STATUS_FILES.md` untuk daftar status per-file.
