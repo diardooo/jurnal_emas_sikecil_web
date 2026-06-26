@@ -314,9 +314,14 @@ Berfungsi di UI tapi belum dirapikan/di-persist. Format: lokasi → kondisi → 
 - **Tersisa (by design):** preferensi masih **per-perangkat**; saat generator notifikasi
   server (§10.7) dibuat, pindahkan ke DB agar backend bisa menghormatinya.
 
-### 10.6 Laporan — export PDF & share masih mock
-- **Lokasi:** `reports/page.tsx` (Export PDF/Bagikan/Cetak → toast/`window.print()`).
-- **Dibutuhkan:** generate PDF nyata (Puppeteer/PDFKit) + link share ber-token.
+### 10.6 Laporan — export PDF — ✅ SELESAI (M15, v1.1)
+- **Sekarang:** "Export PDF" → `window.print()` dgn stylesheet `@media print` di
+  `globals.css` yang **mengisolasi `#report-print`** (sembunyikan sidebar/topbar/builder/
+  toast, A4, `break-inside: avoid` per `.report-section`, `print-color-adjust: exact`).
+  Browser "Simpan sebagai PDF" → PDF A4 nyata **termasuk grafik WHO** & desain asli.
+  Nama file di-set via `document.title` sementara. **Pendekatan: print-CSS** (bukan
+  Puppeteer/chromium yg berat di Vercel Hobby, bukan html2canvas yg rapuh) → nol dependency.
+- **Tersisa (opsional):** "Bagikan via Link" masih salin URL biasa (belum link ber-token).
 
 ### 10.7 Notifikasi — generator otomatis — ✅ SELESAI (M14, v1.1)
 - **Sekarang:** `POST /api/notifications/generate` menurunkan reminder dari data nyata:
@@ -475,6 +480,12 @@ npm run db:generate   # bila ada perubahan schema (additive)
   `POST /api/upload` → set `photoUrl` lokal → persist saat "Simpan" (`updateChild`).
   Input URL tetap sebagai fallback. Tanpa migrasi/endpoint/store baru. Gate hijau.
 - Lihat §10.11. **Foto milestone** masih tersisa (perlu kolom `photoUrl` + migrasi).
+
+**M15 (v1.1) — Export PDF laporan (print-CSS) — ✅ SELESAI**
+- Lihat §10.6. `@media print` di `globals.css` isolasi `#report-print`; `reports/page.tsx`
+  `exportPdf()` (window.print + filename via document.title), `report-section` per Section,
+  `print:hidden` bar pratinjau. Nol dependency, tanpa migrasi/server (aman Vercel Hobby).
+  Gate hijau. **Catatan:** belum uji-visual (perlu cek grafik/warna saat cetak di browser).
 
 **M14 (v1.1) — Generator notifikasi otomatis — ✅ SELESAI**
 - Lihat §10.7. `lib/notifications-gen.ts` (`buildReminders`, murni & unit-tested) +

@@ -49,6 +49,22 @@ export default function ReportsPage() {
 
   const isPremium = plan === "premium";
 
+  /** Print just the report to PDF (browser "Save as PDF"). The temporary
+   *  document title becomes the suggested filename. */
+  function exportPdf() {
+    const prev = document.title;
+    document.title = `Laporan ${child.name} - ${formatDateID(new Date())}`;
+    const restore = () => {
+      document.title = prev;
+      window.removeEventListener("afterprint", restore);
+    };
+    window.addEventListener("afterprint", restore);
+    toast.success("Menyiapkan PDF", {
+      description: "Pada dialog cetak, pilih tujuan 'Simpan sebagai PDF'.",
+    });
+    window.print();
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -85,14 +101,7 @@ export default function ReportsPage() {
 
               {isPremium ? (
                 <div className="space-y-2 pt-2">
-                  <Button
-                    className="w-full"
-                    onClick={() =>
-                      toast.success("Laporan PDF dibuat (demo)", {
-                        description: "File siap diunduh.",
-                      })
-                    }
-                  >
+                  <Button className="w-full" onClick={exportPdf}>
                     <Download /> Export PDF
                   </Button>
                   <Button
@@ -130,9 +139,9 @@ export default function ReportsPage() {
           </Card>
         </div>
 
-        {/* Preview */}
-        <Card className="overflow-hidden">
-          <div className="border-b bg-secondary/40 px-6 py-3">
+        {/* Preview (also the print target — see #report-print in globals.css) */}
+        <Card id="report-print" className="overflow-hidden">
+          <div className="border-b bg-secondary/40 px-6 py-3 print:hidden">
             <p className="flex items-center gap-2 text-sm font-semibold text-navy-muted">
               <FileText className="h-4 w-4" /> Pratinjau Laporan
             </p>
@@ -304,7 +313,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="mt-6">
+    <div className="report-section mt-6">
       <h4 className="mb-3 font-display text-sm font-bold uppercase tracking-wide text-gold-700">
         {title}
       </h4>

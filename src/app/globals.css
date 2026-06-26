@@ -104,3 +104,37 @@
     width: auto !important;
   }
 }
+
+/* Print-to-PDF: isolate the report document (#report-print) and drop the app
+   chrome (sidebar, topbar, builder column, toasts). Browser "Save as PDF" then
+   produces a clean A4 report. Used by the Reports page Export PDF / Cetak. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #report-print,
+  #report-print * {
+    visibility: visible;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  #report-print {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    margin: 0;
+    border: none;
+    box-shadow: none;
+  }
+  /* Keep report sections from splitting awkwardly across pages. */
+  #report-print .report-section {
+    break-inside: avoid;
+  }
+  [data-sonner-toaster] {
+    display: none !important;
+  }
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
+}
