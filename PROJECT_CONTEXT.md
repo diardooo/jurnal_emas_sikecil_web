@@ -466,6 +466,13 @@ npm run db:generate   # bila ada perubahan schema (additive)
   Input URL tetap sebagai fallback. Tanpa migrasi/endpoint/store baru. Gate hijau.
 - Lihat §10.11. **Foto milestone** masih tersisa (perlu kolom `photoUrl` + migrasi).
 
+**STATUS DEPLOY (per 2026-06-27):** kode M7–M10 + hotfix sudah **di-push ke `main`**
+(`origin/main` = `b3c0c99`) → Vercel auto-deploy. **Aksi prod yang masih perlu dijalankan
+user** (butuh `DATABASE_URL` produksi `ep-bold-river`):
+- `npm run db:migrate` → terapkan `0002` (journal), `0003` (regressed), **`0004` (categories)**.
+- `npm run db:cdc` → rekonsiliasi anak existing ke 53 milestone.
+- (opsional) set env Cloudinary di Vercel agar upload foto aktif (else 503 + fallback URL).
+
 Sesudah M10: item v1.1 tersisa → **10.5** (persist toggle notifikasi), **10.6** (export PDF
 nyata), **10.7** (generator notifikasi), **foto milestone** (migrasi + UI goals), lalu roadmap
 **v1.2** (AI coach grounded).
