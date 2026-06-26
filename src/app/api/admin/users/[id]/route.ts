@@ -45,7 +45,11 @@ export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: stri
   if (admin.id === id) {
     return NextResponse.json({ error: "Tidak bisa menghapus akun sendiri" }, { status: 400 });
   }
-  const [row] = await db.delete(user).where(eq(user.id, id)).returning();
-  if (!row) return notFound();
+  const [target] = await db.select({ role: user.role }).from(user).where(eq(user.id, id)).limit(1);
+  if (!target) return notFound();
+  if (target.role === "superadmin") {
+    return NextResponse.json({ error: "Tidak bisa menghapus akun superadmin" }, { status: 400 });
+  }
+  await db.delete(user).where(eq(user.id, id));
   return NextResponse.json({ ok: true });
 }

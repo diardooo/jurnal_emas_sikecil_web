@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import { user } from "@/db/schema/auth";
 import { forbidden, getAdmin } from "@/lib/admin";
@@ -20,9 +20,18 @@ export async function POST(req: NextRequest) {
     case "activate":
       await db.update(user).set({ status: "active", updatedAt: new Date() }).where(inArray(user.id, ids));
       break;
-    case "delete":
-      await db.delete(user).where(inArray(user.id, ids));
-      break;
+    case "delete": {
+      // Never delete superadmins — keeps the admin account safe during a
+      // "select all → delete" sweep.
+      const supers = await db
+        .select({ id: user.id })
+        .from(user)
+        .where(and(inArray(user.id, ids), eq(user.role, "superadmin")));
+      const superSet = new Set(supers.map((s) => s.id));
+      const deletable = ids.filter((id) => !superSet.has(id));
+      if (deletable.length) await db.delete(user).where(inArray(user.id, deletable));
+      return NextResponse.json({ ok: true, affected: deletable.length });
+    }
     default:
       return NextResponse.json({ error: "Aksi tidak dikenal" }, { status: 400 });
   }

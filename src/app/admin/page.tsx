@@ -343,11 +343,17 @@ function PageUsers({ showToast, openModal }: { showToast: (m: string) => void; o
   const toggleOne = (id: string) => setSelected((p) => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; });
   const selectedUsers = all.filter((u) => selected.has(u.id));
 
-  const runBulk = async (action: "suspend" | "activate") => {
+  const runBulk = async (action: "suspend" | "activate" | "delete") => {
+    if (action === "delete" && !confirm(`Hapus ${selected.size} user terpilih secara permanen? Semua data mereka ikut terhapus. (Akun admin/superadmin tidak akan terhapus.)`)) return;
     setBusy(true);
-    try { const r = await adminApi.bulkUsers(Array.from(selected), action); showToast(`✅ ${r.affected} user di${action === "suspend" ? "suspend" : "aktifkan"}`); setSelected(new Set()); await users.reload(); }
+    try { const r = await adminApi.bulkUsers(Array.from(selected), action); const verb = action === "suspend" ? "disuspend" : action === "activate" ? "diaktifkan" : "dihapus"; showToast(`✅ ${r.affected} user ${verb}`); setSelected(new Set()); await users.reload(); }
     catch (e) { showToast(`⚠️ ${e instanceof Error ? e.message : "Gagal"}`); }
     finally { setBusy(false); }
+  };
+  const delUser = async (u: AdminUser) => {
+    if (!confirm(`Hapus ${u.name} (${u.email}) secara permanen? Semua datanya ikut terhapus.`)) return;
+    try { await adminApi.deleteUser(u.id); showToast(`🗑 ${u.name} dihapus`); setSelected((p) => { const n = new Set(p); n.delete(u.id); return n; }); await users.reload(); }
+    catch (e) { showToast(`⚠️ ${e instanceof Error ? e.message : "Gagal"}`); }
   };
   const toggleStatus = async (u: AdminUser) => {
     try { await adminApi.updateUser(u.id, { status: u.status === "active" ? "suspended" : "active" }); showToast(`⚠️ ${u.name} ${u.status === "active" ? "disuspend" : "diaktifkan"}`); await users.reload(); }
@@ -377,6 +383,7 @@ function PageUsers({ showToast, openModal }: { showToast: (m: string) => void; o
           <BtnWa onClick={() => openModal("wa-broadcast", selectedUsers.filter((u) => u.phone))}><MessageCircle size={14} /> Broadcast WhatsApp</BtnWa>
           <button disabled={busy} onClick={() => runBulk("activate")} className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-lg text-sm font-semibold bg-[rgba(16,185,129,0.2)] text-[#34D399] hover:bg-[rgba(16,185,129,0.3)] disabled:opacity-50"><Check size={14} /> Aktifkan</button>
           <button disabled={busy} onClick={() => runBulk("suspend")} className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-lg text-sm font-semibold bg-[rgba(239,68,68,0.2)] text-[#F87171] hover:bg-[rgba(239,68,68,0.3)] disabled:opacity-50"><Ban size={14} /> Suspend</button>
+          <button disabled={busy} onClick={() => runBulk("delete")} className="inline-flex items-center gap-1.5 px-3 py-[7px] rounded-lg text-sm font-semibold bg-[rgba(239,68,68,0.85)] text-white hover:bg-[#EF4444] disabled:opacity-50"><Trash2 size={14} /> Hapus</button>
           <button onClick={() => setSelected(new Set())} className="w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/10"><X size={14} /></button>
         </div>
       )}
@@ -417,6 +424,7 @@ function PageUsers({ showToast, openModal }: { showToast: (m: string) => void; o
                       <IconBtn onClick={() => openModal("edit-user", { user: u, reload: users.reload })} title="Edit"><Pencil size={12} /></IconBtn>
                       {u.phone && <WaBtn phone={u.phone} text={`Halo ${u.name}, dari tim Jurnal Emas Si Kecil 👋`} />}
                       <IconBtn onClick={() => toggleStatus(u)} danger title="Suspend/Aktifkan"><Ban size={12} /></IconBtn>
+                      {u.role !== "superadmin" && <IconBtn onClick={() => delUser(u)} danger title="Hapus permanen"><Trash2 size={12} /></IconBtn>}
                     </div>
                   </td>
                 </tr>

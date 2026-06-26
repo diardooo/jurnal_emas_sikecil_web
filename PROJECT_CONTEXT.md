@@ -349,8 +349,10 @@ Berfungsi di UI tapi belum dirapikan/di-persist. Format: lokasi → kondisi → 
 
 ### 10.12 Admin — sebagian masih dummy/perlu pendalaman
 - **Lokasi:** `app/admin/page.tsx` + `api/admin/stats`.
-- **Sekarang:** CRUD user/langganan/diskon/konten/role/settings berfungsi; sebagian
-  metrik/analitik & beberapa aksi UI masih contoh/perlu dilengkapi.
+- **Sekarang:** CRUD user/langganan/diskon/konten/role/settings berfungsi; **hapus user**
+  (per-baris + bulk) sudah ter-wire di UI (M13) dgn guard: tak bisa hapus diri sendiri
+  **maupun superadmin** (aman untuk "pilih semua → Hapus"). Sebagian metrik/analitik &
+  beberapa aksi UI lain masih contoh/perlu dilengkapi.
 - **Dibutuhkan:** statistik nyata, audit log, RBAC granular per-permission bila diperlukan.
 
 ### 10.13 Sisa kecil
@@ -468,6 +470,16 @@ npm run db:generate   # bila ada perubahan schema (additive)
   `POST /api/upload` → set `photoUrl` lokal → persist saat "Simpan" (`updateChild`).
   Input URL tetap sebagai fallback. Tanpa migrasi/endpoint/store baru. Gate hijau.
 - Lihat §10.11. **Foto milestone** masih tersisa (perlu kolom `photoUrl` + migrasi).
+
+**M13 (admin) — Hapus user di panel admin — ✅ SELESAI**
+- Backend hapus user sudah ada (`DELETE /api/admin/users/[id]` + `POST .../bulk` action
+  `delete`); yang kurang hanya UI. Ditambah **tombol Hapus** per-baris + bulk bar
+  (`app/admin/page.tsx`), `runBulk` diperluas ke `"delete"`, `delUser()`, konfirmasi.
+- **Guard keamanan:** backend kini tolak hapus **superadmin** (bukan cuma self) — single
+  (`DELETE [id]`) & bulk (filter `role=superadmin`), jadi "pilih semua → Hapus" otomatis
+  menyisakan admin. Cascade hapus anak+semua data user (FK `onDelete: cascade`).
+- **Clean-slate dev dijalankan:** 3 user non-superadmin dihapus, `admin@jurnalemas.com`
+  tetap. (Prod: gunakan tombol Hapus di panel admin setelah deploy.) Gate hijau.
 
 **M12 (v1.1) — Upload foto momen milestone — ✅ SELESAI**
 - Kolom additive `milestones.photoUrl` (migrasi `0005`); tipe `Milestone.photoUrl`;
