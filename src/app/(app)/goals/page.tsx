@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   AlertTriangle,
   Camera,
@@ -8,7 +8,9 @@ import {
   ChevronDown,
   Info,
   Lightbulb,
+  Loader2,
   Target,
+  Trash2,
   TrendingDown,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -17,6 +19,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useAppStore } from "@/store/app-store";
 import { domainMeta } from "@/lib/domains";
@@ -332,8 +336,38 @@ const fallbackDomainMeta = {
 function MilestoneRow({ milestone: m }: { milestone: Milestone }) {
   const setStatus = useAppStore((s) => s.setMilestoneStatus);
   const setRegressed = useAppStore((s) => s.setMilestoneRegressed);
+  const setPhoto = useAppStore((s) => s.setMilestonePhoto);
   const meta = domainMeta[m.domain] ?? fallbackDomainMeta;
   const cycle: MilestoneStatus[] = ["belum", "dicoba", "bisa"];
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  // Upload the moment photo to Cloudinary via /api/upload, then persist on the
+  // milestone. Empty url clears it.
+  async function onPickPhoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const data = (await res.json().catch(() => ({}))) as {
+        url?: string;
+        error?: string;
+      };
+      if (!res.ok) throw new Error(data.error ?? `Gagal (${res.status})`);
+      setPhoto(m.id, data.url!);
+      toast.success("Foto momen tersimpan 📸", { description: m.title });
+    } catch (err) {
+      toast.error("Upload gagal", {
+        description: err instanceof Error ? err.message : undefined,
+      });
+    } finally {
+      setUploading(false);
+    }
+  }
 
   return (
     <div className="rounded-xl border bg-background p-4">
@@ -363,11 +397,6 @@ function MilestoneRow({ milestone: m }: { milestone: Milestone }) {
           <p className="mt-0.5 text-xs text-navy-muted">{m.description}</p>
           <p className="mt-1 text-[11px] font-medium text-muted-foreground">
             {m.domain} • usia {m.ageMinMonths}–{m.ageMaxMonths} bulan
-            {m.hasPhoto && (
-              <span className="ml-2 inline-flex items-center gap-1 text-gold-700">
-                <Camera className="h-3 w-3" /> Ada foto
-              </span>
-            )}
           </p>
           {m.note && (
             <p className="mt-2 rounded-lg bg-secondary/60 px-3 py-2 text-xs italic text-navy-muted">
@@ -413,6 +442,72 @@ function MilestoneRow({ milestone: m }: { milestone: Milestone }) {
         >
           {m.regressed ? "Tandai sudah pulih" : "Keterampilan ini hilang?"}
         </button>
+      )}
+
+      {m.status === "bisa" && (
+        <div className="mt-3 border-t pt-3">
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={onPickPhoto}
+          />
+          {m.photoUrl ? (
+            <div className="flex items-center gap-3">
+              <Avatar className="h-16 w-16 rounded-lg border">
+                <AvatarImage
+                  src={m.photoUrl}
+                  alt={m.title}
+                  className="object-cover"
+                />
+                <AvatarFallback className="rounded-lg">
+                  <Camera className="h-5 w-5 text-muted-foreground" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={uploading}
+                  onClick={() => fileRef.current?.click()}
+                >
+                  {uploading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Camera className="h-4 w-4" />
+                  )}
+                  Ganti Foto
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-alert-red hover:bg-alert-red-soft"
+                  onClick={() => {
+                    setPhoto(m.id, "");
+                    toast("Foto momen dihapus");
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" /> Hapus
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={uploading}
+              onClick={() => fileRef.current?.click()}
+            >
+              {uploading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Camera className="h-4 w-4" />
+              )}
+              {uploading ? "Mengunggah…" : "Tambah Foto Momen"}
+            </Button>
+          )}
+        </div>
       )}
     </div>
   );

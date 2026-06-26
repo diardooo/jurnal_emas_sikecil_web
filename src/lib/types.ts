@@ -86,6 +86,8 @@ export interface Milestone {
   achievedAt?: string;
   note?: string;
   hasPhoto?: boolean;
+  /** Cloudinary URL of the milestone moment photo (set via /api/upload). */
+  photoUrl?: string;
 }
 
 export interface Goal {

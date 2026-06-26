@@ -340,13 +340,12 @@ Berfungsi di UI tapi belum dirapikan/di-persist. Format: lokasi → kondisi → 
   Google Cloud project: `jurnal-emas-si-kecil`. Mode: External (testing). Untuk buka ke semua user:
   Google Cloud Console → Audience → Publish App.
 
-### 10.11 Upload media (foto anak & milestone) — ⏳ SEBAGIAN
-- **Sekarang:** infra upload nyata — `lib/cloudinary.ts` + `POST /api/upload`
-  (auth, maks 5 MB, image-only, 503 bila env Cloudinary belum diset). **Foto profil
-  user** (Settings `onPickPhoto`) **& foto anak** (`edit-child-dialog.tsx`, M10 — tombol
-  "Unggah Foto" → `/api/upload` → `photoUrl` persist saat Simpan) sudah ter-wire.
-- **Tersisa:** **foto milestone** (`hasPhoto`) belum punya kolom `photoUrl` di tabel
-  `milestones` — butuh migrasi additive + UI di `goals`. Kandidat siklus tersendiri.
+### 10.11 Upload media (foto anak & milestone) — ✅ SELESAI
+- **Infra:** `lib/cloudinary.ts` + `POST /api/upload` (auth, maks 5 MB, image-only,
+  503 bila env Cloudinary belum diset).
+- **Ter-wire:** foto profil user (Settings), foto anak (`edit-child-dialog.tsx`, M10),
+  **foto milestone** (M12 — kolom additive `milestones.photoUrl`, action
+  `setMilestonePhoto`, UI upload+thumbnail di `goals` MilestoneRow saat status "bisa").
 
 ### 10.12 Admin — sebagian masih dummy/perlu pendalaman
 - **Lokasi:** `app/admin/page.tsx` + `api/admin/stats`.
@@ -470,6 +469,14 @@ npm run db:generate   # bila ada perubahan schema (additive)
   Input URL tetap sebagai fallback. Tanpa migrasi/endpoint/store baru. Gate hijau.
 - Lihat §10.11. **Foto milestone** masih tersisa (perlu kolom `photoUrl` + migrasi).
 
+**M12 (v1.1) — Upload foto momen milestone — ✅ SELESAI**
+- Kolom additive `milestones.photoUrl` (migrasi `0005`); tipe `Milestone.photoUrl`;
+  action store `setMilestonePhoto(id,url)` (set `photoUrl`+`hasPhoto`, persist `apiPatch`,
+  url kosong = hapus). UI `MilestoneRow` (`goals`): saat status "bisa" → tombol "Tambah
+  Foto Momen" / thumbnail (`Avatar`, lint-clean) + Ganti/Hapus, via `/api/upload`.
+  Indikator teks "Ada foto" lama diganti foto nyata. Gate hijau; dev ter-migrate +
+  kolom terverifikasi. Melengkapi §10.11.
+
 **M11 (v1.1) — Persist toggle preferensi notifikasi — ✅ SELESAI**
 - Lihat §10.5. `NotifTab` baru; 6 toggle persist `localStorage` (`je:notif-prefs`),
   lazy initializer (tanpa `useEffect`/warning), Switch terkontrol. Tanpa migrasi/API.
@@ -478,7 +485,8 @@ npm run db:generate   # bila ada perubahan schema (additive)
 **STATUS DEPLOY (per 2026-06-27):** kode M7–M10 + hotfix sudah **di-push ke `main`**
 (`origin/main` = `b3c0c99`) → Vercel auto-deploy. **Aksi prod yang masih perlu dijalankan
 user** (butuh `DATABASE_URL` produksi `ep-bold-river`):
-- `npm run db:migrate` → terapkan `0002` (journal), `0003` (regressed), **`0004` (categories)**.
+- `npm run db:migrate` → terapkan `0002` (journal), `0003` (regressed), `0004` (categories),
+  **`0005` (milestones.photoUrl)**.
 - `npm run db:cdc` → rekonsiliasi anak existing ke 53 milestone.
 - (opsional) set env Cloudinary di Vercel agar upload foto aktif (else 503 + fallback URL).
 

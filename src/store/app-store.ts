@@ -186,6 +186,8 @@ interface AppState {
 
   setMilestoneStatus: (id: string, status: MilestoneStatus) => void;
   setMilestoneRegressed: (id: string, regressed: boolean) => void;
+  /** Set/clear the milestone moment photo (empty string clears it). */
+  setMilestonePhoto: (id: string, photoUrl: string) => void;
 
   addGoal: (goal: Goal) => void;
   toggleSubGoal: (goalId: string, subId: string) => void;
@@ -660,6 +662,22 @@ export const useAppStore = create<AppState>((set, get) => {
         return { milestones: next };
       });
       save(() => apiPatch("milestones", id, { regressed }));
+    },
+
+    setMilestonePhoto: (id, photoUrl) => {
+      const hasPhoto = !!photoUrl;
+      set((s) => {
+        const next: Record<string, Milestone[]> = {};
+        for (const [cid, list] of Object.entries(s.milestones)) {
+          next[cid] = list.map((m) =>
+            m.id === id ? { ...m, photoUrl: photoUrl || undefined, hasPhoto } : m,
+          );
+        }
+        return { milestones: next };
+      });
+      save(() =>
+        apiPatch("milestones", id, { photoUrl: photoUrl || null, hasPhoto }),
+      );
     },
 
     addGoal: (goal) => {

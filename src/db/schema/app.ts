@@ -97,6 +97,7 @@ export const milestones = pgTable("milestones", {
   achievedAt: timestamp("achieved_at"),
   note: text("note"),
   hasPhoto: boolean("has_photo").notNull().default(false),
+  photoUrl: text("photo_url"),
   createdAt: createdAt(),
 });
 
