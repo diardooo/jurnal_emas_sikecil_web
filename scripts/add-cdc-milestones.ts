@@ -1,29 +1,28 @@
 import "dotenv/config";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { db } from "../src/db";
 import { children as childrenT, milestones as msT } from "../src/db/schema/app";
 import { refMilestones } from "../src/db/schema/admin";
 import { mockMilestones } from "../src/lib/mock-data";
 
 /**
- * M4b backfill (idempotent & additive):
- *  1) Refresh katalog `ref_milestones` dari SATU sumber (`mockMilestones`,
- *     domain kanonik + description) — merapikan divergensi list lama.
- *  2) Sisipkan milestone skrining CDC baru ke setiap anak yang belum punya
- *     (dicocokkan by `title`), status "belum". Baris milestone lain tidak disentuh.
+ * Rekonsiliasi milestone ke katalog kanonik (`mockMilestones`, 53 item incl. CDC).
+ * Idempotent & aman:
+ *  1) Refresh `ref_milestones` dari satu sumber (untuk anak yang dibuat ke depan).
+ *  2) Tiap anak: tambahkan milestone kanonik yang BELUM dimiliki (match by `title`,
+ *     status "belum").
+ *  3) Buang "orphan" (judul di luar katalog kanonik — sisa ref lama domain "Bahasa")
+ *     HANYA jika statusnya masih "belum" (placeholder yg belum disentuh orang tua),
+ *     sehingga tanda progres yang sudah ada tidak terhapus.
  *
- * Aman dijalankan ulang: anak yg sudah punya → +0.
- * Jalankan: `npm run db:cdc` (atau `tsx scripts/add-cdc-milestones.ts`).
+ * Jalankan: `npm run db:cdc` (atau dgn DATABASE_URL produksi untuk merapikan prod).
  */
 
-const NEW_TITLES = [
-  "Menoleh saat dipanggil nama",
-  "Menunjuk untuk berbagi perhatian",
-  "Mengikuti perintah 2 langkah",
-];
+const canonical = mockMilestones;
+const canonicalTitles = new Set(canonical.map((m) => m.title));
 
 const refRows = () =>
-  mockMilestones.map((m) => ({
+  canonical.map((m) => ({
     domain: m.domain,
     title: m.title,
     description: m.description,
@@ -39,25 +38,25 @@ async function main() {
     process.exit(1);
   }
 
-  // 1) Refresh katalog referensi (kanonik) untuk anak yang dibuat ke depan.
   const rows = refRows();
   await db.delete(refMilestones);
   await db.insert(refMilestones).values(rows);
   console.log(`→ ref_milestones di-refresh: ${rows.length} item kanonik.`);
 
-  // 2) Backfill milestone CDC baru ke anak existing (idempotent by title).
-  const newMs = mockMilestones.filter((m) => NEW_TITLES.includes(m.title));
   const kids = await db.select().from(childrenT);
   console.log(`→ ${kids.length} anak ditemukan.`);
 
-  let inserted = 0;
+  let added = 0;
+  let removed = 0;
   for (const c of kids) {
     const existing = await db
-      .select({ title: msT.title })
+      .select({ id: msT.id, title: msT.title, status: msT.status })
       .from(msT)
       .where(eq(msT.childId, c.id));
     const have = new Set(existing.map((r) => r.title));
-    const toAdd = newMs.filter((m) => !have.has(m.title));
+
+    // 1) tambah kanonik yang kurang
+    const toAdd = canonical.filter((m) => !have.has(m.title));
     if (toAdd.length > 0) {
       await db.insert(msT).values(
         toAdd.map((m) => ({
@@ -72,11 +71,21 @@ async function main() {
           status: "belum" as const,
         })),
       );
-      inserted += toAdd.length;
+      added += toAdd.length;
     }
-    console.log(`  ${c.name}: +${toAdd.length} milestone CDC`);
+
+    // 2) buang orphan yg belum disentuh (judul di luar katalog & status "belum")
+    const orphanIds = existing
+      .filter((r) => !canonicalTitles.has(r.title) && r.status === "belum")
+      .map((r) => r.id);
+    if (orphanIds.length > 0) {
+      await db.delete(msT).where(inArray(msT.id, orphanIds));
+      removed += orphanIds.length;
+    }
+
+    console.log(`  ${c.name}: +${toAdd.length} / -${orphanIds.length}`);
   }
-  console.log(`✓ Selesai. Total ${inserted} milestone disisipkan.`);
+  console.log(`✓ Selesai. Total +${added} disisipkan, -${removed} orphan dihapus.`);
   process.exit(0);
 }
 

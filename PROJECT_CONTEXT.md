@@ -380,6 +380,10 @@ npm run db:generate   # bila ada perubahan schema (additive)
   `getMe()` & `children` tetap strict. Satu migrasi telat tak lagi mematikan login semua user.
 - **Fix kode:** route `/journal` ditambahkan ke `middleware.ts` (PROTECTED + matcher) —
   sebelumnya kelewat saat menambah halaman Jurnal.
+- **Fix kode (500 "Gagal menyimpan" saat tandai milestone "Sudah Bisa"):** API mengirim
+  `achievedAt` sebagai string ISO, tapi kolom `timestamp` Drizzle butuh `Date`
+  (`value.toISOString is not a function`). `sanitize()` di `lib/api.ts` kini meng-koersi
+  string→`Date` untuk kolom `columnType === "PgTimestamp"`. Berlaku umum (semua resource).
 - **WAJIB (ops):** **migrate branch PRODUKSI Neon** (yang dipakai Vercel), bukan cuma dev.
   Pastikan `DATABASE_URL` di Vercel menunjuk branch yang sudah punya `journal_entries`
   + `milestones.regressed`. Tanpa ini, login jalan tapi milestone/jurnal tampil kosong.
@@ -403,9 +407,13 @@ npm run db:generate   # bila ada perubahan schema (additive)
 - **Divergensi 6-vs-50 dibereskan:** `seed-admin.ts` const `MILESTONES` kini **diturunkan
   dari `mockMilestones`** (53, kanonik, ber-`description`) — bukan lagi list 6-item domain
   "Bahasa". `ref_milestones` = satu sumber kebenaran.
-- Skrip backfill **idempotent** `scripts/add-cdc-milestones.ts` (`npm run db:cdc`):
-  (1) refresh `ref_milestones` ke 53 kanonik; (2) sisipkan milestone CDC yg belum dimiliki
-  tiap anak (match by `title`, status "belum"). Terverifikasi di dev: run#1 +3/anak, run#2 +0.
+- Skrip **rekonsiliasi idempotent** `scripts/add-cdc-milestones.ts` (`npm run db:cdc`):
+  (1) refresh `ref_milestones` ke 53 kanonik; (2) tiap anak ditambahkan SEMUA milestone
+  kanonik yg belum dimiliki (match by `title`); (3) buang "orphan" (judul di luar katalog,
+  sisa ref lama domain "Bahasa") HANYA jika status masih "belum" (tanda progres dijaga).
+  Terverifikasi di dev: anak normal 53; anak lama (6+3) → 53 (+1 orphan ber-status dijaga);
+  run ulang +0/-0. **Penting:** anak yang terlanjur dibuat dari ref lama (mis. cuma 3–9
+  milestone) baru lengkap setelah skrip ini dijalankan di DB-nya.
 - **AKSI DEPLOY (ops, setelah migrate produksi):** jalankan `npm run db:cdc` dgn
   `DATABASE_URL` **produksi** → refresh katalog + backfill anak existing. Additive & aman diulang.
 
