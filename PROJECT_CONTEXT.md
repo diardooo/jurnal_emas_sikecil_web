@@ -481,6 +481,13 @@ npm run db:generate   # bila ada perubahan schema (additive)
   Input URL tetap sebagai fallback. Tanpa migrasi/endpoint/store baru. Gate hijau.
 - Lihat §10.11. **Foto milestone** masih tersisa (perlu kolom `photoUrl` + migrasi).
 
+**M18 (v1.2) — AI Coach: riwayat chat tersimpan — ✅ SELESAI**
+- Percakapan dulu hilang saat reload/pindah halaman. Tabel additive
+  `coach_messages(user_id, child_id→cascade, role, content)` (migrasi `0007`).
+  `POST /api/coach` simpan 2 turn (user+coach) setelah jawaban sukses; `GET /api/coach?childId=`
+  muat riwayat (urut, limit 100, di-map ke `{role,text}`). UI `/coach` load riwayat saat
+  buka/ganti anak via effect async (tak menambah warning). Roundtrip + cascade smoke-test PASS.
+
 **M17 (v1.2) — AI Coach: rate-limit per-user + handling 429 — ✅ SELESAI**
 - **Kuota free terbukti ketat** (uji live: `gemini-2.0-flash` → 429; ganti default ke
   `gemini-2.5-flash` yang jalan). Key Gemini valid & **panggilan LLM live terverifikasi**.
@@ -549,7 +556,7 @@ npm run db:generate   # bila ada perubahan schema (additive)
 (`origin/main` = `b3c0c99`) → Vercel auto-deploy. **Aksi prod yang masih perlu dijalankan
 user** (butuh `DATABASE_URL` produksi `ep-bold-river`):
 - `npm run db:migrate` → terapkan `0002` (journal), `0003` (regressed), `0004` (categories),
-  `0005` (milestones.photoUrl), **`0006` (coach_usage)**.
+  `0005` (milestones.photoUrl), `0006` (coach_usage), **`0007` (coach_messages)**.
 - **AI Coach prod:** set `GEMINI_API_KEY` (+ `GEMINI_MODEL=gemini-2.5-flash`, opsional
   `COACH_DAILY_LIMIT`) di Vercel env. Tanpa key → `/coach` aman (pesan "belum aktif").
   - **INSIDEN 2026-06-26:** dikonfirmasi dari log prod, branch prod ada di **0003**

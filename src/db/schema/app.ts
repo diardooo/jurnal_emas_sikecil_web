@@ -219,6 +219,21 @@ export const coachUsage = pgTable(
   (t) => [unique("coach_usage_user_date").on(t.userId, t.date)],
 );
 
+/**
+ * Persisted AI-coach conversation so a parent can revisit advice across
+ * reloads. One row per turn (user question / coach answer), scoped to a child.
+ */
+export const coachMessages = pgTable("coach_messages", {
+  id: id(),
+  userId: userId(),
+  childId: text("child_id")
+    .notNull()
+    .references(() => children.id, { onDelete: "cascade" }),
+  role: text("role").notNull(), // 'user' | 'coach'
+  content: text("content").notNull(),
+  createdAt: createdAt(),
+});
+
 export const notifications = pgTable("notifications", {
   id: id(),
   userId: userId(),

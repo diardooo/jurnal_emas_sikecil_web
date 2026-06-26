@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { and, eq, sql } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import { badRequest, getUser, unauthorized } from "@/lib/api";
 import { db } from "@/db";
 import {
   children as childrenT,
+  coachMessages as coachMessagesT,
   coachUsage as coachUsageT,
   growthRecords as growthT,
   journalEntries as journalT,
@@ -88,6 +89,11 @@ export async function POST(req: NextRequest) {
         target: [coachUsageT.userId, coachUsageT.date],
         set: { count: sql`${coachUsageT.count} + 1` },
       });
+    // Persist the exchange so the conversation survives reloads.
+    await db.insert(coachMessagesT).values([
+      { userId: user.id, childId, role: "user", content: question },
+      { userId: user.id, childId, role: "coach", content: answer },
+    ]);
     const remaining = Math.max(0, dailyLimit - ((usage?.count ?? 0) + 1));
     return NextResponse.json({ answer, remaining });
   } catch (e) {
@@ -109,4 +115,20 @@ export async function POST(req: NextRequest) {
       { status: 502 },
     );
   }
+}
+
+/** Past conversation for a child (oldest→newest), so the UI can restore it. */
+export async function GET(req: NextRequest) {
+  const user = await getUser(req);
+  if (!user) return unauthorized();
+  const childId = req.nextUrl.searchParams.get("childId")?.trim();
+  if (!childId) return NextResponse.json([]);
+  const rows = await db
+    .select({ role: coachMessagesT.role, content: coachMessagesT.content })
+    .from(coachMessagesT)
+    .where(and(eq(coachMessagesT.userId, user.id), eq(coachMessagesT.childId, childId)))
+    .orderBy(asc(coachMessagesT.createdAt))
+    .limit(100);
+  // Shape matches the UI's Turn ({ role, text }).
+  return NextResponse.json(rows.map((r) => ({ role: r.role, text: r.content })));
 }

@@ -50,6 +50,13 @@
       "when": 1782514943020,
       "tag": "0006_wise_whistler",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1782516660047,
+      "tag": "0007_typical_penance",
+      "breakpoints": true
     }
   ]
 }

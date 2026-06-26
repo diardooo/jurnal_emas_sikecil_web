@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Loader2, Send, Sparkles, Stethoscope } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/app/page-header";
@@ -27,6 +27,27 @@ export default function CoachPage() {
   const [thread, setThread] = useState<Turn[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Restore the saved conversation for the active child (skips demo).
+  useEffect(() => {
+    if (!child || demo) return;
+    let active = true;
+    void (async () => {
+      try {
+        const res = await fetch(
+          `/api/coach?childId=${encodeURIComponent(child.id)}`,
+        );
+        if (!res.ok) return;
+        const rows = (await res.json()) as Turn[];
+        if (active) setThread(rows);
+      } catch {
+        /* offline / not configured — start fresh */
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [child, demo]);
 
   async function ask(q: string) {
     const question = q.trim();
