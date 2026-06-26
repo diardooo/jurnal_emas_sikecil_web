@@ -167,6 +167,14 @@ export interface JournalEntry {
   createdAt?: string;
 }
 
+/** A user-defined task/habit category (persisted; defaults live in mock-data). */
+export interface Category {
+  id: string;
+  kind: "task" | "habit";
+  name: string;
+  createdAt?: string;
+}
+
 export interface AppNotification {
   id: string;
   type: "imunisasi" | "posyandu" | "task" | "habit" | "milestone";

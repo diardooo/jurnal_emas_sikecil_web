@@ -187,6 +187,19 @@ export const journalEntries = pgTable("journal_entries", {
   createdAt: createdAt(),
 });
 
+/**
+ * User-defined task/habit categories (additive — defaults still ship in code).
+ * Only *custom* categories are persisted here; on hydrate they merge with the
+ * built-in defaults. User-scoped, not child-scoped.
+ */
+export const categories = pgTable("categories", {
+  id: id(),
+  userId: userId(),
+  kind: text("kind").notNull(), // 'task' | 'habit'
+  name: text("name").notNull(),
+  createdAt: createdAt(),
+});
+
 export const notifications = pgTable("notifications", {
   id: id(),
   userId: userId(),

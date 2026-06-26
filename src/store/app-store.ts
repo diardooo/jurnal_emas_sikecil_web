@@ -26,6 +26,7 @@ import {
 } from "@/lib/mock-data";
 import type {
   AppNotification,
+  Category,
   Child,
   Goal,
   GrowthRecord,
@@ -75,6 +76,19 @@ const sortGrowth = (a: GrowthRecord, b: GrowthRecord) =>
 /** Newest entries first for the journal timeline. */
 const sortJournal = (a: JournalEntry, b: JournalEntry) =>
   b.date.localeCompare(a.date);
+
+/** Built-in defaults + persisted custom categories of one kind (deduped). */
+const mergeCategories = (
+  defaults: readonly string[],
+  rows: Category[],
+  kind: Category["kind"],
+): string[] => {
+  const out = [...defaults];
+  for (const r of rows) {
+    if (r.kind === kind && !out.includes(r.name)) out.push(r.name);
+  }
+  return out;
+};
 
 /** Build per-child milestone groups from the master list (for demo mode). */
 function demoMilestones(): Record<string, Milestone[]> {
@@ -209,6 +223,7 @@ export const useAppStore = create<AppState>((set, get) => {
         teeth,
         sleep,
         journal,
+        categories,
       ] = await Promise.all([
         getMe(),
         apiGet<Child[]>("children"),
@@ -223,6 +238,7 @@ export const useAppStore = create<AppState>((set, get) => {
         safeList("teeth", apiGet<ToothRecord[]>("teeth")),
         safeList("sleep", apiGet<SleepLog[]>("sleep")),
         safeList("journal", apiGet<JournalEntry[]>("journal")),
+        safeList("categories", apiGet<Category[]>("categories")),
       ]);
 
       const grouped = groupByChild(growth);
@@ -246,6 +262,8 @@ export const useAppStore = create<AppState>((set, get) => {
         teeth: groupByChild(teeth),
         sleepLogs: groupByChild(sleep),
         journal: groupByChild(journal),
+        taskCategories: mergeCategories(taskCategories, categories, "task"),
+        habitCategories: mergeCategories(habitCategories, categories, "habit"),
       });
     },
 
@@ -496,12 +514,11 @@ export const useAppStore = create<AppState>((set, get) => {
         ),
       );
     },
-    addTaskCategory: (name) =>
-      set((s) =>
-        s.taskCategories.includes(name)
-          ? s
-          : { taskCategories: [...s.taskCategories, name] },
-      ),
+    addTaskCategory: (name) => {
+      if (get().taskCategories.includes(name)) return;
+      set((s) => ({ taskCategories: [...s.taskCategories, name] }));
+      save(() => apiPost("categories", { kind: "task", name }));
+    },
     updateTask: (id, patch) => {
       set((s) => ({
         tasks: s.tasks.map((t) => (t.id === id ? { ...t, ...patch } : t)),
@@ -561,12 +578,11 @@ export const useAppStore = create<AppState>((set, get) => {
         ),
       );
     },
-    addHabitCategory: (name) =>
-      set((s) =>
-        s.habitCategories.includes(name)
-          ? s
-          : { habitCategories: [...s.habitCategories, name] },
-      ),
+    addHabitCategory: (name) => {
+      if (get().habitCategories.includes(name)) return;
+      set((s) => ({ habitCategories: [...s.habitCategories, name] }));
+      save(() => apiPost("categories", { kind: "habit", name }));
+    },
     checkInHabit: (id) => {
       let payload: { history: boolean[]; streak: number } | null = null;
       set((s) => ({

@@ -270,12 +270,18 @@ bekerja normal. `.env` Neon aktif (gitignored). Tanpa `DATABASE_URL`, app jalan 
 
 Berfungsi di UI tapi belum dirapikan/di-persist. Format: lokasi → kondisi → kebutuhan.
 
-### 10.1 Kategori task & habit kustom (client-only) — _prioritas tinggi_
-- **Lokasi:** `store/app-store.ts` (`taskCategories`, `habitCategories`,
-  `addTaskCategory`, `addHabitCategory`); dipakai di `task-dialog.tsx`, `habit-dialog.tsx`.
-- **Sekarang:** in-memory, **hilang saat reload**, tidak per-user/DB.
-- **Dibutuhkan:** tabel `categories (id,user_id,kind,name)` + `GET/POST /api/categories`;
-  isi store saat `hydrate()`.
+### 10.1 Kategori task & habit kustom — ✅ SELESAI (v1.1)
+- **Dulu:** in-memory, **hilang saat reload**, tidak per-user/DB.
+- **Sekarang:** tabel additive `categories (id,user_id,kind,name,created_at)`,
+  `kind ∈ {task,habit}` (user-scoped, bukan child) + `GET/POST /api/categories`
+  (lewat `resource()` factory). DB hanya menyimpan kategori **kustom**; default tetap
+  di `mock-data` dan **digabung** saat `hydrate()` via `mergeCategories()` (dedupe) →
+  state tetap `string[]`, **dialog tak berubah**. `addTaskCategory/addHabitCategory`
+  kini optimistic + `save(apiPost("categories",{kind,name}))` (demo tetap lokal).
+  Fetch via `safeList` → DB belum migrate tak mem-brick login (default tampil).
+- **Migrasi:** `0004_nebulous_sharon_carter.sql` (CREATE TABLE saja, additive). 
+- **AKSI DEPLOY (ops):** `npm run db:migrate` dgn `DATABASE_URL` produksi untuk
+  menerapkan `0004` (bersama 0002/0003 bila prod belum di-migrate).
 
 ### 10.2 Streak global "12 hari" (statis) — ✅ SELESAI
 - **Dulu:** konstanta `streak: 12` di store, tampil di banner dashboard.
@@ -417,7 +423,15 @@ npm run db:generate   # bila ada perubahan schema (additive)
 - **AKSI DEPLOY (ops, setelah migrate produksi):** jalankan `npm run db:cdc` dgn
   `DATABASE_URL` **produksi** → refresh katalog + backfill anak existing. Additive & aman diulang.
 
-Sesudah M4b: roadmap v1.2 (AI coach grounded) & seterusnya.
+**M7 (v1.1) — Kategori kustom persist ke DB — ✅ SELESAI**
+- Lihat §10.1. Tabel additive `categories` + `/api/categories` (resource factory);
+  `hydrate()` gabung default+kustom (`mergeCategories`), dialog tak berubah; persist
+  optimistic via `save()`. Migrasi `0004` (CREATE TABLE, additive). Gate hijau
+  (tsc/lint/build), dev sudah di-migrate & tabel terverifikasi.
+- **AKSI DEPLOY (ops):** `db:migrate` produksi untuk menerapkan `0004`.
+
+Sesudah M7: roadmap v1.2 (AI coach grounded) & item v1.1 lain (10.3 persist guide,
+10.4 settings profil/sandi, fix race onboarding `finish()`).
 
 ---
 Lihat `STATUS_FILES.md` untuk daftar status per-file.
