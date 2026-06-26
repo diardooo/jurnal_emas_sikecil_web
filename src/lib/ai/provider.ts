@@ -20,7 +20,7 @@ export function aiConfigured(): boolean {
   return !!process.env.GEMINI_API_KEY;
 }
 
-const MODEL = process.env.GEMINI_MODEL ?? "gemini-2.0-flash";
+const MODEL = process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
 
 /**
  * Generate one grounded answer. `system` carries the guardrails, `user` carries
