@@ -481,6 +481,25 @@ npm run db:generate   # bila ada perubahan schema (additive)
   Input URL tetap sebagai fallback. Tanpa migrasi/endpoint/store baru. Gate hijau.
 - Lihat §10.11. **Foto milestone** masih tersisa (perlu kolom `photoUrl` + migrasi).
 
+**M16 (v1.2) — AI Coach "Pendamping Emas" (grounded) — ✅ SELESAI (kode)**
+- **Grounded:** `lib/coach-context.ts` `buildCoachContext()` (murni, unit-tested) merangkum
+  data SATU anak → profil/usia, pertumbuhan vs WHO (reuse `classifyWho` z-score), milestone
+  per-domain, red-flag (reuse `evaluateRedFlags`), jurnal terbaru. System prompt
+  `COACH_SYSTEM_PROMPT`: jawab HANYA dari konteks, berbasis bukti (WHO/IDAI/CDC), bukan
+  diagnosis, arahkan ke nakes, Bahasa Indonesia.
+- **Provider swappable** `lib/ai/provider.ts`: `generateAnswer()` via **Google Gemini REST**
+  (`fetch`, tanpa dependency npm). `aiConfigured()`/`AiNotConfiguredError`. Ganti provider =
+  1 file.
+- **Route** `POST /api/coach` (nodejs runtime): auth → muat data anak (scoped) → context →
+  LLM → `{answer}`. **503 ramah** bila `GEMINI_API_KEY` kosong (pola Cloudinary/Midtrans).
+- **UI** `/coach` (`app/(app)/coach/page.tsx`): tanya-jawab + pertanyaan saran + disclaimer
+  medis; demo mode diblok ramah. Nav "Pendamping AI" (Sparkles) + middleware `/coach`.
+- **Env:** `GEMINI_API_KEY` (+ opsional `GEMINI_MODEL`) di `.env.example`. Key gratis:
+  aistudio.google.com/apikey.
+- **Status uji:** context builder & 503-path terverifikasi (gate hijau, smoke-test PASS).
+  **Panggilan LLM live belum diuji** (perlu key) — user set `GEMINI_API_KEY` di `.env`
+  (dev) & Vercel (prod) lalu coba di `/coach`. Tanpa migrasi DB.
+
 **M15 (v1.1) — Export PDF laporan (print-CSS) — ✅ SELESAI**
 - Lihat §10.6. `@media print` di `globals.css` isolasi `#report-print`; `reports/page.tsx`
   `exportPdf()` (window.print + filename via document.title), `report-section` per Section,
