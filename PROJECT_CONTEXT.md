@@ -337,11 +337,12 @@ Berfungsi di UI tapi belum dirapikan/di-persist. Format: lokasi → kondisi → 
   Google Cloud Console → Audience → Publish App.
 
 ### 10.11 Upload media (foto anak & milestone) — ⏳ SEBAGIAN
-- **Sekarang:** infra upload nyata ada — `lib/cloudinary.ts` + `POST /api/upload`
+- **Sekarang:** infra upload nyata — `lib/cloudinary.ts` + `POST /api/upload`
   (auth, maks 5 MB, image-only, 503 bila env Cloudinary belum diset). **Foto profil
-  user** sudah ter-wire di Settings (`onPickPhoto`).
-- **Tersisa:** wiring upload untuk **foto anak** (`edit-child-dialog.tsx`) & **foto milestone**
-  (`hasPhoto`) belum memakai `/api/upload` (masih URL/dicebear). Kandidat siklus tersendiri.
+  user** (Settings `onPickPhoto`) **& foto anak** (`edit-child-dialog.tsx`, M10 — tombol
+  "Unggah Foto" → `/api/upload` → `photoUrl` persist saat Simpan) sudah ter-wire.
+- **Tersisa:** **foto milestone** (`hasPhoto`) belum punya kolom `photoUrl` di tabel
+  `milestones` — butuh migrasi additive + UI di `goals`. Kandidat siklus tersendiri.
 
 ### 10.12 Admin — sebagian masih dummy/perlu pendalaman
 - **Lokasi:** `app/admin/page.tsx` + `api/admin/stats`.
@@ -459,9 +460,15 @@ npm run db:generate   # bila ada perubahan schema (additive)
 - **Pelajaran:** §10 sempat tertinggal dari kode (kedua kalinya, setelah M4b). Sebelum
   ambil item §10, **cek kode dulu** — jangan percaya status doc buta.
 
-Sesudah M9: item v1.1 tersisa yang benar-benar open → **10.5** (persist toggle notifikasi),
-**10.6** (export PDF nyata), **10.7** (generator notifikasi), **10.11-lanjut** (foto anak/milestone),
-lalu roadmap **v1.2** (AI coach grounded).
+**M10 (v1.1) — Upload foto anak via Cloudinary — ✅ SELESAI**
+- `edit-child-dialog.tsx`: tombol "Unggah Foto" (reuse pola `onPickPhoto` Settings) →
+  `POST /api/upload` → set `photoUrl` lokal → persist saat "Simpan" (`updateChild`).
+  Input URL tetap sebagai fallback. Tanpa migrasi/endpoint/store baru. Gate hijau.
+- Lihat §10.11. **Foto milestone** masih tersisa (perlu kolom `photoUrl` + migrasi).
+
+Sesudah M10: item v1.1 tersisa → **10.5** (persist toggle notifikasi), **10.6** (export PDF
+nyata), **10.7** (generator notifikasi), **foto milestone** (migrasi + UI goals), lalu roadmap
+**v1.2** (AI coach grounded).
 
 ---
 Lihat `STATUS_FILES.md` untuk daftar status per-file.

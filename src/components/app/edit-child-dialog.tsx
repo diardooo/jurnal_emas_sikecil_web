@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Pencil, RefreshCw } from "lucide-react";
+import { useRef, useState } from "react";
+import { Loader2, Pencil, RefreshCw, Upload } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -29,6 +29,8 @@ export function EditChildDialog({ child }: { child: Child }) {
   const [weight, setWeight] = useState(child.birthWeight?.toString() ?? "");
   const [height, setHeight] = useState(child.birthHeight?.toString() ?? "");
   const [photoUrl, setPhotoUrl] = useState(child.photoUrl ?? "");
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   function randomizeAvatar() {
     setPhotoUrl(
@@ -36,6 +38,32 @@ export function EditChildDialog({ child }: { child: Child }) {
         name + Math.random().toString(36).slice(2, 6),
       )}`,
     );
+  }
+
+  // Upload to Cloudinary via /api/upload; the returned URL persists on Save.
+  async function onPickPhoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const data = (await res.json().catch(() => ({}))) as {
+        url?: string;
+        error?: string;
+      };
+      if (!res.ok) throw new Error(data.error ?? `Gagal (${res.status})`);
+      setPhotoUrl(data.url!);
+      toast.success("Foto diunggah");
+    } catch (err) {
+      toast.error("Upload gagal", {
+        description: err instanceof Error ? err.message : undefined,
+      });
+    } finally {
+      setUploading(false);
+    }
   }
 
   function submit() {
@@ -75,9 +103,32 @@ export function EditChildDialog({ child }: { child: Child }) {
             <AvatarImage src={photoUrl} alt={name} />
             <AvatarFallback>{initials(name || "?")}</AvatarFallback>
           </Avatar>
-          <Button type="button" variant="outline" size="sm" onClick={randomizeAvatar}>
-            <RefreshCw className="h-4 w-4" /> Acak Avatar
-          </Button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={onPickPhoto}
+          />
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={uploading}
+              onClick={() => fileRef.current?.click()}
+            >
+              {uploading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Upload className="h-4 w-4" />
+              )}
+              {uploading ? "Mengunggah…" : "Unggah Foto"}
+            </Button>
+            <Button type="button" variant="outline" size="sm" onClick={randomizeAvatar}>
+              <RefreshCw className="h-4 w-4" /> Acak Avatar
+            </Button>
+          </div>
         </div>
 
         <div className="space-y-4">
