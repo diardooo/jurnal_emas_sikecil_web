@@ -9,12 +9,14 @@ import {
   Info,
   Lightbulb,
   Loader2,
+  Plus,
   Target,
   Trash2,
   TrendingDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/app/page-header";
+import { GoalDialog } from "@/components/app/goal-dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -184,9 +186,40 @@ export default function GoalsPage() {
         </TabsContent>
 
         <TabsContent value="goal" className="space-y-4">
-          {goals.map((g) => (
-            <GoalCard key={g.id} goalId={g.id} />
-          ))}
+          {goals.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center gap-3 p-10 text-center">
+                <span className="grid h-12 w-12 place-items-center rounded-full bg-gold-100 text-gold-700">
+                  <Target className="h-6 w-6" />
+                </span>
+                <div>
+                  <p className="font-display font-bold text-navy">
+                    Belum ada goal
+                  </p>
+                  <p className="mx-auto mt-1 max-w-sm text-sm text-navy-muted">
+                    Buat target yang ingin Anda capai bersama si Kecil, lalu pecah
+                    jadi langkah-langkah kecil untuk dipantau.
+                  </p>
+                </div>
+                <GoalDialog
+                  trigger={
+                    <Button>
+                      <Plus /> Buat Goal Pertama
+                    </Button>
+                  }
+                />
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              <div className="flex justify-end">
+                <GoalDialog />
+              </div>
+              {goals.map((g) => (
+                <GoalCard key={g.id} goalId={g.id} />
+              ))}
+            </>
+          )}
         </TabsContent>
       </Tabs>
     </div>
