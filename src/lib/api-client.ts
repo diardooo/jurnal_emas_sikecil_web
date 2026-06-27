@@ -34,7 +34,7 @@ export const apiDelete = (resource: string, id: string) =>
 export interface MeResponse {
   user: { id: string; name: string; email: string; image?: string | null };
   plan: "free" | "premium";
-  subscription: { id: string; plan: string } | null;
+  subscription: { id: string; plan: string; expiresAt: string | null } | null;
 }
 export const getMe = () => apiGet<MeResponse>("me");
 

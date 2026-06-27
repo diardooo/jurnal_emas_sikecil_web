@@ -258,6 +258,7 @@ export default function SettingsPage() {
   const setPlan = useAppStore((s) => s.setPlan);
   const setShowGuide = useAppStore((s) => s.setShowGuide);
   const hydrate = useAppStore((s) => s.hydrate);
+  const expiresAt = useAppStore((s) => s.subscriptionExpiresAt);
   const { data: session } = useSession();
   const [checkingOut, setCheckingOut] = useState<"monthly" | "yearly" | null>(null);
 
@@ -378,8 +379,13 @@ export default function SettingsPage() {
               </div>
               {plan === "premium" && (
                 <p className="mt-4 text-sm text-cream/70">
-                  Diperpanjang otomatis pada 19 Jul 2026 •{" "}
-                  {formatRupiah(49000)}/bulan
+                  {expiresAt
+                    ? `Berlaku sampai ${new Intl.DateTimeFormat("id-ID", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      }).format(new Date(expiresAt))}`
+                    : "Premium aktif tanpa batas waktu"}
                 </p>
               )}
             </div>

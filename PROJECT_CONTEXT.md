@@ -506,6 +506,18 @@ npm run db:generate   # bila ada perubahan schema (additive)
   Input URL tetap sebagai fallback. Tanpa migrasi/endpoint/store baru. Gate hijau.
 - Lihat §10.11. **Foto milestone** masih tersisa (perlu kolom `photoUrl` + migrasi).
 
+**M25 (10.8) — Enforce expiry langganan — ✅ SELESAI**
+- **Masalah:** `plan` dibaca mentah dari DB → premium tak pernah turun walau `expiresAt`
+  lewat.
+- **Solusi:** `lib/subscription.ts` `isPremiumActive`/`effectivePlan` (expiry-aware;
+  `expiresAt=null` = lifetime/comp → tetap aktif). `getMe` kembalikan effective plan +
+  **lazy-downgrade** baris premium kedaluwarsa ke free (sekali, biar admin/revenue akurat).
+  Admin stats `premium`/MRR kini hitung effective (`plan=premium AND (expiresAt NULL OR
+  > now)`). Settings tampil tanggal `expiresAt` asli (ganti hardcode "19 Jul 2026").
+- **Store:** `subscriptionExpiresAt` + `MeResponse.subscription.expiresAt`.
+- **Verifikasi:** unit test helper 8/8 PASS. Gerbang: tsc bersih · lint 0 error · build
+  sukses. **Tanpa migrasi.**
+
 **M24 (10.8) — Rekonsiliasi status bayar (anti webhook-hilang) — ✅ SELESAI**
 - **Masalah nyata (ditemukan saat uji prod):** kartu kredit sukses di Midtrans tapi
   subscription tetap `pending` — webhook settlement tak terproses. Andalan webhook saja

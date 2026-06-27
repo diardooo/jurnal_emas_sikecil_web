@@ -138,6 +138,7 @@ interface AppState {
   habitCategories: string[];
   plan: SubscriptionPlan;
   subscriptionId?: string;
+  subscriptionExpiresAt?: string | null;
   showGuide: boolean;
 
   hydrate: () => Promise<void>;
@@ -274,6 +275,7 @@ export const useAppStore = create<AppState>((set, get) => {
         demo: false,
         plan: me.plan,
         subscriptionId: me.subscription?.id,
+        subscriptionExpiresAt: me.subscription?.expiresAt ?? null,
         children,
         activeChildId: children[0]?.id ?? "",
         tasks,

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { count, countDistinct, eq, gt, gte, inArray, sql } from "drizzle-orm";
+import { and, count, countDistinct, eq, gt, gte, inArray, isNull, or, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { session, user } from "@/db/schema/auth";
 import {
@@ -45,7 +45,16 @@ export async function GET(req: NextRequest) {
   ] = await Promise.all([
     db.select({ totalUsers: count() }).from(user),
     db.select({ suspended: count() }).from(user).where(eq(user.status, "suspended")),
-    db.select({ premium: count() }).from(subscriptions).where(eq(subscriptions.plan, "premium")),
+    // Effective premium: plan=premium AND not expired (null expiry = lifetime).
+    db
+      .select({ premium: count() })
+      .from(subscriptions)
+      .where(
+        and(
+          eq(subscriptions.plan, "premium"),
+          or(isNull(subscriptions.expiresAt), gt(subscriptions.expiresAt, now)),
+        ),
+      ),
     db.select({ totalChildren: count() }).from(children),
     db.select({ newThisWeek: count() }).from(user).where(gte(user.createdAt, weekAgo)),
     db.select({ milestonesAchieved: count() }).from(milestones).where(eq(milestones.status, "bisa")),
