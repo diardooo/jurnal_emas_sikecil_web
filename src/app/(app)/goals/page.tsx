@@ -330,10 +330,10 @@ function PhaseGroup({
           {label.split(" ")[0]}
         </span>
         <div className="flex-1">
-          <p className="flex items-center gap-2 font-display font-bold text-navy">
+          <div className="flex items-center gap-2 font-display font-bold text-navy">
             {label}
             {isCurrent && <Badge variant="gold">Usia anak</Badge>}
-          </p>
+          </div>
           <p className="text-xs text-navy-muted">
             {done}/{items.length} tercapai • {pct}%
           </p>
