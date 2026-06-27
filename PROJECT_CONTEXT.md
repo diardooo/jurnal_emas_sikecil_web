@@ -347,8 +347,14 @@ Berfungsi di UI tapi belum dirapikan/di-persist. Format: lokasi → kondisi → 
   `notify` flip `paid`/`failed`/`expired` (+`paymentType`,`paidAt`), `order_id` unique
   (upsert idempotent). Admin Analytics "Revenue Bulanan" kini **rupiah nyata** dari
   `sum(amount) where status=paid` (ganti proxy subsByMonth M21).
+- **Rekonsiliasi (M24):** webhook bisa hilang/telat → `getTransactionStatus` (Core API
+  `GET /v2/{order}/status`) + `POST /api/payment/status` (user-scoped) cek status saat
+  user balik `?paid=1` lalu settle via helper bersama `lib/payment-apply.ts`
+  (`applyOrderOutcome`, dipakai webhook & reconcile — tak bisa drift). 404 = body
+  `status_code:"404"` (HTTP 200) → null.
 - **Ops uji live (kamu):** isi `MIDTRANS_SERVER_KEY`/`CLIENT_KEY` (Sandbox) di `.env` &
   Vercel; set Payment Notification URL Midtrans → `https://<domain>/api/payment/notify`.
+  **Sandbox AKTIF di prod** (Merchant G058364987); kartu tes `4811 1111 1111 1114`.
 
 ### 10.9 Mailer + reset password — ✅ SEBAGIAN BESAR SELESAI
 - **Sekarang:** `lib/mailer.ts` ada; `auth.ts` `sendResetPassword` aktif (Resend bila
@@ -499,6 +505,21 @@ npm run db:generate   # bila ada perubahan schema (additive)
   `POST /api/upload` → set `photoUrl` lokal → persist saat "Simpan" (`updateChild`).
   Input URL tetap sebagai fallback. Tanpa migrasi/endpoint/store baru. Gate hijau.
 - Lihat §10.11. **Foto milestone** masih tersisa (perlu kolom `photoUrl` + migrasi).
+
+**M24 (10.8) — Rekonsiliasi status bayar (anti webhook-hilang) — ✅ SELESAI**
+- **Masalah nyata (ditemukan saat uji prod):** kartu kredit sukses di Midtrans tapi
+  subscription tetap `pending` — webhook settlement tak terproses. Andalan webhook saja
+  rapuh (notifikasi bisa hilang/telat → user yg sudah bayar nyangkut).
+- **Solusi:** `lib/midtrans.ts` `getTransactionStatus` (Core API `GET /v2/{order}/status`,
+  host `api.*` bukan `app.*`); `lib/payment-apply.ts` `applyOrderOutcome` (logika settle
+  diekstrak — dipakai webhook & reconcile bersama); `POST /api/payment/status`
+  (user-scoped: hanya rekonsiliasi langganan milik caller). Frontend `?paid=1` →
+  panggil `/api/payment/status` → `hydrate()` → toast "Premium aktif" bila ter-upgrade.
+- **Refactor:** `notify/route.ts` kini ramping, pakai `applyOrderOutcome` yg sama.
+- **Bugfix:** order tak dikenal = Midtrans balas HTTP 200 + body `status_code:"404"` →
+  `getTransactionStatus` kembalikan null (bukan baca `res.status`).
+- **Verifikasi live (read-only):** status order asli = `capture/accept`; order palsu →
+  null. Gerbang: tsc bersih · lint 0 error · build sukses. **Tanpa migrasi.**
 
 **M23 (10.8) — Tabel transactions: histori bayar + revenue rupiah nyata — ✅ SELESAI**
 - **DB (migrasi 0008, additive):** `transactions(id, userId→cascade, orderId UNIQUE,

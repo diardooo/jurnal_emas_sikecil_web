@@ -261,17 +261,33 @@ export default function SettingsPage() {
   const { data: session } = useSession();
   const [checkingOut, setCheckingOut] = useState<"monthly" | "yearly" | null>(null);
 
-  // Returning from Midtrans Snap (?paid=1): re-sync so the new plan shows.
-  // The webhook is the source of truth; refresh covers the redirect race.
+  // Returning from Midtrans Snap (?paid=1): reconcile against Midtrans in case
+  // the webhook was missed/delayed, then re-sync the store so the plan updates.
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     if (!params.has("paid")) return;
-    void hydrate();
-    toast.success("Pembayaran diproses", {
-      description: "Status langganan akan diperbarui setelah pembayaran terkonfirmasi.",
-    });
     window.history.replaceState({}, "", "/settings");
+    void (async () => {
+      let upgraded = false;
+      try {
+        const res = await fetch("/api/payment/status", { method: "POST" });
+        const data = (await res.json().catch(() => ({}))) as { plan?: string; status?: string };
+        upgraded = data.plan === "premium";
+      } catch {
+        /* fall back to hydrate + neutral message */
+      }
+      await hydrate();
+      if (upgraded) {
+        toast.success("Selamat datang di Premium Emas! 👑", {
+          description: "Pembayaran terkonfirmasi — semua fitur premium aktif.",
+        });
+      } else {
+        toast("Pembayaran diproses", {
+          description: "Status akan diperbarui begitu pembayaran terkonfirmasi.",
+        });
+      }
+    })();
   }, [hydrate]);
 
   // Start a Midtrans checkout. Falls back to demo trial when not configured.

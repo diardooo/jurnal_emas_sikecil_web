@@ -15,6 +15,8 @@ const isProd = process.env.MIDTRANS_IS_PRODUCTION === "true";
 const SNAP_BASE = isProd
   ? "https://app.midtrans.com/snap/v1/transactions"
   : "https://app.sandbox.midtrans.com/snap/v1/transactions";
+// Core API (status check) lives on a different host than Snap.
+const API_BASE = isProd ? "https://api.midtrans.com/v2" : "https://api.sandbox.midtrans.com/v2";
 
 export const PLAN_PRICES: Record<string, number> = {
   monthly: Number(process.env.PRICE_MONTHLY ?? 49000),
@@ -79,6 +81,35 @@ export async function createSnapTransaction(args: {
   }
   const data = (await res.json()) as { token: string; redirect_url: string };
   return { token: data.token, redirectUrl: data.redirect_url };
+}
+
+/**
+ * Fetch the authoritative status of an order from Midtrans (Core API). Used to
+ * reconcile when a webhook is missed/delayed. Returns null when the order is
+ * unknown to Midtrans (404 — e.g. user abandoned before paying).
+ */
+export async function getTransactionStatus(orderId: string): Promise<{
+  transaction_status: string;
+  fraud_status?: string;
+  payment_type?: string;
+  status_code?: string;
+} | null> {
+  const serverKey = process.env.MIDTRANS_SERVER_KEY!;
+  const auth = Buffer.from(`${serverKey}:`).toString("base64");
+  const res = await fetch(`${API_BASE}/${encodeURIComponent(orderId)}/status`, {
+    headers: { Accept: "application/json", Authorization: `Basic ${auth}` },
+  });
+  if (res.status === 401 || res.status >= 500) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`Midtrans status gagal (${res.status}): ${body.slice(0, 200)}`);
+  }
+  const data = (await res.json().catch(() => ({}))) as {
+    status_code?: string;
+    transaction_status?: string;
+  };
+  // Unknown order: Midtrans returns HTTP 200 with status_code "404" in the body.
+  if (data.status_code === "404" || !data.transaction_status) return null;
+  return data as { transaction_status: string; fraud_status?: string; payment_type?: string; status_code?: string };
 }
 
 /** Verify Midtrans webhook signature: sha512(order_id+status_code+gross_amount+serverKey). */
