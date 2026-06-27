@@ -217,18 +217,6 @@ function Async<T>({ state, children }: { state: { data: T | null; loading: boole
   return <>{children(state.data)}</>;
 }
 
-// ── DEMO-ONLY CHART DATA (no backing endpoint yet — clearly labelled in the UI)
-const REVENUE_DATA = ["6/6", "7/6", "8/6", "9/6", "10/6", "11/6", "12/6", "13/6", "14/6"].map((date, i) => ({ date, revenue: [448000, 1047000, 398000, 847000, 796000, 1096000, 0, 498000, 1693000][i] }));
-const RETENTION_DATA = [
-  { day: "Day 1", "Jun 2026": 100, "Mei 2026": 100 }, { day: "Day 3", "Jun 2026": 78, "Mei 2026": 74 },
-  { day: "Day 7", "Jun 2026": 62, "Mei 2026": 58 }, { day: "Day 14", "Jun 2026": 48, "Mei 2026": 44 },
-  { day: "Day 30", "Jun 2026": 31, "Mei 2026": 28 },
-];
-const USAGE_DATA = [
-  { module: "Profil Anak", pct: 94 }, { module: "Dashboard", pct: 91 }, { module: "Goal & Milestone", pct: 82 },
-  { module: "Rutinitas", pct: 74 }, { module: "Task Manager", pct: 68 }, { module: "Tumbuh Kembang", pct: 61 }, { module: "Laporan", pct: 38 },
-];
-
 // ── PAGE: OVERVIEW
 function PageOverview({ setActivePage, refreshSignal }: { setActivePage: (p: PageId) => void; refreshSignal: number }) {
   const stats = useAsync(() => adminApi.stats(), [refreshSignal]);
@@ -787,7 +775,7 @@ function PageAnalytics({ refreshSignal }: { refreshSignal: number }) {
       <div className="flex items-start justify-between mb-5">
         <div>
           <h2 className="text-base font-bold mb-1">Analytics & Insights</h2>
-          <p className="text-sm text-gray-400">Agregat dari DB; sebagian grafik masih data demo</p>
+          <p className="text-sm text-gray-400">Agregat nyata dari database</p>
         </div>
         <div className="flex items-center gap-3">
           {synced && <span className="text-[11px] text-gray-400">Diperbarui {synced.toLocaleTimeString("id-ID")}</span>}
@@ -796,6 +784,7 @@ function PageAnalytics({ refreshSignal }: { refreshSignal: number }) {
       </div>
       <Async state={stats}>
         {(s) => (
+          <>
           <div className="grid grid-cols-5 gap-4 mb-6">
             <StatCard label="Total User" value={s.totalUsers.toLocaleString("id-ID")} icon="👥" change={`+${s.newThisWeek} minggu ini`} up />
             <StatCard label="User Aktif (7 hari)" value={s.active7d.toLocaleString("id-ID")} icon="🟢" change={`${s.activeNow} online · ${s.active24h} hari ini`} up />
@@ -803,43 +792,48 @@ function PageAnalytics({ refreshSignal }: { refreshSignal: number }) {
             <StatCard label="Milestone Tercapai" value={s.milestonesAchieved.toLocaleString("id-ID")} icon="🌱" change={`${s.tasksDone} task selesai`} up />
             <StatCard label="Konten Referensi" value={String(s.contentCounts.milestones + s.contentCounts.immunizations + s.contentCounts.teeth + s.contentCounts.sleep)} icon="📚" change={`${s.contentCounts.milestones} milestone · ${s.contentCounts.immunizations} vaksin`} up />
           </div>
-        )}
-      </Async>
-      <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
         <Card>
-          <CardHeader title="📊 Retensi User" meta="· data demo" />
+          <CardHeader title="🚀 Funnel Aktivasi" meta="· % dari total user" />
           <div className="p-5 pt-3">
             <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={RETENTION_DATA} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" /><XAxis dataKey="day" tick={{ fontSize: 11 }} /><YAxis domain={[0, 100]} tick={{ fontSize: 11 }} tickFormatter={(v) => `${v}%`} /><Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} /><Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />
-                <Line type="monotone" dataKey="Jun 2026" stroke={G.gold} strokeWidth={2} dot={{ r: 3 }} /><Line type="monotone" dataKey="Mei 2026" stroke={G.dark} strokeWidth={2} dot={{ r: 3 }} />
-              </LineChart>
+              <BarChart data={s.activation} layout="vertical" margin={{ top: 5, right: 36, left: 10, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" horizontal={false} /><XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} tickFormatter={(v) => `${v}%`} /><YAxis dataKey="step" type="category" tick={{ fontSize: 11 }} width={120} /><Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} formatter={(v: number, _n, p) => [`${v}% · ${(p?.payload as { users: number }).users.toLocaleString("id-ID")} user`, "Capai"]} />
+                <Bar dataKey="pct" name="Capai" radius={[0, 4, 4, 0]}>{s.activation.map((_, i) => <Cell key={i} fill={`rgba(201,162,39,${1 - i * 0.16})`} />)}</Bar>
+              </BarChart>
             </ResponsiveContainer>
           </div>
         </Card>
         <Card>
-          <CardHeader title="🏆 Modul Paling Digunakan" meta="· data demo" />
+          <CardHeader title="🏆 Modul Paling Digunakan" meta="· % user dgn data" />
           <div className="p-5 pt-3">
             <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={USAGE_DATA} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" horizontal={false} /><XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} tickFormatter={(v) => `${v}%`} /><YAxis dataKey="module" type="category" tick={{ fontSize: 11 }} width={110} /><Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} />
-                <Bar dataKey="pct" name="% User Aktif" radius={[0, 4, 4, 0]}>{USAGE_DATA.map((_, i) => <Cell key={i} fill={i === 0 ? G.dark : i < 3 ? G.gold : `rgba(201,162,39,${0.7 - i * 0.08})`} />)}</Bar>
+              <BarChart data={s.moduleUsage} layout="vertical" margin={{ top: 5, right: 36, left: 10, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" horizontal={false} /><XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} tickFormatter={(v) => `${v}%`} /><YAxis dataKey="module" type="category" tick={{ fontSize: 11 }} width={120} /><Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} formatter={(v: number, _n, p) => [`${v}% · ${(p?.payload as { users: number }).users.toLocaleString("id-ID")} user`, "Adopsi"]} />
+                <Bar dataKey="pct" name="Adopsi" radius={[0, 4, 4, 0]}>{s.moduleUsage.map((_, i) => <Cell key={i} fill={i === 0 ? G.dark : i < 3 ? G.gold : `rgba(201,162,39,${0.7 - i * 0.07})`} />)}</Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
         </Card>
         <Card className="col-span-2">
-          <CardHeader title="💳 Revenue Harian" meta="· data demo (Midtrans belum aktif)" />
+          <CardHeader title="💳 Langganan Premium Baru / Bulan" meta="· nyata (revenue transaksi menyusul Midtrans)" />
           <div className="p-5 pt-3">
+            {s.subsByMonth.length === 0 ? (
+              <div className="flex h-[200px] items-center justify-center text-sm text-gray-400">Belum ada langganan premium.</div>
+            ) : (
             <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={REVENUE_DATA} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" vertical={false} /><XAxis dataKey="date" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${v / 1000}k`} /><Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} formatter={(v: number) => `Rp ${v.toLocaleString("id-ID")}`} />
-                <Bar dataKey="revenue" name="Revenue" radius={[3, 3, 0, 0]}>{REVENUE_DATA.map((d, i) => <Cell key={i} fill={d.revenue > 1000000 ? G.gold : "rgba(201,162,39,0.4)"} />)}</Bar>
+              <BarChart data={s.subsByMonth.map((r) => ({ ...r, label: shortMonth(r.month) }))} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" vertical={false} /><XAxis dataKey="label" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 11 }} allowDecimals={false} /><Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} formatter={(v: number, _n, p) => [`${v} langganan · ~Rp ${(p?.payload as { revenue: number }).revenue.toLocaleString("id-ID")}/bln`, "Premium baru"]} />
+                <Bar dataKey="count" name="Premium baru" radius={[3, 3, 0, 0]}>{s.subsByMonth.map((_, i) => <Cell key={i} fill={G.gold} />)}</Bar>
               </BarChart>
             </ResponsiveContainer>
+            )}
           </div>
         </Card>
-      </div>
+          </div>
+          </>
+        )}
+      </Async>
     </div>
   );
 }

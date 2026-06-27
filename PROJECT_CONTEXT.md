@@ -357,13 +357,18 @@ Berfungsi di UI tapi belum dirapikan/di-persist. Format: lokasi → kondisi → 
   **foto milestone** (M12 — kolom additive `milestones.photoUrl`, action
   `setMilestonePhoto`, UI upload+thumbnail di `goals` MilestoneRow saat status "bisa").
 
-### 10.12 Admin — sebagian masih dummy/perlu pendalaman
+### 10.12 Admin — ✅ ANALITIK NYATA (M21); sisa pendalaman
 - **Lokasi:** `app/admin/page.tsx` + `api/admin/stats`.
 - **Sekarang:** CRUD user/langganan/diskon/konten/role/settings berfungsi; **hapus user**
   (per-baris + bulk) sudah ter-wire di UI (M13) dgn guard: tak bisa hapus diri sendiri
-  **maupun superadmin** (aman untuk "pilih semua → Hapus"). Sebagian metrik/analitik &
-  beberapa aksi UI lain masih contoh/perlu dilengkapi.
-- **Dibutuhkan:** statistik nyata, audit log, RBAC granular per-permission bila diperlukan.
+  **maupun superadmin** (aman untuk "pilih semua → Hapus"). **Tab Analytics kini 100% data
+  nyata (M21):** 3 grafik demo (RETENTION/USAGE/REVENUE konstan) dihapus → diganti
+  `moduleUsage` (adopsi: `countDistinct(userId)` per modul ÷ total user), `activation`
+  (funnel Registrasi→Tambah Anak→Catat Pertumbuhan→Tandai Milestone→Aktif 7 hari), dan
+  `subsByMonth` (langganan premium baru/bulan dari `subscriptions.createdAt`, plan=premium).
+  Semua agregat read-only, **tanpa migrasi**.
+- **Dibutuhkan (tersisa):** audit log, RBAC granular per-permission; revenue transaksi nyata
+  menyusul Midtrans (10.8).
 
 ### 10.13 Sisa kecil
 - "Ingat saya 30 hari" di login = kosmetik (session memang 30 hari).
@@ -480,6 +485,20 @@ npm run db:generate   # bila ada perubahan schema (additive)
   `POST /api/upload` → set `photoUrl` lokal → persist saat "Simpan" (`updateChild`).
   Input URL tetap sebagai fallback. Tanpa migrasi/endpoint/store baru. Gate hijau.
 - Lihat §10.11. **Foto milestone** masih tersisa (perlu kolom `photoUrl` + migrasi).
+
+**M21 (10.12) — Admin Analytics: de-mock → data nyata — ✅ SELESAI**
+- **Masalah:** tab Analytics punya 3 grafik dgn konstanta hardcoded (`RETENTION_DATA`,
+  `USAGE_DATA`, `REVENUE_DATA`) — tampak nyata tapi palsu.
+- **Backend (`api/admin/stats`):** tambah 3 agregat read-only (tanpa migrasi):
+  `moduleUsage` (`countDistinct(userId)` per tabel: children/growth/milestones/tasks/
+  habits/journal/immun ÷ total user → % adopsi, sorted), `activation` (funnel berurutan
+  Registrasi→Tambah Anak→Catat Pertumbuhan→Tandai Milestone[status=bisa]→Aktif 7 hari),
+  `subsByMonth` (premium baru/bln dari `subscriptions.createdAt`, `plan=premium`).
+- **Frontend:** Retensi→**Funnel Aktivasi**, Modul Paling Digunakan→adopsi nyata,
+  Revenue Harian→**Langganan Premium Baru/Bulan** (revenue transaksi nyata menyusul
+  Midtrans 10.8). Konstanta demo + label "data demo" dihapus. Tooltip tampil %+jumlah user.
+- **Catatan deploy:** murni query baca → **tak perlu migrasi prod**, aman push langsung.
+- Gerbang: tsc bersih · lint 0 error (15 warning pre-existing) · build sukses.
 
 **M20 (v1.2) — AI Coach: kontrol percakapan + fix jawaban terpotong — ✅ SELESAI**
 - **Fix kritis (uji browser user):** `gemini-2.5-flash` model thinking → token thinking

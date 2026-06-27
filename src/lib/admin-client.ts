@@ -45,6 +45,9 @@ export interface AdminStats {
   planDistribution: { plan: string; count: number }[];
   growthByMonth: { month: string; count: number }[];
   contentCounts: { milestones: number; immunizations: number; teeth: number; sleep: number };
+  moduleUsage: { module: string; users: number; pct: number }[];
+  activation: { step: string; users: number; pct: number }[];
+  subsByMonth: { month: string; count: number; revenue: number }[];
 }
 
 export interface NotificationHistory {

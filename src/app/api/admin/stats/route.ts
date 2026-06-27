@@ -2,7 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { count, countDistinct, eq, gt, gte, inArray, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { session, user } from "@/db/schema/auth";
-import { children, milestones, subscriptions, tasks } from "@/db/schema/app";
+import {
+  children,
+  growthRecords,
+  habits,
+  immunizations,
+  journalEntries,
+  milestones,
+  subscriptions,
+  tasks,
+} from "@/db/schema/app";
 import {
   platformSettings,
   refImmunizations,
@@ -67,6 +76,70 @@ export async function GET(req: NextRequest) {
   ]);
   const priceMonthly = Number(priceRow.find((p) => p.key === "price_monthly")?.value ?? 49000) || 49000;
 
+  // ── Module adoption: distinct users who have any data in each module. The
+  // denominator is total users, so each value is "% of all users who touched X".
+  const [
+    [{ uChildren }],
+    [{ uGrowth }],
+    [{ uMilestones }],
+    [{ uTasks }],
+    [{ uHabits }],
+    [{ uJournal }],
+    [{ uImmun }],
+    [{ uActivated }],
+  ] = await Promise.all([
+    db.select({ uChildren: countDistinct(children.userId) }).from(children),
+    db.select({ uGrowth: countDistinct(growthRecords.userId) }).from(growthRecords),
+    db.select({ uMilestones: countDistinct(milestones.userId) }).from(milestones),
+    db.select({ uTasks: countDistinct(tasks.userId) }).from(tasks),
+    db.select({ uHabits: countDistinct(habits.userId) }).from(habits),
+    db.select({ uJournal: countDistinct(journalEntries.userId) }).from(journalEntries),
+    db.select({ uImmun: countDistinct(immunizations.userId) }).from(immunizations),
+    // Activation step 4: users who have actually MARKED a milestone as achieved.
+    db
+      .select({ uActivated: countDistinct(milestones.userId) })
+      .from(milestones)
+      .where(eq(milestones.status, "bisa")),
+  ]);
+
+  const total = Number(totalUsers) || 0;
+  const pct = (n: number) => (total ? Math.round((n / total) * 100) : 0);
+  const moduleUsage = [
+    { module: "Profil Anak", users: Number(uChildren), pct: pct(Number(uChildren)) },
+    { module: "Tumbuh Kembang", users: Number(uGrowth), pct: pct(Number(uGrowth)) },
+    { module: "Goal & Milestone", users: Number(uMilestones), pct: pct(Number(uMilestones)) },
+    { module: "Task Manager", users: Number(uTasks), pct: pct(Number(uTasks)) },
+    { module: "Rutinitas", users: Number(uHabits), pct: pct(Number(uHabits)) },
+    { module: "Jurnal Emas", users: Number(uJournal), pct: pct(Number(uJournal)) },
+    { module: "Imunisasi", users: Number(uImmun), pct: pct(Number(uImmun)) },
+  ].sort((a, b) => b.users - a.users);
+
+  // ── Activation funnel (ordered): where users drop off on the way to value.
+  const activation = [
+    { step: "Registrasi", users: total, pct: 100 },
+    { step: "Tambah Anak", users: Number(uChildren), pct: pct(Number(uChildren)) },
+    { step: "Catat Pertumbuhan", users: Number(uGrowth), pct: pct(Number(uGrowth)) },
+    { step: "Tandai Milestone", users: Number(uActivated), pct: pct(Number(uActivated)) },
+    { step: "Aktif 7 hari", users: Number(active7d), pct: pct(Number(active7d)) },
+  ];
+
+  // ── Premium subscriptions created per month (real monetization signal;
+  // replaces the demo "daily revenue" until Midtrans transactions exist).
+  const subsByMonthRows = await db
+    .select({
+      month: sql<string>`to_char(${subscriptions.createdAt}, 'YYYY-MM')`,
+      n: count(),
+    })
+    .from(subscriptions)
+    .where(eq(subscriptions.plan, "premium"))
+    .groupBy(sql`to_char(${subscriptions.createdAt}, 'YYYY-MM')`)
+    .orderBy(sql`to_char(${subscriptions.createdAt}, 'YYYY-MM')`);
+  const subsByMonth = subsByMonthRows.map((r) => ({
+    month: r.month,
+    count: Number(r.n),
+    revenue: Number(r.n) * priceMonthly,
+  }));
+
   return NextResponse.json({
     totalUsers: Number(totalUsers),
     suspended: Number(suspended),
@@ -87,5 +160,8 @@ export async function GET(req: NextRequest) {
       teeth: Number(refT[0].n),
       sleep: Number(refS[0].n),
     },
+    moduleUsage,
+    activation,
+    subsByMonth,
   });
 }
