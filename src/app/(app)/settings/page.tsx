@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Bell,
   CreditCard,
@@ -257,7 +257,51 @@ export default function SettingsPage() {
   const plan = useAppStore((s) => s.plan);
   const setPlan = useAppStore((s) => s.setPlan);
   const setShowGuide = useAppStore((s) => s.setShowGuide);
+  const hydrate = useAppStore((s) => s.hydrate);
   const { data: session } = useSession();
+  const [checkingOut, setCheckingOut] = useState<"monthly" | "yearly" | null>(null);
+
+  // Returning from Midtrans Snap (?paid=1): re-sync so the new plan shows.
+  // The webhook is the source of truth; refresh covers the redirect race.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (!params.has("paid")) return;
+    void hydrate();
+    toast.success("Pembayaran diproses", {
+      description: "Status langganan akan diperbarui setelah pembayaran terkonfirmasi.",
+    });
+    window.history.replaceState({}, "", "/settings");
+  }, [hydrate]);
+
+  // Start a Midtrans checkout. Falls back to demo trial when not configured.
+  async function startCheckout(billing: "monthly" | "yearly") {
+    setCheckingOut(billing);
+    try {
+      const res = await fetch("/api/payment/snap", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ plan: billing }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { redirectUrl?: string; error?: string };
+      if (res.status === 503) {
+        // Midtrans belum aktif → mode demo (trial langsung).
+        setPlan("premium");
+        toast.success("Selamat datang di Premium Emas! 👑", {
+          description: "Mode demo (pembayaran belum aktif) — trial 14 hari dimulai.",
+        });
+        return;
+      }
+      if (!res.ok) throw new Error(data.error ?? "Gagal memproses");
+      if (data.redirectUrl) window.location.href = data.redirectUrl;
+    } catch (e) {
+      toast.error("Gagal memulai pembayaran", {
+        description: e instanceof Error ? e.message : undefined,
+      });
+    } finally {
+      setCheckingOut(null);
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -344,36 +388,23 @@ export default function SettingsPage() {
                   </ul>
                   <div className="mt-6 flex flex-wrap items-center gap-3">
                     <Button
-                      onClick={async () => {
-                        try {
-                          const res = await fetch("/api/payment/snap", {
-                            method: "POST",
-                            headers: { "content-type": "application/json" },
-                            body: JSON.stringify({ plan: "monthly" }),
-                          });
-                          const data = (await res.json().catch(() => ({}))) as { redirectUrl?: string; error?: string };
-                          if (res.status === 503) {
-                            // Midtrans belum aktif → mode demo (trial langsung).
-                            setPlan("premium");
-                            toast.success("Selamat datang di Premium Emas! 👑", {
-                              description: "Mode demo (pembayaran belum aktif) — trial 14 hari dimulai.",
-                            });
-                            return;
-                          }
-                          if (!res.ok) throw new Error(data.error ?? "Gagal memproses");
-                          if (data.redirectUrl) window.location.href = data.redirectUrl;
-                        } catch (e) {
-                          toast.error("Gagal memulai pembayaran", {
-                            description: e instanceof Error ? e.message : undefined,
-                          });
-                        }
-                      }}
+                      onClick={() => startCheckout("monthly")}
+                      disabled={checkingOut !== null}
                     >
-                      Coba Premium 14 Hari
+                      {checkingOut === "monthly"
+                        ? "Memproses…"
+                        : `Bulanan — ${formatRupiah(49000)}/bln`}
                     </Button>
-                    <span className="text-sm text-navy-muted">
-                      {formatRupiah(49000)}/bln • {formatRupiah(399000)}/thn
-                    </span>
+                    <Button
+                      variant="outline"
+                      onClick={() => startCheckout("yearly")}
+                      disabled={checkingOut !== null}
+                    >
+                      {checkingOut === "yearly"
+                        ? "Memproses…"
+                        : `Tahunan — ${formatRupiah(399000)}/thn`}
+                    </Button>
+                    <span className="text-sm text-sage">Hemat 2 bulan dengan paket tahunan</span>
                   </div>
                 </div>
               ) : (

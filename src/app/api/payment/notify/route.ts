@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { subscriptions } from "@/db/schema/app";
-import { midtransConfigured, verifySignature } from "@/lib/midtrans";
+import {
+  midtransConfigured,
+  planDurationDays,
+  planFromOrderId,
+  verifySignature,
+} from "@/lib/midtrans";
 
 /**
  * Midtrans webhook (HTTP notification). Verifies signature, then flips the
@@ -24,23 +29,39 @@ export async function POST(req: NextRequest) {
 
   const orderId = body.order_id;
   const txStatus = body.transaction_status;
-  const settled = txStatus === "settlement" || txStatus === "capture";
-  const failed = txStatus === "deny" || txStatus === "cancel" || txStatus === "expire";
+  // A credit-card "capture" is only money-in once fraud screening accepts it.
+  const settled =
+    txStatus === "settlement" ||
+    (txStatus === "capture" && body.fraud_status === "accept");
+  const failed =
+    txStatus === "deny" ||
+    txStatus === "cancel" ||
+    txStatus === "expire" ||
+    (txStatus === "capture" && body.fraud_status === "deny");
 
   const [sub] = await db.select().from(subscriptions).where(eq(subscriptions.paymentId, orderId)).limit(1);
   if (!sub) return NextResponse.json({ ok: true, note: "order tidak dikenal" });
 
   if (settled) {
-    // orderId encodes the plan as JES-<ts>-<uid>; default 30d. Tahunan → 365d.
-    const yearly = (body.item_id ?? "").includes("yearly");
+    // Plan comes from the order id (Midtrans doesn't echo our item details).
+    const plan = planFromOrderId(orderId);
+    const days = planDurationDays(plan);
+    // Idempotent: Midtrans may resend the same notification. Anchor the period
+    // to the first settlement (existing startedAt) so duplicates don't stack
+    // extra days; a genuine renewal arrives with a fresh order id + pending row.
+    const alreadyApplied =
+      sub.status === "active" && sub.plan === "premium" && !!sub.startedAt;
+    const startedAt = alreadyApplied ? sub.startedAt! : new Date();
     await db.update(subscriptions).set({
       plan: "premium",
       status: "active",
-      startedAt: new Date(),
-      expiresAt: new Date(Date.now() + (yearly ? 365 : 30) * 864e5),
+      startedAt,
+      expiresAt: new Date(startedAt.getTime() + days * 864e5),
     }).where(eq(subscriptions.id, sub.id));
-  } else if (failed) {
-    await db.update(subscriptions).set({ status: "active", plan: "free" }).where(eq(subscriptions.id, sub.id));
+  } else if (failed && sub.status === "pending") {
+    // Only the pending checkout failed — clear the pending flag but NEVER
+    // downgrade someone whose premium is still valid (e.g. a failed renewal).
+    await db.update(subscriptions).set({ status: "active" }).where(eq(subscriptions.id, sub.id));
   }
 
   return NextResponse.json({ ok: true });

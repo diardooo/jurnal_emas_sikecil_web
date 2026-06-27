@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { subscriptions } from "@/db/schema/app";
 import { getUser, unauthorized } from "@/lib/api";
-import { PLAN_PRICES, createSnapTransaction, midtransConfigured } from "@/lib/midtrans";
+import { PLAN_PRICES, createSnapTransaction, makeOrderId, midtransConfigured } from "@/lib/midtrans";
 
 /** Start a premium checkout. body: { plan: "monthly" | "yearly" }. */
 export async function POST(req: NextRequest) {
@@ -20,7 +20,9 @@ export async function POST(req: NextRequest) {
   const body = (await req.json().catch(() => ({}))) as { plan?: string };
   const plan = body.plan === "yearly" ? "yearly" : "monthly";
   const amount = PLAN_PRICES[plan];
-  const orderId = `JES-${Date.now()}-${user.id.slice(0, 6)}`;
+  // Plan is encoded into the order id so the webhook can recover it.
+  const orderId = makeOrderId(plan, user.id);
+  const finishUrl = `${req.nextUrl.origin}/settings?paid=1`;
 
   try {
     const { token, redirectUrl } = await createSnapTransaction({
@@ -28,6 +30,7 @@ export async function POST(req: NextRequest) {
       amount,
       plan,
       customer: { name: user.name, email: user.email },
+      finishUrl,
     });
 
     // Record a pending subscription tied to this order.

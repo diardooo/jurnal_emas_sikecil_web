@@ -333,9 +333,20 @@ Berfungsi di UI tapi belum dirapikan/di-persist. Format: lokasi → kondisi → 
 - **Tersisa (opsional):** pembersihan reminder yang sudah selesai, reminder habit, &
   honor preferensi notifikasi (§10.5, kini per-perangkat) saat pindah ke DB.
 
-### 10.8 Pembayaran Midtrans (subscription)
-- **Lokasi:** `settings/page.tsx` `setPlan` → `PATCH /api/subscriptions/:id`. Tanpa pembayaran nyata.
-- **Dibutuhkan:** Midtrans Snap + webhook (PRD §FR-PAY), free trial, status transaksi.
+### 10.8 Pembayaran Midtrans (subscription) — ✅ SELESAI (M22), uji live butuh key
+- **Flow nyata:** `lib/midtrans.ts` (Snap REST, env-gated, sandbox default) +
+  `POST /api/payment/snap` (checkout → token/redirectUrl, catat sub `pending`) +
+  `POST /api/payment/notify` (webhook: verifikasi signature sha512 → premium/active).
+  Kosong key → 503 → frontend fallback "mode demo trial".
+- **Korektnes M22:** plan (bulanan/tahunan) di-encode ke `orderId` (`JES-<plan>-<ts>-<uid>`)
+  & di-parse webhook (fix bug tahunan selalu 30h); cek `fraud_status` utk `capture`;
+  expiry **idempotent** (anchor ke settlement pertama → webhook ganda tak menumpuk hari);
+  gagal/expire **tak men-downgrade** premium yang masih aktif (hanya bersihkan `pending`).
+  Frontend: tombol Bulanan/Tahunan + handle balik `?paid=1` (re-hydrate). **Tanpa migrasi.**
+- **Ops uji live (kamu):** isi `MIDTRANS_SERVER_KEY`/`CLIENT_KEY` (Sandbox) di `.env` &
+  Vercel; set Payment Notification URL Midtrans → `https://<domain>/api/payment/notify`.
+- **Tersisa (opsional):** tabel `transactions` utk histori/audit & revenue rupiah nyata
+  (kini admin pakai jumlah langganan premium/bln, M21).
 
 ### 10.9 Mailer + reset password — ✅ SEBAGIAN BESAR SELESAI
 - **Sekarang:** `lib/mailer.ts` ada; `auth.ts` `sendResetPassword` aktif (Resend bila
@@ -485,6 +496,21 @@ npm run db:generate   # bila ada perubahan schema (additive)
   `POST /api/upload` → set `photoUrl` lokal → persist saat "Simpan" (`updateChild`).
   Input URL tetap sebagai fallback. Tanpa migrasi/endpoint/store baru. Gate hijau.
 - Lihat §10.11. **Foto milestone** masih tersisa (perlu kolom `photoUrl` + migrasi).
+
+**M22 (10.8) — Midtrans: flow pembayaran benar end-to-end — ✅ SELESAI**
+- **Temuan:** Midtrans sudah sebagian ada (snap/notify/lib) tapi punya bug korektnes:
+  (a) deteksi paket tahunan baca `body.item_id` yg tak ada di webhook → semua 30 hari;
+  (b) gagal bayar set `plan:free` → bisa downgrade premium aktif; (c) tak idempotent /
+  tak cek `fraud_status`.
+- **Fix (additive, tanpa migrasi):** `lib/midtrans.ts` `makeOrderId`/`planFromOrderId`/
+  `planDurationDays` (encode plan ke orderId) + dukung `callbacks.finish`; `snap` pakai
+  orderId ber-plan + finishUrl `/settings?paid=1`; `notify` ambil plan dari orderId,
+  `capture` butuh `fraud_status=accept`, expiry idempotent (anchor settlement pertama),
+  gagal hanya bersihkan `pending` (tak downgrade premium aktif).
+- **Frontend:** tombol Bulanan/Tahunan (`startCheckout`), handle `?paid=1` → `hydrate()`.
+- **Verifikasi:** skrip tsx 19/19 PASS (orderId roundtrip, signature sha512, mapping
+  status, idempotensi expiry). Gerbang: tsc bersih · lint 0 error · build sukses.
+- **Catatan:** read/write existing tables only → **tak perlu migrasi prod**, aman push.
 
 **M21 (10.12) — Admin Analytics: de-mock → data nyata — ✅ SELESAI**
 - **Masalah:** tab Analytics punya 3 grafik dgn konstanta hardcoded (`RETENTION_DATA`,

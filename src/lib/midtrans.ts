@@ -21,12 +21,34 @@ export const PLAN_PRICES: Record<string, number> = {
   yearly: Number(process.env.PRICE_YEARLY ?? 399000),
 };
 
+export type BillingPlan = "monthly" | "yearly";
+
+/**
+ * Order id encodes the billing plan so the webhook can recover it WITHOUT a
+ * separate lookup (Midtrans notifications don't echo our item details).
+ * Shape: `JES-<plan>-<timestamp>-<uid6>`.
+ */
+export function makeOrderId(plan: BillingPlan, userId: string): string {
+  return `JES-${plan}-${Date.now()}-${userId.slice(0, 6)}`;
+}
+
+/** Recover the billing plan from an order id (defaults to monthly). */
+export function planFromOrderId(orderId: string): BillingPlan {
+  return orderId.split("-")[1] === "yearly" ? "yearly" : "monthly";
+}
+
+/** Subscription length in days for a billing plan. */
+export function planDurationDays(plan: BillingPlan): number {
+  return plan === "yearly" ? 365 : 30;
+}
+
 /** Create a Snap transaction; returns the redirect/token to open Snap. */
 export async function createSnapTransaction(args: {
   orderId: string;
   amount: number;
   customer: { name: string; email: string; phone?: string | null };
   plan: string;
+  finishUrl?: string;
 }): Promise<{ token: string; redirectUrl: string }> {
   const serverKey = process.env.MIDTRANS_SERVER_KEY!;
   const auth = Buffer.from(`${serverKey}:`).toString("base64");
@@ -46,6 +68,8 @@ export async function createSnapTransaction(args: {
         email: args.customer.email,
         phone: args.customer.phone ?? undefined,
       },
+      // Where Snap returns the buyer after they finish (configured per-tx).
+      ...(args.finishUrl ? { callbacks: { finish: args.finishUrl } } : {}),
     }),
   });
 
