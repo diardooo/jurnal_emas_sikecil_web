@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { ImagePlus, Loader2, Plus, X } from "lucide-react";
+import { ImagePlus, Loader2, Lock, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -39,6 +39,14 @@ export function JournalDialog({
   const activeId = useAppStore((s) => s.activeChildId);
   const addEntry = useAppStore((s) => s.addJournalEntry);
   const updateEntry = useAppStore((s) => s.updateJournalEntry);
+  const isPremium = useAppStore((s) => s.plan) === "premium";
+
+  function upsellPhoto() {
+    toast("Foto jurnal khusus Premium", {
+      description: "Upgrade ke Emas untuk menambahkan foto pada catatan.",
+      action: { label: "Upgrade", onClick: () => (window.location.href = "/settings") },
+    });
+  }
   const isEdit = !!entry;
 
   const [open, setOpen] = useState(false);
@@ -263,18 +271,26 @@ export function JournalDialog({
               <button
                 type="button"
                 disabled={uploading}
-                onClick={() => fileRef.current?.click()}
-                className="grid h-16 w-16 place-items-center rounded-lg border-2 border-dashed border-border text-navy-muted transition-colors hover:border-gold-300 hover:text-gold-700 disabled:opacity-50"
+                onClick={() => (isPremium ? fileRef.current?.click() : upsellPhoto())}
+                aria-label={isPremium ? "Tambah foto" : "Tambah foto (Premium)"}
+                className="relative grid h-16 w-16 place-items-center rounded-lg border-2 border-dashed border-border text-navy-muted transition-colors hover:border-gold-300 hover:text-gold-700 disabled:opacity-50"
               >
                 {uploading ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
                   <ImagePlus className="h-5 w-5" />
                 )}
+                {!isPremium && (
+                  <span className="absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full bg-gold-500 text-white">
+                    <Lock className="h-3 w-3" />
+                  </span>
+                )}
               </button>
             </div>
             <p className="text-[11px] text-muted-foreground">
-              Foto otomatis dikompres sebelum diunggah agar hemat & cepat.
+              {isPremium
+                ? "Foto otomatis dikompres sebelum diunggah agar hemat & cepat."
+                : "Foto pada catatan tersedia di Premium."}
             </p>
           </div>
         </div>

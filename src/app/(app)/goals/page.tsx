@@ -9,6 +9,7 @@ import {
   Info,
   Lightbulb,
   Loader2,
+  Lock,
   Plus,
   Target,
   Trash2,
@@ -370,10 +371,18 @@ function MilestoneRow({ milestone: m }: { milestone: Milestone }) {
   const setStatus = useAppStore((s) => s.setMilestoneStatus);
   const setRegressed = useAppStore((s) => s.setMilestoneRegressed);
   const setPhoto = useAppStore((s) => s.setMilestonePhoto);
+  const isPremium = useAppStore((s) => s.plan) === "premium";
   const meta = domainMeta[m.domain] ?? fallbackDomainMeta;
   const cycle: MilestoneStatus[] = ["belum", "dicoba", "bisa"];
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  function upsellPhoto() {
+    toast("Foto momen khusus Premium", {
+      description: "Upgrade ke Emas untuk mengabadikan momen milestone.",
+      action: { label: "Upgrade", onClick: () => (window.location.href = "/settings") },
+    });
+  }
 
   // Upload the moment photo to Cloudinary via /api/upload, then persist on the
   // milestone. Empty url clears it.
@@ -531,14 +540,16 @@ function MilestoneRow({ milestone: m }: { milestone: Milestone }) {
               size="sm"
               variant="outline"
               disabled={uploading}
-              onClick={() => fileRef.current?.click()}
+              onClick={() => (isPremium ? fileRef.current?.click() : upsellPhoto())}
             >
               {uploading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
+              ) : isPremium ? (
                 <Camera className="h-4 w-4" />
+              ) : (
+                <Lock className="h-4 w-4" />
               )}
-              {uploading ? "Mengunggah…" : "Tambah Foto Momen"}
+              {uploading ? "Mengunggah…" : isPremium ? "Tambah Foto Momen" : "Foto Momen (Premium)"}
             </Button>
           )}
         </div>

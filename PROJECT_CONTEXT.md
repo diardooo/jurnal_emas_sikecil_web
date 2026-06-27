@@ -506,6 +506,13 @@ npm run db:generate   # bila ada perubahan schema (additive)
   Input URL tetap sebagai fallback. Tanpa migrasi/endpoint/store baru. Gate hijau.
 - Lihat §10.11. **Foto milestone** masih tersisa (perlu kolom `photoUrl` + migrasi).
 
+**M29 — Gating Premium terlihat (lock hint di UI) — ✅ SELESAI**
+- Tombol foto **jurnal** (journal-dialog) & **milestone** (goals MilestoneRow) di akun Free
+  kini tampil **terkunci** (ikon Lock + label "Premium") dan klik → toast upsell ke
+  /settings, bukan baru error setelah upload. Premium → normal.
+- Murni client/UX (lengkapi M28). Gerbang: tsc bersih · lint 0 error · build sukses.
+  **Tanpa migrasi.**
+
 **M28 — Gating Premium (free vs premium enforcement) — ✅ SELESAI**
 - **Server (sumber kebenaran, expiry-aware via `effectivePlan`):** `lib/plan.ts`
   `getUserPlan`/`isPremium`/`premiumRequired(403)`; `lib/gating.ts` konstanta
