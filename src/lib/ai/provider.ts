@@ -37,7 +37,15 @@ export async function generateAnswer(system: string, user: string): Promise<stri
     body: JSON.stringify({
       systemInstruction: { parts: [{ text: system }] },
       contents: [{ role: "user", parts: [{ text: user }] }],
-      generationConfig: { temperature: 0.4, maxOutputTokens: 800 },
+      generationConfig: {
+        temperature: 0.4,
+        maxOutputTokens: 1200,
+        // Gemini 2.5 models "think" before answering and thinking tokens count
+        // against maxOutputTokens — left on, they eat the budget and the answer
+        // comes back truncated/empty (502). We don't need deep reasoning for a
+        // parenting Q&A, so disable thinking for direct, complete replies.
+        thinkingConfig: { thinkingBudget: 0 },
+      },
     }),
   });
 
@@ -47,10 +55,18 @@ export async function generateAnswer(system: string, user: string): Promise<stri
   }
 
   const data = (await res.json()) as {
-    candidates?: { content?: { parts?: { text?: string }[] } }[];
+    candidates?: {
+      content?: { parts?: { text?: string }[] };
+      finishReason?: string;
+    }[];
   };
+  const cand = data.candidates?.[0];
   const text =
-    data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("").trim() ?? "";
-  if (!text) throw new Error("Jawaban kosong dari AI");
+    cand?.content?.parts?.map((p) => p.text ?? "").join("").trim() ?? "";
+  if (!text) {
+    throw new Error(
+      `Jawaban kosong dari AI (finishReason: ${cand?.finishReason ?? "?"})`,
+    );
+  }
   return text;
 }
