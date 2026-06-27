@@ -481,6 +481,17 @@ npm run db:generate   # bila ada perubahan schema (additive)
   Input URL tetap sebagai fallback. Tanpa migrasi/endpoint/store baru. Gate hijau.
 - Lihat §10.11. **Foto milestone** masih tersisa (perlu kolom `photoUrl` + migrasi).
 
+**M20 (v1.2) — AI Coach: kontrol percakapan + fix jawaban terpotong — ✅ SELESAI**
+- **Fix kritis (uji browser user):** `gemini-2.5-flash` model thinking → token thinking
+  makan `maxOutputTokens` → jawaban terpotong jadi "L" / kosong → 502. Fix di
+  `lib/ai/provider.ts`: `thinkingConfig.thinkingBudget=0` + `maxOutputTokens` 800→1200;
+  error kosong sertakan `finishReason`. Uji live: jawaban utuh ~2k char.
+- **Kontrol:** `DELETE /api/coach?childId=` hapus riwayat (kuota harian dipertahankan);
+  UI tombol "Hapus riwayat" + tampil "Sisa N pertanyaan hari ini" (dari `remaining`).
+  Roundtrip delete PASS.
+- **Fix (uji browser user):** hydration error di `goals` `PhaseGroup` — `<Badge>` (div)
+  di dalam `<p>` → ganti `<p>`→`<div>`. Scan kode: tak ada lagi block-in-`<p>`.
+
 **M19 (UI/UX + bugfix, 3 siklus) — ✅ SELESAI**
 - **(A) Bug "Goal Orang Tua" kosong:** backend goals lengkap tapi tak ada UI buat goal +
   tak ada empty-state → akun nyata selalu blank. Tambah `components/app/goal-dialog.tsx`

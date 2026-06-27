@@ -132,3 +132,20 @@ export async function GET(req: NextRequest) {
   // Shape matches the UI's Turn ({ role, text }).
   return NextResponse.json(rows.map((r) => ({ role: r.role, text: r.content })));
 }
+
+/** Clear a child's saved conversation. Daily usage quota is intentionally kept. */
+export async function DELETE(req: NextRequest) {
+  const user = await getUser(req);
+  if (!user) return unauthorized();
+  const childId = req.nextUrl.searchParams.get("childId")?.trim();
+  if (!childId) return badRequest("Anak belum dipilih");
+  await db
+    .delete(coachMessagesT)
+    .where(
+      and(
+        eq(coachMessagesT.userId, user.id),
+        eq(coachMessagesT.childId, childId),
+      ),
+    );
+  return NextResponse.json({ ok: true });
+}

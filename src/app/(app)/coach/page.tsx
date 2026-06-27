@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Send, Sparkles, Stethoscope } from "lucide-react";
+import { Loader2, Send, Sparkles, Stethoscope, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/app/page-header";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,6 +27,7 @@ export default function CoachPage() {
   const [thread, setThread] = useState<Turn[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [remaining, setRemaining] = useState<number | null>(null);
 
   // Restore the saved conversation for the active child (skips demo).
   useEffect(() => {
@@ -70,6 +71,7 @@ export default function CoachPage() {
       const data = (await res.json().catch(() => ({}))) as {
         answer?: string;
         error?: string;
+        remaining?: number;
       };
       // Not configured (503) or rate-limited (429, daily cap / AI busy) →
       // show the server's calm message as a coach reply, not an error toast.
@@ -89,12 +91,32 @@ export default function CoachPage() {
       }
       if (!res.ok) throw new Error(data.error ?? `Gagal (${res.status})`);
       setThread((t) => [...t, { role: "coach", text: data.answer ?? "" }]);
+      if (typeof data.remaining === "number") setRemaining(data.remaining);
     } catch (e) {
       toast.error("Gagal bertanya", {
         description: e instanceof Error ? e.message : undefined,
       });
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function clearHistory() {
+    if (!child || demo || thread.length === 0) return;
+    if (
+      !confirm(
+        "Hapus seluruh riwayat percakapan dengan Pendamping Emas untuk anak ini?",
+      )
+    )
+      return;
+    setThread([]);
+    setRemaining(null);
+    try {
+      await fetch(`/api/coach?childId=${encodeURIComponent(child.id)}`, {
+        method: "DELETE",
+      });
+    } catch {
+      /* cleared locally regardless */
     }
   }
 
@@ -107,6 +129,21 @@ export default function CoachPage() {
 
       <Card>
         <CardContent className="space-y-4 p-5">
+          {thread.length > 0 && (
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs text-navy-muted">
+                {remaining != null
+                  ? `Sisa ${remaining} pertanyaan hari ini`
+                  : " "}
+              </span>
+              <button
+                onClick={clearHistory}
+                className="flex items-center gap-1 text-xs font-semibold text-muted-foreground transition-colors hover:text-alert-red"
+              >
+                <Trash2 className="h-3.5 w-3.5" /> Hapus riwayat
+              </button>
+            </div>
+          )}
           {thread.length === 0 ? (
             <div className="rounded-xl bg-gold-50/60 p-5 text-center">
               <Sparkles className="mx-auto h-7 w-7 text-gold-600" />
