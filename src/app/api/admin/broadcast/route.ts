@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { user } from "@/db/schema/auth";
 import { notifications, subscriptions } from "@/db/schema/app";
 import { forbidden, getAdmin } from "@/lib/admin";
+import { logAdmin } from "@/lib/admin-audit";
 
 /**
  * Fan out an in-app notification to a target audience. Returns the recipients'
@@ -12,7 +13,8 @@ import { forbidden, getAdmin } from "@/lib/admin";
  * body: { title, body, type?, target: 'all'|'free'|'premium'|'ids', ids?: [] }
  */
 export async function POST(req: NextRequest) {
-  if (!(await getAdmin(req))) return forbidden();
+  const admin = await getAdmin(req);
+  if (!admin) return forbidden();
   const b = (await req.json().catch(() => ({}))) as {
     title?: string; body?: string; type?: string;
     target?: "all" | "free" | "premium" | "ids"; ids?: string[];
@@ -57,6 +59,13 @@ export async function POST(req: NextRequest) {
     .select({ id: user.id, name: user.name, phone: user.phone })
     .from(user)
     .where(inArray(user.id, recipientIds));
+
+  await logAdmin(admin, {
+    action: "broadcast.send",
+    targetType: "broadcast",
+    summary: `Broadcast "${b.title}" ke ${recipientIds.length} user (${b.target ?? "all"})`,
+    meta: { target: b.target ?? "all", count: recipientIds.length, type: b.type ?? "broadcast" },
+  });
 
   return NextResponse.json({ ok: true, sent: recipientIds.length, recipients });
 }

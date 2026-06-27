@@ -3,6 +3,7 @@ import { asc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { rolePermissions } from "@/db/schema/admin";
 import { forbidden, getAdmin } from "@/lib/admin";
+import { logAdmin } from "@/lib/admin-audit";
 
 /** The Free/Premium feature-access matrix. */
 export async function GET(req: NextRequest) {
@@ -13,7 +14,8 @@ export async function GET(req: NextRequest) {
 
 /** Persist toggled rows: body = [{ id, freeEnabled, premiumEnabled }, ...]. */
 export async function PUT(req: NextRequest) {
-  if (!(await getAdmin(req))) return forbidden();
+  const admin = await getAdmin(req);
+  if (!admin) return forbidden();
   const body = (await req.json().catch(() => [])) as Array<{
     id: string; freeEnabled?: boolean; premiumEnabled?: boolean;
   }>;
@@ -32,5 +34,11 @@ export async function PUT(req: NextRequest) {
   );
 
   const rows = await db.select().from(rolePermissions).orderBy(asc(rolePermissions.sortOrder));
+  await logAdmin(admin, {
+    action: "roles.update",
+    targetType: "roles",
+    summary: `Ubah matriks akses fitur (${body.length} baris)`,
+    meta: { rows: body.length },
+  });
   return NextResponse.json(rows);
 }

@@ -77,6 +77,10 @@ export interface AdminMe {
   id: string; name: string; email: string; role: string;
 }
 
+export interface AuditEntry {
+  id: string; actorEmail: string; action: string; summary: string; createdAt: string;
+}
+
 export interface SubscriptionRow {
   id: string; plan: string; status: string; startedAt: string;
   expiresAt: string | null; paymentId: string | null;
@@ -123,6 +127,9 @@ export const adminApi = {
   subscriptions: (f?: { plan?: string; status?: string }) =>
     http<SubscriptionRow[]>("GET", `/api/admin/subscriptions${qs(f)}`),
   stats: () => http<AdminStats>("GET", "/api/admin/stats"),
+
+  // Audit trail
+  audit: () => http<AuditEntry[]>("GET", "/api/admin/audit"),
 
   // Role matrix
   roles: () => http<RolePermission[]>("GET", "/api/admin/roles"),

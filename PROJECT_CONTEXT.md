@@ -506,6 +506,23 @@ npm run db:generate   # bila ada perubahan schema (additive)
   Input URL tetap sebagai fallback. Tanpa migrasi/endpoint/store baru. Gate hijau.
 - Lihat §10.11. **Foto milestone** masih tersisa (perlu kolom `photoUrl` + migrasi).
 
+**M27 (10.12) — Audit log admin — ✅ SELESAI**
+- **DB (migrasi 0009, additive):** `admin_audit_log(id, actorId, actorEmail[snapshot],
+  action, targetType, targetId, summary, meta:jsonb, createdAt)`.
+- **Helper:** `lib/admin-audit.ts` `logAdmin(actor, {action,summary,targetType,targetId,
+  meta})` — best-effort (gagal log ≠ gagal aksi).
+- **Ter-wire:** `users/[id]` PATCH (`user.update` + field berubah/plan) & DELETE
+  (`user.delete`); `users/bulk` (`users.bulk` suspend/activate/delete + count);
+  `broadcast` (`broadcast.send` target+count); `roles` PUT (`roles.update`).
+- **Baca + UI:** `GET /api/admin/audit` (100 terbaru) + panel "Riwayat Aktivitas Admin"
+  di Settings (tabel waktu/admin/aksi/detail, refresh).
+- **Verifikasi:** roundtrip DB dev PASS (2 entri logged & terbaca, cleanup). Gerbang: tsc
+  bersih · lint 0 error · build sukses.
+- **⚠️ Deploy (schema change):** migrasi **0009** harus diterapkan ke prod **SEBELUM push**
+  (`DATABASE_URL="<PROD-DIRECT>" npm run db:migrate`) — tanpa itu semua aksi admin yg
+  memanggil `logAdmin` tetap jalan (best-effort catch) TAPI panel audit & insert akan
+  error di server log; aman tapi kotor. Idealnya migrate dulu.
+
 **M26 (10.12) — Status integrasi admin jadi NYATA — ✅ SELESAI**
 - **Masalah:** panel "Integrasi API" (Settings) & kartu "Integrasi Midtrans" (Subscription)
   hardcoded "Belum aktif/Perlu Konfigurasi" — padahal Midtrans/Cloudinary/Resend/Google/

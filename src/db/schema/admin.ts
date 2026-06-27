@@ -2,6 +2,7 @@ import {
   boolean,
   date,
   integer,
+  jsonb,
   pgTable,
   text,
   timestamp,
@@ -91,5 +92,22 @@ export const refSleep = pgTable("ref_sleep", {
   nightLabel: text("night_label").notNull().default(""),
   napLabel: text("nap_label").notNull().default(""),
   note: text("note").notNull().default(""),
+  createdAt: createdAt(),
+});
+
+/**
+ * Accountability trail for sensitive admin actions (delete user, change
+ * role/plan, broadcast, edit feature matrix). Append-only; `actorEmail` is
+ * snapshotted so the record survives the actor being renamed/deleted.
+ */
+export const adminAuditLog = pgTable("admin_audit_log", {
+  id: id(),
+  actorId: text("actor_id").notNull(),
+  actorEmail: text("actor_email").notNull(),
+  action: text("action").notNull(), // e.g. "user.delete", "user.update", "broadcast.send"
+  targetType: text("target_type"), // "user" | "users" | "broadcast" | "roles"
+  targetId: text("target_id"),
+  summary: text("summary").notNull(), // human-readable, shown in the dashboard
+  meta: jsonb("meta"),
   createdAt: createdAt(),
 });

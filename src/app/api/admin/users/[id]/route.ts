@@ -5,18 +5,24 @@ import { user } from "@/db/schema/auth";
 import { subscriptions } from "@/db/schema/app";
 import { notFound } from "@/lib/api";
 import { forbidden, getAdmin } from "@/lib/admin";
+import { logAdmin } from "@/lib/admin-audit";
 
 const EDITABLE = ["name", "email", "phone", "role", "status"] as const;
 
 /** Edit a user (name/email/phone/role/status) and optionally their plan. */
 export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
-  if (!(await getAdmin(req))) return forbidden();
+  const admin = await getAdmin(req);
+  if (!admin) return forbidden();
   const { id } = await ctx.params;
   const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
 
   const patch: Record<string, unknown> = { updatedAt: new Date() };
+  const changed: string[] = [];
   for (const key of EDITABLE) {
-    if (key in body && body[key] !== undefined) patch[key] = body[key];
+    if (key in body && body[key] !== undefined) {
+      patch[key] = body[key];
+      changed.push(key);
+    }
   }
 
   const [row] = await db.update(user).set(patch).where(eq(user.id, id)).returning();
@@ -30,6 +36,17 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
     } else {
       await db.insert(subscriptions).values({ userId: id, plan: body.plan, status: "active" });
     }
+    changed.push(`plan→${body.plan}`);
+  }
+
+  if (changed.length) {
+    await logAdmin(admin, {
+      action: "user.update",
+      targetType: "user",
+      targetId: id,
+      summary: `Ubah user ${row.email}: ${changed.join(", ")}`,
+      meta: { changed },
+    });
   }
 
   return NextResponse.json({
@@ -45,11 +62,17 @@ export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: stri
   if (admin.id === id) {
     return NextResponse.json({ error: "Tidak bisa menghapus akun sendiri" }, { status: 400 });
   }
-  const [target] = await db.select({ role: user.role }).from(user).where(eq(user.id, id)).limit(1);
+  const [target] = await db.select({ role: user.role, email: user.email }).from(user).where(eq(user.id, id)).limit(1);
   if (!target) return notFound();
   if (target.role === "superadmin") {
     return NextResponse.json({ error: "Tidak bisa menghapus akun superadmin" }, { status: 400 });
   }
   await db.delete(user).where(eq(user.id, id));
+  await logAdmin(admin, {
+    action: "user.delete",
+    targetType: "user",
+    targetId: id,
+    summary: `Hapus user ${target.email}`,
+  });
   return NextResponse.json({ ok: true });
 }

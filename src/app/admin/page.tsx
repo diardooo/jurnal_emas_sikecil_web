@@ -6,7 +6,7 @@ import {
   Settings, LogOut, Search, RefreshCw, Download, Plus, Eye,
   Pencil, Ban, X, Megaphone, AlertCircle, CheckCircle2, Clock,
   Wifi, WifiOff, Baby, Syringe, Smile, Moon, ShieldCheck,
-  MessageCircle, Tag, Trash2, Check, Loader2, Lock,
+  MessageCircle, Tag, Trash2, Check, Loader2, Lock, History,
 } from "lucide-react";
 import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
@@ -845,6 +845,7 @@ function PageSettings({ showToast }: { showToast: (m: string) => void }) {
   const settings = useAsync(() => adminApi.settings(), []);
   const discounts = useAsync(() => adminApi.discounts(), []);
   const stats = useAsync(() => adminApi.stats(), []);
+  const audit = useAsync(() => adminApi.audit(), []);
   const [form, setForm] = useState<Record<string, string>>({});
   const [savingS, setSavingS] = useState(false);
   useEffect(() => { if (settings.data) setForm(settings.data); }, [settings.data]);
@@ -943,6 +944,32 @@ function PageSettings({ showToast }: { showToast: (m: string) => void }) {
                 }</div>
               ))}
             </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-[0_1px_4px_rgba(0,0,0,0.08)] p-5 col-span-2">
+            <div className="flex items-center justify-between mb-3.5">
+              <h4 className="text-sm font-bold flex items-center gap-2"><History size={14} /> Riwayat Aktivitas Admin <span className="ml-1 text-[10px] font-normal text-gray-400">(100 terbaru)</span></h4>
+              <IconBtn onClick={audit.reload} title="Refresh"><RefreshCw size={13} /></IconBtn>
+            </div>
+            {audit.loading && !audit.data ? <Spinner /> : audit.error ? <ErrorState msg={audit.error} onRetry={audit.reload} /> : (audit.data ?? []).length === 0 ? (
+              <div className="py-8 text-center text-sm text-gray-400">Belum ada aktivitas tercatat.</div>
+            ) : (
+              <div className="border border-gray-100 rounded-lg overflow-hidden max-h-[420px] overflow-y-auto">
+                <table className="w-full border-collapse">
+                  <thead className="sticky top-0 bg-white"><tr>{["Waktu", "Admin", "Aksi", "Detail"].map((h) => <Th key={h}>{h}</Th>)}</tr></thead>
+                  <tbody>
+                    {(audit.data ?? []).map((e) => (
+                      <tr key={e.id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50/50">
+                        <td className="px-4 py-2.5 text-xs text-gray-400 whitespace-nowrap">{new Date(e.createdAt).toLocaleString("id-ID", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</td>
+                        <td className="px-4 py-2.5 text-xs text-gray-600 whitespace-nowrap">{e.actorEmail}</td>
+                        <td className="px-4 py-2.5"><span className="font-mono text-[11px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">{e.action}</span></td>
+                        <td className="px-4 py-2.5 text-xs text-gray-600">{e.summary}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       )}

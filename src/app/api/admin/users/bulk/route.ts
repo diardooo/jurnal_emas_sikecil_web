@@ -3,6 +3,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import { user } from "@/db/schema/auth";
 import { forbidden, getAdmin } from "@/lib/admin";
+import { logAdmin } from "@/lib/admin-audit";
 
 /** Bulk action over selected users: suspend | activate | delete. */
 export async function POST(req: NextRequest) {
@@ -30,11 +31,23 @@ export async function POST(req: NextRequest) {
       const superSet = new Set(supers.map((s) => s.id));
       const deletable = ids.filter((id) => !superSet.has(id));
       if (deletable.length) await db.delete(user).where(inArray(user.id, deletable));
+      await logAdmin(admin, {
+        action: "users.bulk",
+        targetType: "users",
+        summary: `Bulk hapus ${deletable.length} user`,
+        meta: { action: "delete", affected: deletable.length, ids: deletable },
+      });
       return NextResponse.json({ ok: true, affected: deletable.length });
     }
     default:
       return NextResponse.json({ error: "Aksi tidak dikenal" }, { status: 400 });
   }
 
+  await logAdmin(admin, {
+    action: "users.bulk",
+    targetType: "users",
+    summary: `Bulk ${body.action} ${ids.length} user`,
+    meta: { action: body.action, affected: ids.length, ids },
+  });
   return NextResponse.json({ ok: true, affected: ids.length });
 }
