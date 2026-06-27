@@ -255,3 +255,21 @@ export const subscriptions = pgTable("subscriptions", {
   paymentId: text("payment_id"),
   createdAt: createdAt(),
 });
+
+/**
+ * Payment history / audit trail — one row per Midtrans checkout. Written
+ * `pending` at checkout, flipped to `paid`/`failed`/`expired` by the webhook.
+ * Enables real revenue reporting and reconciliation. `orderId` is unique so the
+ * webhook can upsert idempotently.
+ */
+export const transactions = pgTable("transactions", {
+  id: id(),
+  userId: userId(),
+  orderId: text("order_id").notNull().unique(),
+  plan: text("plan").notNull(), // "monthly" | "yearly"
+  amount: integer("amount").notNull(), // gross amount in rupiah
+  status: text("status").notNull().default("pending"), // pending | paid | failed | expired
+  paymentType: text("payment_type"), // gopay, qris, bank_transfer, …
+  paidAt: timestamp("paid_at"),
+  createdAt: createdAt(),
+});

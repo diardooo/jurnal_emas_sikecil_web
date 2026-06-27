@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { subscriptions } from "@/db/schema/app";
+import { subscriptions, transactions } from "@/db/schema/app";
 import {
   midtransConfigured,
   planDurationDays,
@@ -38,6 +38,16 @@ export async function POST(req: NextRequest) {
     txStatus === "cancel" ||
     txStatus === "expire" ||
     (txStatus === "capture" && body.fraud_status === "deny");
+
+  // Reflect the outcome on the payment-history row (idempotent by order_id).
+  await db
+    .update(transactions)
+    .set({
+      status: settled ? "paid" : failed ? (txStatus === "expire" ? "expired" : "failed") : "pending",
+      paymentType: body.payment_type ?? null,
+      paidAt: settled ? new Date() : null,
+    })
+    .where(eq(transactions.orderId, orderId));
 
   const [sub] = await db.select().from(subscriptions).where(eq(subscriptions.paymentId, orderId)).limit(1);
   if (!sub) return NextResponse.json({ ok: true, note: "order tidak dikenal" });

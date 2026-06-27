@@ -816,15 +816,15 @@ function PageAnalytics({ refreshSignal }: { refreshSignal: number }) {
           </div>
         </Card>
         <Card className="col-span-2">
-          <CardHeader title="💳 Langganan Premium Baru / Bulan" meta="· nyata (revenue transaksi menyusul Midtrans)" />
+          <CardHeader title="💳 Revenue Bulanan" meta="· nyata dari transaksi Midtrans terbayar" />
           <div className="p-5 pt-3">
-            {s.subsByMonth.length === 0 ? (
-              <div className="flex h-[200px] items-center justify-center text-sm text-gray-400">Belum ada langganan premium.</div>
+            {s.revenueByMonth.length === 0 ? (
+              <div className="flex h-[200px] items-center justify-center text-sm text-gray-400">Belum ada transaksi terbayar.</div>
             ) : (
             <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={s.subsByMonth.map((r) => ({ ...r, label: shortMonth(r.month) }))} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" vertical={false} /><XAxis dataKey="label" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 11 }} allowDecimals={false} /><Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} formatter={(v: number, _n, p) => [`${v} langganan · ~Rp ${(p?.payload as { revenue: number }).revenue.toLocaleString("id-ID")}/bln`, "Premium baru"]} />
-                <Bar dataKey="count" name="Premium baru" radius={[3, 3, 0, 0]}>{s.subsByMonth.map((_, i) => <Cell key={i} fill={G.gold} />)}</Bar>
+              <BarChart data={s.revenueByMonth.map((r) => ({ ...r, label: shortMonth(r.month) }))} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" vertical={false} /><XAxis dataKey="label" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${v / 1000}k`} /><Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} formatter={(v: number, _n, p) => [`Rp ${v.toLocaleString("id-ID")} · ${(p?.payload as { count: number }).count} transaksi`, "Revenue"]} />
+                <Bar dataKey="revenue" name="Revenue" radius={[3, 3, 0, 0]}>{s.revenueByMonth.map((d, i) => <Cell key={i} fill={d.revenue > 0 ? G.gold : "rgba(201,162,39,0.4)"} />)}</Bar>
               </BarChart>
             </ResponsiveContainer>
             )}

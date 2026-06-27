@@ -11,6 +11,7 @@ import {
   milestones,
   subscriptions,
   tasks,
+  transactions,
 } from "@/db/schema/app";
 import {
   platformSettings,
@@ -123,21 +124,22 @@ export async function GET(req: NextRequest) {
     { step: "Aktif 7 hari", users: Number(active7d), pct: pct(Number(active7d)) },
   ];
 
-  // ── Premium subscriptions created per month (real monetization signal;
-  // replaces the demo "daily revenue" until Midtrans transactions exist).
-  const subsByMonthRows = await db
+  // ── Real revenue per month from PAID transactions (sum of gross amount).
+  // Empty until Midtrans payments land — honest, no fabricated numbers.
+  const revenueRows = await db
     .select({
-      month: sql<string>`to_char(${subscriptions.createdAt}, 'YYYY-MM')`,
+      month: sql<string>`to_char(${transactions.paidAt}, 'YYYY-MM')`,
+      revenue: sql<number>`coalesce(sum(${transactions.amount}), 0)`,
       n: count(),
     })
-    .from(subscriptions)
-    .where(eq(subscriptions.plan, "premium"))
-    .groupBy(sql`to_char(${subscriptions.createdAt}, 'YYYY-MM')`)
-    .orderBy(sql`to_char(${subscriptions.createdAt}, 'YYYY-MM')`);
-  const subsByMonth = subsByMonthRows.map((r) => ({
+    .from(transactions)
+    .where(eq(transactions.status, "paid"))
+    .groupBy(sql`to_char(${transactions.paidAt}, 'YYYY-MM')`)
+    .orderBy(sql`to_char(${transactions.paidAt}, 'YYYY-MM')`);
+  const revenueByMonth = revenueRows.map((r) => ({
     month: r.month,
+    revenue: Number(r.revenue),
     count: Number(r.n),
-    revenue: Number(r.n) * priceMonthly,
   }));
 
   return NextResponse.json({
@@ -162,6 +164,6 @@ export async function GET(req: NextRequest) {
     },
     moduleUsage,
     activation,
-    subsByMonth,
+    revenueByMonth,
   });
 }

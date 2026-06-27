@@ -343,10 +343,12 @@ Berfungsi di UI tapi belum dirapikan/di-persist. Format: lokasi → kondisi → 
   expiry **idempotent** (anchor ke settlement pertama → webhook ganda tak menumpuk hari);
   gagal/expire **tak men-downgrade** premium yang masih aktif (hanya bersihkan `pending`).
   Frontend: tombol Bulanan/Tahunan + handle balik `?paid=1` (re-hydrate). **Tanpa migrasi.**
+- **Histori & revenue (M23):** tabel `transactions` (0008) — `snap` insert `pending`,
+  `notify` flip `paid`/`failed`/`expired` (+`paymentType`,`paidAt`), `order_id` unique
+  (upsert idempotent). Admin Analytics "Revenue Bulanan" kini **rupiah nyata** dari
+  `sum(amount) where status=paid` (ganti proxy subsByMonth M21).
 - **Ops uji live (kamu):** isi `MIDTRANS_SERVER_KEY`/`CLIENT_KEY` (Sandbox) di `.env` &
   Vercel; set Payment Notification URL Midtrans → `https://<domain>/api/payment/notify`.
-- **Tersisa (opsional):** tabel `transactions` utk histori/audit & revenue rupiah nyata
-  (kini admin pakai jumlah langganan premium/bln, M21).
 
 ### 10.9 Mailer + reset password — ✅ SEBAGIAN BESAR SELESAI
 - **Sekarang:** `lib/mailer.ts` ada; `auth.ts` `sendResetPassword` aktif (Resend bila
@@ -376,7 +378,8 @@ Berfungsi di UI tapi belum dirapikan/di-persist. Format: lokasi → kondisi → 
   nyata (M21):** 3 grafik demo (RETENTION/USAGE/REVENUE konstan) dihapus → diganti
   `moduleUsage` (adopsi: `countDistinct(userId)` per modul ÷ total user), `activation`
   (funnel Registrasi→Tambah Anak→Catat Pertumbuhan→Tandai Milestone→Aktif 7 hari), dan
-  `subsByMonth` (langganan premium baru/bulan dari `subscriptions.createdAt`, plan=premium).
+  `revenueByMonth` (revenue rupiah nyata dari `transactions` terbayar — M23; sebelumnya
+  proxy `subsByMonth` M21).
   Semua agregat read-only, **tanpa migrasi**.
 - **Dibutuhkan (tersisa):** audit log, RBAC granular per-permission; revenue transaksi nyata
   menyusul Midtrans (10.8).
@@ -496,6 +499,20 @@ npm run db:generate   # bila ada perubahan schema (additive)
   `POST /api/upload` → set `photoUrl` lokal → persist saat "Simpan" (`updateChild`).
   Input URL tetap sebagai fallback. Tanpa migrasi/endpoint/store baru. Gate hijau.
 - Lihat §10.11. **Foto milestone** masih tersisa (perlu kolom `photoUrl` + migrasi).
+
+**M23 (10.8) — Tabel transactions: histori bayar + revenue rupiah nyata — ✅ SELESAI**
+- **DB (migrasi 0008, additive):** `transactions(id, userId→cascade, orderId UNIQUE,
+  plan, amount:int, status[pending|paid|failed|expired], paymentType, paidAt, createdAt)`.
+- **Wire:** `snap` insert baris `pending` saat checkout; `notify` set `paid`/`failed`/
+  `expired` + `paymentType` + `paidAt` (by orderId, idempotent).
+- **Admin:** stats `revenueByMonth` = `sum(amount) where status=paid` group bln(paidAt) →
+  kartu "Revenue Bulanan" rupiah nyata (ganti `subsByMonth` proxy M21); empty-state bila
+  belum ada transaksi terbayar.
+- **Verifikasi:** roundtrip DB dev PASS (pending→paid, agregat Rp399k/1 tx, unique
+  order_id enforced, cleanup). Gerbang: tsc bersih · lint 0 error · build sukses.
+- **⚠️ Catatan deploy (schema change):** migrasi **0008** harus diterapkan ke **prod
+  SEBELUM push** (`DATABASE_URL="<PROD-DIRECT>" npm run db:migrate`) — Vercel auto-deploy,
+  tanpa tabel ini `snap`/`notify`/admin-stats akan 500.
 
 **M22 (10.8) — Midtrans: flow pembayaran benar end-to-end — ✅ SELESAI**
 - **Temuan:** Midtrans sudah sebagian ada (snap/notify/lib) tapi punya bug korektnes:

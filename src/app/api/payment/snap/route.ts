@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { subscriptions } from "@/db/schema/app";
+import { subscriptions, transactions } from "@/db/schema/app";
 import { getUser, unauthorized } from "@/lib/api";
 import { PLAN_PRICES, createSnapTransaction, makeOrderId, midtransConfigured } from "@/lib/midtrans";
 
@@ -40,6 +40,9 @@ export async function POST(req: NextRequest) {
     } else {
       await db.insert(subscriptions).values({ userId: user.id, plan: "free", status: "pending", paymentId: orderId });
     }
+
+    // Payment history / audit row (flipped to paid|failed by the webhook).
+    await db.insert(transactions).values({ userId: user.id, orderId, plan, amount, status: "pending" });
 
     return NextResponse.json({ token, redirectUrl, orderId });
   } catch (e) {
