@@ -1,14 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUser, unauthorized } from "@/lib/api";
 import { cloudinaryConfigured, uploadImage } from "@/lib/cloudinary";
+import { isPremium, premiumRequired } from "@/lib/plan";
 
 export const runtime = "nodejs";
 const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 
-/** Authenticated image upload → Cloudinary. Returns { url }. */
+/** Authenticated image upload → Cloudinary (Premium-only). Returns { url }. */
 export async function POST(req: NextRequest) {
   const user = await getUser(req);
   if (!user) return unauthorized();
+
+  // Photo upload is a Premium feature (journal, milestone, child & profile photos).
+  if (!(await isPremium(user.id))) {
+    return premiumRequired("Upload foto khusus Premium. Upgrade ke Emas untuk menambahkan foto.");
+  }
 
   if (!cloudinaryConfigured()) {
     return NextResponse.json(

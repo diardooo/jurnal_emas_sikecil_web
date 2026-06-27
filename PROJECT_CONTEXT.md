@@ -506,6 +506,21 @@ npm run db:generate   # bila ada perubahan schema (additive)
   Input URL tetap sebagai fallback. Tanpa migrasi/endpoint/store baru. Gate hijau.
 - Lihat §10.11. **Foto milestone** masih tersisa (perlu kolom `photoUrl` + migrasi).
 
+**M28 — Gating Premium (free vs premium enforcement) — ✅ SELESAI**
+- **Server (sumber kebenaran, expiry-aware via `effectivePlan`):** `lib/plan.ts`
+  `getUserPlan`/`isPremium`/`premiumRequired(403)`; `lib/gating.ts` konstanta
+  (`FREE_CHILD_LIMIT=1`, `FREE_COACH_DAILY_LIMIT=3`).
+  - `/api/upload` → **Premium-only** (semua foto: jurnal/milestone/anak/profil) → 403.
+  - `/api/children` POST → Free maks 1 anak → 403 premiumRequired.
+  - `/api/coach` → kuota harian: Free 3, Premium `COACH_DAILY_LIMIT` (20); 429 ber-flag.
+- **Client UX:** reports Export PDF **sudah** ter-gate (upsell); children "Tambah Anak"
+  pre-check + upsell toast→/settings; `addChild` rollback optimistic insert saat 403
+  (tak ada anak hantu); call-site upload sudah tampilkan `data.error` → pesan premium muncul.
+- **Verifikasi:** `getUserPlan` + child-count diuji ke DB dev (free+1 anak→BLOCK, premium→allow).
+  Gerbang: tsc bersih · lint 0 error · build sukses. **Tanpa migrasi.**
+- **Catatan:** matriks `role_permissions` di admin masih display-only (belum jadi sumber
+  gating); gating saat ini di kode. Wiring matriks→gating bisa milestone lanjutan.
+
 **M27 (10.12) — Audit log admin — ✅ SELESAI**
 - **DB (migrasi 0009, additive):** `admin_audit_log(id, actorId, actorEmail[snapshot],
   action, targetType, targetId, summary, meta:jsonb, createdAt)`.

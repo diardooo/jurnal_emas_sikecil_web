@@ -17,8 +17,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { toast } from "sonner";
 import { useAppStore } from "@/store/app-store";
 import { formatDateID, getAge, initials, cn } from "@/lib/utils";
+import { FREE_CHILD_LIMIT } from "@/lib/gating";
 
 export default function ChildrenPage() {
   const router = useRouter();
@@ -26,6 +28,19 @@ export default function ChildrenPage() {
   const activeId = useAppStore((s) => s.activeChildId);
   const setActive = useAppStore((s) => s.setActiveChild);
   const growthMap = useAppStore((s) => s.growth);
+  const plan = useAppStore((s) => s.plan);
+
+  const atFreeLimit = plan !== "premium" && children.length >= FREE_CHILD_LIMIT;
+  function onAddChild() {
+    if (atFreeLimit) {
+      toast("Tambah anak khusus Premium", {
+        description: `Akun Free dibatasi ${FREE_CHILD_LIMIT} anak. Upgrade ke Emas untuk menambah anak lain.`,
+        action: { label: "Upgrade", onClick: () => router.push("/settings") },
+      });
+      return;
+    }
+    router.push("/onboarding");
+  }
 
   const active = children.find((c) => c.id === activeId) ?? children[0];
   const age = getAge(active.dob);
@@ -38,7 +53,7 @@ export default function ChildrenPage() {
         title="Profil Anak"
         description="Kelola data dasar si Kecil dan beralih antar anak."
         action={
-          <Button onClick={() => router.push("/onboarding")}>
+          <Button onClick={onAddChild}>
             <Plus /> Tambah Anak
           </Button>
         }

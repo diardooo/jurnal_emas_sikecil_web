@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { asc } from "drizzle-orm";
+import { asc, count, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { children, immunizations, milestones, teeth } from "@/db/schema/app";
 import { refImmunizations, refMilestones, refTeeth } from "@/db/schema/admin";
 import { badRequest, getUser, resource, unauthorized } from "@/lib/api";
 import { childReferenceRows } from "@/lib/child-templates";
+import { getUserPlan, premiumRequired } from "@/lib/plan";
+import { FREE_CHILD_LIMIT } from "@/lib/gating";
 
 const base = resource(children);
 export const GET = base.GET;
@@ -51,6 +53,19 @@ export async function POST(req: NextRequest) {
   const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
   if (!body.name || !body.dob || !body.gender) {
     return badRequest("Nama, tanggal lahir, dan jenis kelamin wajib diisi");
+  }
+
+  // Free accounts are limited to FREE_CHILD_LIMIT children.
+  if ((await getUserPlan(user.id)) !== "premium") {
+    const [{ n }] = await db
+      .select({ n: count() })
+      .from(children)
+      .where(eq(children.userId, user.id));
+    if (Number(n) >= FREE_CHILD_LIMIT) {
+      return premiumRequired(
+        `Akun Free dibatasi ${FREE_CHILD_LIMIT} anak. Upgrade ke Emas untuk menambah anak lain.`,
+      );
+    }
   }
 
   const [child] = await db

@@ -12,6 +12,8 @@ import {
 } from "@/db/schema/app";
 import { buildCoachContext, COACH_SYSTEM_PROMPT } from "@/lib/coach-context";
 import { AiNotConfiguredError, aiConfigured, generateAnswer } from "@/lib/ai/provider";
+import { getUserPlan } from "@/lib/plan";
+import { FREE_COACH_DAILY_LIMIT } from "@/lib/gating";
 import type { GrowthRecord, Milestone } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -48,8 +50,12 @@ export async function POST(req: NextRequest) {
   if (!child) return badRequest("Anak tidak valid");
 
   // Per-user daily rate limit (fail fast before doing any heavy work / LLM call).
+  // Free accounts get a small quota; Premium gets the full COACH_DAILY_LIMIT.
+  const premium = (await getUserPlan(user.id)) === "premium";
   const today = new Date().toISOString().slice(0, 10);
-  const dailyLimit = Number(process.env.COACH_DAILY_LIMIT ?? 20);
+  const dailyLimit = premium
+    ? Number(process.env.COACH_DAILY_LIMIT ?? 20)
+    : FREE_COACH_DAILY_LIMIT;
   const [usage] = await db
     .select({ count: coachUsageT.count })
     .from(coachUsageT)
@@ -58,7 +64,10 @@ export async function POST(req: NextRequest) {
   if ((usage?.count ?? 0) >= dailyLimit) {
     return NextResponse.json(
       {
-        error: `Batas harian ${dailyLimit} pertanyaan ke Pendamping Emas sudah tercapai. Silakan lanjut lagi besok.`,
+        error: premium
+          ? `Batas harian ${dailyLimit} pertanyaan ke Pendamping Emas sudah tercapai. Silakan lanjut lagi besok.`
+          : `Akun Free dibatasi ${dailyLimit} pertanyaan/hari ke Pendamping Emas. Upgrade ke Emas untuk kuota lebih besar.`,
+        premiumRequired: !premium,
       },
       { status: 429 },
     );

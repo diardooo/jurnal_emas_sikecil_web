@@ -326,21 +326,31 @@ export const useAppStore = create<AppState>((set, get) => {
       // Returns a promise (always resolves; errors toast via `persist`) so the
       // caller can await the create before navigating — see onboarding finish().
       return persist(
-        apiPost<Child>("children", payload).then(async (real) => {
-          // server seeds milestone/immunization/teeth templates → pull them in
-          const [milestones, immunizations, teeth] = await Promise.all([
-            apiGet<Milestone[]>("milestones"),
-            apiGet<Immunization[]>("immunizations"),
-            apiGet<ToothRecord[]>("teeth"),
-          ]);
-          set((s) => ({
-            children: [...s.children.filter((c) => c.id !== child.id), real],
-            activeChildId: real.id,
-            milestones: groupByChild(milestones),
-            immunizations: groupByChild(immunizations),
-            teeth: groupByChild(teeth),
-          }));
-        }),
+        apiPost<Child>("children", payload)
+          .then(async (real) => {
+            // server seeds milestone/immunization/teeth templates → pull them in
+            const [milestones, immunizations, teeth] = await Promise.all([
+              apiGet<Milestone[]>("milestones"),
+              apiGet<Immunization[]>("immunizations"),
+              apiGet<ToothRecord[]>("teeth"),
+            ]);
+            set((s) => ({
+              children: [...s.children.filter((c) => c.id !== child.id), real],
+              activeChildId: real.id,
+              milestones: groupByChild(milestones),
+              immunizations: groupByChild(immunizations),
+              teeth: groupByChild(teeth),
+            }));
+          })
+          .catch((e) => {
+            // Roll back the optimistic insert if the server rejects (e.g. the
+            // Free child limit) so a phantom child doesn't linger in the UI.
+            set((s) => {
+              const remaining = s.children.filter((c) => c.id !== child.id);
+              return { children: remaining, activeChildId: remaining[0]?.id ?? "" };
+            });
+            throw e;
+          }),
       ).then(() => undefined);
     },
     updateChild: (id, patch) => {
