@@ -510,7 +510,8 @@ npm run db:generate   # bila ada perubahan schema (additive)
 - **Server (sumber kebenaran, expiry-aware via `effectivePlan`):** `lib/plan.ts`
   `getUserPlan`/`isPremium`/`premiumRequired(403)`; `lib/gating.ts` konstanta
   (`FREE_CHILD_LIMIT=1`, `FREE_COACH_DAILY_LIMIT=3`).
-  - `/api/upload` → **Premium-only** (semua foto: jurnal/milestone/anak/profil) → 403.
+  - `/api/upload` → gated per `purpose`: **jurnal & milestone = Premium** (403);
+    **profil & anak = gratis** (`PREMIUM_PURPOSES={journal,milestone}`).
   - `/api/children` POST → Free maks 1 anak → 403 premiumRequired.
   - `/api/coach` → kuota harian: Free 3, Premium `COACH_DAILY_LIMIT` (20); 429 ber-flag.
 - **Client UX:** reports Export PDF **sudah** ter-gate (upsell); children "Tambah Anak"

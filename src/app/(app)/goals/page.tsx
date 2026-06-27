@@ -385,6 +385,7 @@ function MilestoneRow({ milestone: m }: { milestone: Milestone }) {
     try {
       const fd = new FormData();
       fd.append("file", file);
+      fd.append("purpose", "milestone");
       const res = await fetch("/api/upload", { method: "POST", body: fd });
       const data = (await res.json().catch(() => ({}))) as {
         url?: string;

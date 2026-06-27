@@ -76,6 +76,7 @@ export function JournalDialog({
         const fd = new FormData();
         fd.append("file", blob, "journal.jpg");
         fd.append("folder", "jurnal-emas/journal");
+        fd.append("purpose", "journal");
         const res = await fetch("/api/upload", { method: "POST", body: fd });
         const data = (await res.json().catch(() => ({}))) as {
           url?: string;
