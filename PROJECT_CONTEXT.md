@@ -506,6 +506,18 @@ npm run db:generate   # bila ada perubahan schema (additive)
   Input URL tetap sebagai fallback. Tanpa migrasi/endpoint/store baru. Gate hijau.
 - Lihat §10.11. **Foto milestone** masih tersisa (perlu kolom `photoUrl` + migrasi).
 
+**M26 (10.12) — Status integrasi admin jadi NYATA — ✅ SELESAI**
+- **Masalah:** panel "Integrasi API" (Settings) & kartu "Integrasi Midtrans" (Subscription)
+  hardcoded "Belum aktif/Perlu Konfigurasi" — padahal Midtrans/Cloudinary/Resend/Google/
+  Gemini sudah aktif.
+- **Solusi:** `api/admin/stats` tambah `integrations` (boolean dari env server, tanpa
+  bocorkan secret): midtrans/cloudinary/resend/googleOAuth/gemini. UI: panel render
+  3-state (Aktif hijau / Belum aktif merah / Manual oranye utk WhatsApp wa.me); kartu
+  Subscription pakai `integrations.midtrans` nyata. PageSettings & PageSubscriptions fetch
+  `stats`.
+- **Verifikasi:** kelima integrasi lokal = true. Gerbang: tsc bersih · lint 0 error ·
+  build sukses. **Tanpa migrasi.**
+
 **M25 (10.8) — Enforce expiry langganan — ✅ SELESAI**
 - **Masalah:** `plan` dibaca mentah dari DB → premium tak pernah turun walau `expiresAt`
   lewat.

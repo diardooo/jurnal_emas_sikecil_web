@@ -485,8 +485,10 @@ function PageChildren({ showToast }: { showToast: (m: string) => void }) {
 // ── PAGE: SUBSCRIPTIONS
 function PageSubscriptions({ showToast }: { showToast: (m: string) => void }) {
   const subs = useAsync(() => adminApi.subscriptions(), []);
+  const stats = useAsync(() => adminApi.stats(), []);
   const all = subs.data ?? [];
   const premium = all.filter((s) => s.plan === "premium").length;
+  const midtransOn = stats.data?.integrations.midtrans;
 
   return (
     <div>
@@ -497,7 +499,7 @@ function PageSubscriptions({ showToast }: { showToast: (m: string) => void }) {
       <div className="grid grid-cols-3 gap-4 mb-6">
         <StatCard label="Total Langganan" value={String(all.length)} icon="💳" change="Record di DB" up />
         <StatCard label="Premium Aktif" value={String(premium)} icon="⭐" change={`${all.length - premium} free`} up />
-        <StatCard label="Integrasi Midtrans" value="—" icon="🔌" change="Belum aktif (kolom DB saja)" up={false} />
+        <StatCard label="Integrasi Midtrans" value={midtransOn ? "Aktif" : "—"} icon="🔌" change={midtransOn ? "Pembayaran live (terhubung)" : "Belum aktif (set server key)"} up={!!midtransOn} />
       </div>
 
       <Card className="overflow-hidden">
@@ -842,6 +844,7 @@ function PageAnalytics({ refreshSignal }: { refreshSignal: number }) {
 function PageSettings({ showToast }: { showToast: (m: string) => void }) {
   const settings = useAsync(() => adminApi.settings(), []);
   const discounts = useAsync(() => adminApi.discounts(), []);
+  const stats = useAsync(() => adminApi.stats(), []);
   const [form, setForm] = useState<Record<string, string>>({});
   const [savingS, setSavingS] = useState(false);
   useEffect(() => { if (settings.data) setForm(settings.data); }, [settings.data]);
@@ -864,12 +867,14 @@ function PageSettings({ showToast }: { showToast: (m: string) => void }) {
   const toggleDiscount = async (d: DiscountCode) => { try { await adminApi.updateDiscount(d.id, { active: !d.active }); await discounts.reload(); } catch (e) { showToast(`⚠️ ${e instanceof Error ? e.message : "Gagal"}`); } };
   const removeDiscount = async (id: string) => { try { await adminApi.deleteDiscount(id); showToast("🗑 Kode dihapus"); await discounts.reload(); } catch (e) { showToast(`⚠️ ${e instanceof Error ? e.message : "Gagal"}`); } };
 
-  const integrations = [
-    { name: "Midtrans Payment", desc: "Belum diimplementasi", warn: false },
-    { name: "Cloudinary CDN", desc: "Upload foto belum aktif", warn: false },
-    { name: "Resend Email", desc: "Mailer belum dikonfigurasi", warn: false },
-    { name: "Google OAuth", desc: "Config ada, credential kosong", warn: true },
-    { name: "WhatsApp Business API", desc: "Broadcast via wa.me (manual)", warn: true },
+  const ig = stats.data?.integrations;
+  const integrations: { name: string; on?: boolean; desc: string; manual?: boolean }[] = [
+    { name: "Midtrans Payment", on: ig?.midtrans, desc: ig?.midtrans ? "Pembayaran aktif" : "Set MIDTRANS_SERVER_KEY" },
+    { name: "Cloudinary CDN", on: ig?.cloudinary, desc: ig?.cloudinary ? "Upload foto aktif" : "Set CLOUDINARY_*" },
+    { name: "Resend Email", on: ig?.resend, desc: ig?.resend ? "Mailer aktif" : "Set RESEND_API_KEY" },
+    { name: "Google OAuth", on: ig?.googleOAuth, desc: ig?.googleOAuth ? "Login Google aktif" : "Set GOOGLE_CLIENT_ID/SECRET" },
+    { name: "AI Coach (Gemini)", on: ig?.gemini, desc: ig?.gemini ? "Pendamping Emas aktif" : "Set GEMINI_API_KEY" },
+    { name: "WhatsApp Business API", manual: true, desc: "Broadcast via wa.me (manual)" },
   ];
 
   return (
@@ -931,7 +936,11 @@ function PageSettings({ showToast }: { showToast: (m: string) => void }) {
             <h4 className="text-sm font-bold mb-3.5 flex items-center gap-2"><Wifi size={14} /> Integrasi API <span className="ml-1 text-[10px] font-normal text-gray-400">(status sebenarnya)</span></h4>
             <div className="grid grid-cols-2 gap-x-6">
               {integrations.map((item) => (
-                <div key={item.name} className="flex items-center justify-between py-2 border-b border-gray-100"><div><div className="text-sm font-medium">{item.name}</div><div className="text-[11px] text-gray-400">{item.desc}</div></div>{item.warn ? <Badge type="orange"><AlertCircle size={9} /> Perlu Konfigurasi</Badge> : <Badge type="red"><WifiOff size={9} /> Belum aktif</Badge>}</div>
+                <div key={item.name} className="flex items-center justify-between py-2 border-b border-gray-100"><div><div className="text-sm font-medium">{item.name}</div><div className="text-[11px] text-gray-400">{item.desc}</div></div>{
+                  item.manual ? <Badge type="orange"><AlertCircle size={9} /> Manual</Badge>
+                  : item.on ? <Badge type="green"><Wifi size={9} /> Aktif</Badge>
+                  : <Badge type="red"><WifiOff size={9} /> Belum aktif</Badge>
+                }</div>
               ))}
             </div>
           </div>

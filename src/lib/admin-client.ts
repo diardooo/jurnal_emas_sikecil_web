@@ -48,6 +48,13 @@ export interface AdminStats {
   moduleUsage: { module: string; users: number; pct: number }[];
   activation: { step: string; users: number; pct: number }[];
   revenueByMonth: { month: string; revenue: number; count: number }[];
+  integrations: {
+    midtrans: boolean;
+    cloudinary: boolean;
+    resend: boolean;
+    googleOAuth: boolean;
+    gemini: boolean;
+  };
 }
 
 export interface NotificationHistory {

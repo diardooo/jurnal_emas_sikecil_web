@@ -21,6 +21,21 @@ import {
   refTeeth,
 } from "@/db/schema/admin";
 import { forbidden, getAdmin } from "@/lib/admin";
+import { midtransConfigured } from "@/lib/midtrans";
+
+/** Real integration status, derived from server env (booleans only, no secrets). */
+function integrationStatus() {
+  return {
+    midtrans: midtransConfigured(),
+    cloudinary:
+      !!process.env.CLOUDINARY_CLOUD_NAME &&
+      !!process.env.CLOUDINARY_API_KEY &&
+      !!process.env.CLOUDINARY_API_SECRET,
+    resend: !!process.env.RESEND_API_KEY,
+    googleOAuth: !!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET,
+    gemini: !!process.env.GEMINI_API_KEY,
+  };
+}
 
 /** Aggregate counters for the Overview / Analytics dashboards. */
 export async function GET(req: NextRequest) {
@@ -174,5 +189,6 @@ export async function GET(req: NextRequest) {
     moduleUsage,
     activation,
     revenueByMonth,
+    integrations: integrationStatus(),
   });
 }
