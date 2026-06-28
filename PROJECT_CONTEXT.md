@@ -506,6 +506,60 @@ npm run db:generate   # bila ada perubahan schema (additive)
   Input URL tetap sebagai fallback. Tanpa migrasi/endpoint/store baru. Gate hijau.
 - Lihat §10.11. **Foto milestone** masih tersisa (perlu kolom `photoUrl` + migrasi).
 
+### Sesi 2026-06-28 — Landing world-class + polish in-app (M37–M43)
+
+> Semua commit di bawah **belum di-push** (user yang push & deploy). Semua **tanpa
+> migrasi DB** (murni frontend). Gerbang tiap commit hijau (tsc · lint 0 error · build).
+
+**M43 — Galeri foto jurnal + lightbox swipe — ✅ SELESAI** (`65dcc20`)
+- **Masalah:** foto jurnal menumpuk vertikal full-width; klik = buka gambar mentah di tab baru.
+- **Fix:** `components/app/photo-gallery.tsx` — grid adaptif (1/2/3 kolom sesuai jumlah,
+  overlay **"+N"** bila >6) + **lightbox full-screen** via portal: swipe (touch), tombol
+  panah, keyboard ←/→, strip thumbnail, counter, Esc/backdrop tutup, kunci scroll body.
+  Pakai `<img>` (tahan URL lama, `eslint-disable` agar lint bersih). Ganti blok media lama
+  di `journal/page.tsx` (hapus import Avatar yg tak terpakai).
+
+**M42 — Nav mobile konsisten + panduan responsif + nama anak demo — ✅ SELESAI** (`bfdb2c3`)
+- **Bottom nav vs drawer beda total** → bottom nav = 4 primary (Beranda/Tumbuh/Milestone/
+  Task) + tombol **"Lainnya"** yang membuka drawer yang sama (state dibagi via
+  `store/ui-store.ts`); "Lainnya" aktif saat di halaman non-primary. Topbar pakai store ini.
+- **Kartu panduan** footer tergencet di HP → susun vertikal (`flex-col sm:flex-row`).
+- **Anak demo** `mock-data` c1 → **Kyara Zivanya Adinegara**, lahir 2025-02-10, P; konten
+  demo (jurnal/notif/goal) yang menyebut "Bintang" disamakan ke "Kyara".
+
+**M41 — Fix React key Growth (demo) — ✅ SELESAI** (`564fe09`)
+- `mockGrowth` tanpa `id` → `key={r.id}` undefined (warning dev). Fallback
+  `key={r.id ?? \`${r.ageMonths}-${r.date ?? i}\`}`. Tab lain (imun/gigi) sudah ber-id.
+
+**M40 — Hero simetris (deck overlap) + CTA mobile full-width — ✅ SELESAI** (`5d9cedd`,`5cbed89`)
+- 3 kartu hero dulu vertikal → terlalu tinggi/asimetris. Jadi **deck bertumpuk**: tiap
+  kartu `-mt-24` + lebar bertingkat (94/97/100%) + z-index, menutupi sebagian kartu di
+  belakang (info tetap utuh). In-flow → responsif & mulus di HP. 2 chip mengambang ke sudut.
+- Tombol Magnetic (`inline-block`) bikin CTA primary sempit di HP → `w-full sm:w-auto`.
+
+**M39 — Landing world-class redesign — ✅ SELESAI** (`e7bd3c6`)
+- Upgrade premium **tanpa dependency baru** (no Framer Motion), `/` tetap statis.
+- `components/marketing/fx.tsx`: `Reveal` (scroll), `CountUp`, `Magnetic`, `ScrollProgress`,
+  `SpotlightCard` — GPU-only, IntersectionObserver, reduced-motion aware.
+- Design system: gradient-text emas, glass, noise, marquee mask, keyframes blob/float/
+  marquee/gradient; `aurora.tsx` (blob ambient).
+- Header transparan→solid + scroll-spy. Hero parallax tilt (`hero-preview.tsx`).
+- Seksi baru: marquee kredibilitas, stat band count-up, grid fitur spotlight, demo
+  browser-frame, timeline 3 langkah, perbandingan manual-vs-app, FAQ accordion (`faq.tsx`),
+  CTA aurora. + OpenGraph/Twitter metadata + JSON-LD SoftwareApplication.
+- **Catatan:** dark-mode landing belum (seksi pakai warna brand tetap); ditunda agar tak setengah jadi.
+
+**M38 — Kartu laporan hero + caption benefit + admin tables mobile-safe — ✅ SELESAI** (`72a82b9`)
+- Hero dapat kartu ilustrasi **Laporan Perkembangan** (PDF/share, bar per domain).
+- Tiap kartu ilustrasi diberi footer **caption benefit** (poin plus).
+- 11 tabel admin dulu di dalam `Card overflow-hidden` (terpotong di HP) → dibungkus
+  `overflow-x-auto` (scroll horizontal).
+
+**M37 — Hero illustration: grafik pertumbuhan + kalender jadwal — ✅ SELESAI** (`5582a5b`)
+- Gambar hero abstrak diganti komposit feature-true: profil anak + **grafik z-score WHO**
+  + ringkasan milestone, dan **kartu kalender** dengan jadwal (imunisasi/posyandu/cek
+  milestone) + chip Pendamping AI.
+
 **M36 — Footer landing: link nyata + halaman legal — ✅ SELESAI**
 - **Masalah:** footer punya 6 link mati `href="#"` (Tentang/Blog/Karier/Pusat Bantuan/
   Kontak/Privasi) + "Dashboard" (redirect login).
