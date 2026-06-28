@@ -12,7 +12,7 @@ import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
-import { signIn, signOut, useSession } from "@/lib/auth-client";
+import { authClient, signIn, signOut, useSession } from "@/lib/auth-client";
 import { MILESTONE_DOMAINS } from "@/lib/types";
 import { ACCESS_POLICY } from "@/lib/gating";
 import {
@@ -171,8 +171,8 @@ function Select({ children, ...props }: React.SelectHTMLAttributes<HTMLSelectEle
 function BtnPrimary({ onClick, children, disabled }: { onClick?: () => void; children: React.ReactNode; disabled?: boolean }) {
   return <button onClick={onClick} disabled={disabled} className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-lg text-sm font-semibold cursor-pointer bg-[#C9A227] text-[#1A1A2E] hover:bg-[#F0C84A] transition-colors border-0 disabled:opacity-50 disabled:cursor-not-allowed">{children}</button>;
 }
-function BtnGhost({ onClick, children, className = "" }: { onClick?: () => void; children: React.ReactNode; className?: string }) {
-  return <button onClick={onClick} className={`inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-lg text-sm font-semibold cursor-pointer bg-transparent text-gray-500 border border-gray-200 hover:bg-gray-50 transition-colors ${className}`}>{children}</button>;
+function BtnGhost({ onClick, children, className = "", disabled }: { onClick?: () => void; children: React.ReactNode; className?: string; disabled?: boolean }) {
+  return <button onClick={onClick} disabled={disabled} className={`inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-lg text-sm font-semibold cursor-pointer bg-transparent text-gray-500 border border-gray-200 hover:bg-gray-50 transition-colors disabled:opacity-50 ${className}`}>{children}</button>;
 }
 function BtnWa({ href, onClick, children }: { href?: string; onClick?: () => void; children: React.ReactNode }) {
   const cls = "inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-lg text-sm font-semibold cursor-pointer bg-[#25D366] text-white hover:bg-[#1EBE5A] transition-colors border-0";
@@ -965,9 +965,25 @@ function PageSettings({ showToast }: { showToast: (m: string) => void }) {
 // ── MODALS
 function ModalUserDetail({ user, onClose, showToast }: { user: AdminUser; onClose: () => void; showToast: (m: string) => void }) {
   const kids = useAsync(() => adminApi.children({ userId: user.id }), [user.id]);
+  const [resetting, setResetting] = useState(false);
+  const sendReset = async () => {
+    setResetting(true);
+    try {
+      const { error } = await authClient.requestPasswordReset({
+        email: user.email,
+        redirectTo: "/reset-password",
+      });
+      if (error) throw new Error(error.message);
+      showToast(`📧 Email reset sandi dikirim ke ${user.email}`);
+    } catch (e) {
+      showToast(`⚠️ ${e instanceof Error ? e.message : "Gagal mengirim reset"}`);
+    } finally {
+      setResetting(false);
+    }
+  };
   return (
     <Modal id="modal-user-detail" title="Detail User" open onClose={onClose}
-      footer={<>{user.phone && <BtnWa href={waLink(user.phone, `Halo ${user.name} 👋`)}><MessageCircle size={14} /> Chat WA</BtnWa>}<BtnGhost onClick={() => { showToast("📧 (mock) reset password"); onClose(); }}>🔑 Reset Password</BtnGhost><BtnPrimary onClick={onClose}>Tutup</BtnPrimary></>}>
+      footer={<>{user.phone && <BtnWa href={waLink(user.phone, `Halo ${user.name} 👋`)}><MessageCircle size={14} /> Chat WA</BtnWa>}<BtnGhost onClick={sendReset} disabled={resetting}>🔑 {resetting ? "Mengirim…" : "Reset Password"}</BtnGhost><BtnPrimary onClick={onClose}>Tutup</BtnPrimary></>}>
       <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl mb-4">
         <AvatarCircle name={user.name} color={colorOf(user.id)} size="lg" />
         <div>

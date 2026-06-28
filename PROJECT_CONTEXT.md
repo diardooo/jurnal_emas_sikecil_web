@@ -506,6 +506,14 @@ npm run db:generate   # bila ada perubahan schema (additive)
   Input URL tetap sebagai fallback. Tanpa migrasi/endpoint/store baru. Gate hijau.
 - Lihat §10.11. **Foto milestone** masih tersisa (perlu kolom `photoUrl` + migrasi).
 
+**M35 — Admin: reset password jadi NYATA (de-mock) — ✅ SELESAI**
+- **Bug:** tombol "Reset Password" di Detail User = `showToast("📧 (mock) reset password")`.
+- **Fix:** panggil `authClient.requestPasswordReset({ email, redirectTo:"/reset-password" })`
+  → kirim email reset nyata (via Resend, sesuai flow forgot-password). `BtnGhost` dukung
+  `disabled`. Audit ulang admin: notification history (recipients/read/openRate) ternyata
+  **sudah nyata** (agregat grup). Tak ada stub lain tersisa di admin. Tanpa migrasi.
+- Gerbang: tsc bersih · lint 0 error · build sukses.
+
 **M34 — Matriks akses admin jadi NYATA (read-only, sumber kode) — ✅ SELESAI**
 - **Masalah:** tab "Role & Akses" punya toggle Free/Premium yang **tak berpengaruh**
   (display-only) DAN isinya **salah** (klaim Imunisasi/Gigi/Tidur/notifikasi = premium,
