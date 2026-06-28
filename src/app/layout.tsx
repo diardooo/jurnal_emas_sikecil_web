@@ -15,10 +15,22 @@ const display = Baloo_2({
   display: "swap",
 });
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_APP_URL ??
+  (process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : "http://localhost:3000");
+
+const title = "Jurnal Emas Si Kecil — Pendamping Tumbuh Kembang Anak";
+const description =
+  "Platform all-in-one untuk memantau, mencatat, dan mengoptimalkan tumbuh kembang anak 0–6 tahun. Task Manager, To-Do, Habit Tracker, dan Goal Tracker dalam satu ekosistem parenting.";
+
 export const metadata: Metadata = {
-  title: "Jurnal Emas Si Kecil — Pendamping Tumbuh Kembang Anak",
-  description:
-    "Platform all-in-one untuk memantau, mencatat, dan mengoptimalkan tumbuh kembang anak 0–6 tahun. Task Manager, To-Do, Habit Tracker, dan Goal Tracker dalam satu ekosistem parenting.",
+  // Makes og:image / twitter:image URLs absolute — required by WhatsApp,
+  // Facebook, etc. to render link previews.
+  metadataBase: new URL(siteUrl),
+  title,
+  description,
   keywords: [
     "parenting",
     "tumbuh kembang anak",
@@ -26,6 +38,21 @@ export const metadata: Metadata = {
     "habit tracker",
     "jurnal anak",
   ],
+  openGraph: {
+    type: "website",
+    locale: "id_ID",
+    siteName: "Jurnal Emas Si Kecil",
+    title,
+    description,
+    url: siteUrl,
+    // The image itself is produced by app/opengraph-image.tsx; Next.js wires it
+    // into og:image automatically with the correct absolute URL & dimensions.
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+  },
 };
 
 export const viewport: Viewport = {
