@@ -433,21 +433,35 @@ export default function SettingsPage() {
                 <div className="space-y-4">
                   <p className="text-sm text-navy-muted">
                     Terima kasih telah berlangganan! Anda menikmati semua fitur
-                    premium.
+                    premium
+                    {expiresAt
+                      ? ` hingga ${new Intl.DateTimeFormat("id-ID", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        }).format(new Date(expiresAt))}`
+                      : ""}
+                    .
                   </p>
-                  <div className="flex flex-wrap gap-3">
-                    <Button variant="outline" onClick={() => toast("Membuka portal pembayaran…")}>
-                      Kelola Pembayaran
+                  <p className="text-xs text-navy-muted">
+                    Pembayaran sekali bayar — langganan{" "}
+                    <span className="font-semibold">tidak diperpanjang otomatis</span>.
+                    Perpanjang kapan saja; masa aktif baru ditambahkan dari tanggal
+                    pembayaran.
+                  </p>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Button
+                      onClick={() => startCheckout("monthly")}
+                      disabled={checkingOut !== null}
+                    >
+                      {checkingOut === "monthly" ? "Memproses…" : "Perpanjang 1 Bulan"}
                     </Button>
                     <Button
-                      variant="ghost"
-                      className="text-alert-red hover:bg-alert-red-soft"
-                      onClick={() => {
-                        setPlan("free");
-                        toast("Langganan dibatalkan");
-                      }}
+                      variant="outline"
+                      onClick={() => startCheckout("yearly")}
+                      disabled={checkingOut !== null}
                     >
-                      Batalkan Langganan
+                      {checkingOut === "yearly" ? "Memproses…" : "Perpanjang 1 Tahun"}
                     </Button>
                   </div>
                 </div>

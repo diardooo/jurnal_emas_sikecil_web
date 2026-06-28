@@ -506,6 +506,16 @@ npm run db:generate   # bila ada perubahan schema (additive)
   Input URL tetap sebagai fallback. Tanpa migrasi/endpoint/store baru. Gate hijau.
 - Lihat §10.11. **Foto milestone** masih tersisa (perlu kolom `photoUrl` + migrasi).
 
+**M30 — Panel langganan Premium sesuai model sekali-bayar — ✅ SELESAI**
+- **Bug diperbaiki:** tombol "Batalkan Langganan" memanggil `setPlan("free")` → mencabut
+  premium yang sudah dibayar seketika. Pembayaran kita sekali-bayar (bukan recurring),
+  jadi "batalkan" tak relevan.
+- **Sekarang:** panel premium tampil masa aktif (`hingga <tanggal>`), info "sekali bayar,
+  tidak diperpanjang otomatis", + tombol **Perpanjang 1 Bulan / 1 Tahun** (`startCheckout`,
+  masa aktif baru dari tanggal bayar — sesuai anchoring M22). Hapus "Kelola Pembayaran"
+  (stub) & "Batalkan Langganan" (destruktif). Client-only, **tanpa migrasi**.
+- Gerbang: tsc bersih · lint 0 error · build sukses.
+
 **M29 — Gating Premium terlihat (lock hint di UI) — ✅ SELESAI**
 - Tombol foto **jurnal** (journal-dialog) & **milestone** (goals MilestoneRow) di akun Free
   kini tampil **terkunci** (ikon Lock + label "Premium") dan klik → toast upsell ke
