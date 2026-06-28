@@ -506,6 +506,18 @@ npm run db:generate   # bila ada perubahan schema (additive)
   Input URL tetap sebagai fallback. Tanpa migrasi/endpoint/store baru. Gate hijau.
 - Lihat §10.11. **Foto milestone** masih tersisa (perlu kolom `photoUrl` + migrasi).
 
+**M36 — Footer landing: link nyata + halaman legal — ✅ SELESAI**
+- **Masalah:** footer punya 6 link mati `href="#"` (Tentang/Blog/Karier/Pusat Bantuan/
+  Kontak/Privasi) + "Dashboard" (redirect login).
+- **Fix:** restruktur jadi 3 kolom semua-nyata — Produk (#fitur/#cara-kerja/#harga),
+  Mulai (/register, /login, /demo), Legal & Bantuan (/privacy, /terms, mailto kontak).
+  Hapus link tak penting. Buat **halaman publik `/privacy` & `/terms`** nyata (konten
+  jujur: data anak, Neon/Cloudinary/Gemini/Midtrans/Resend, hak hapus akun, bukan nasihat
+  medis, paket sekali-bayar) + `LegalShell` (header+footer konsisten). Header anchor
+  diverifikasi semua ada. **Tanpa migrasi.**
+- **Catatan:** kontak pakai `mailto:halo@jurnalemas.com` — user perlu pastikan inbox ada.
+- Gerbang: tsc bersih · lint 0 error · build sukses.
+
 **M35 — Admin: reset password jadi NYATA (de-mock) — ✅ SELESAI**
 - **Bug:** tombol "Reset Password" di Detail User = `showToast("📧 (mock) reset password")`.
 - **Fix:** panggil `authClient.requestPasswordReset({ email, redirectTo:"/reset-password" })`

@@ -6,24 +6,24 @@ const cols = [
     title: "Produk",
     links: [
       { label: "Fitur", href: "#fitur" },
+      { label: "Cara Kerja", href: "#cara-kerja" },
       { label: "Harga", href: "#harga" },
-      { label: "Dashboard", href: "/dashboard" },
     ],
   },
   {
-    title: "Perusahaan",
+    title: "Mulai",
     links: [
-      { label: "Tentang Kami", href: "#" },
-      { label: "Blog Parenting", href: "#" },
-      { label: "Karier", href: "#" },
+      { label: "Coba Gratis", href: "/register" },
+      { label: "Masuk", href: "/login" },
+      { label: "Lihat Demo", href: "/demo" },
     ],
   },
   {
-    title: "Bantuan",
+    title: "Legal & Bantuan",
     links: [
-      { label: "Pusat Bantuan", href: "#" },
-      { label: "Kontak", href: "#" },
-      { label: "Kebijakan Privasi", href: "#" },
+      { label: "Kebijakan Privasi", href: "/privacy" },
+      { label: "Syarat & Ketentuan", href: "/terms" },
+      { label: "Kontak", href: "mailto:halo@jurnalemas.com" },
     ],
   },
 ];
