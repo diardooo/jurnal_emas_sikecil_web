@@ -243,15 +243,24 @@ export default function LandingPage() {
               </Reveal>
               <Reveal delay={240}>
                 <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                  <Magnetic>
-                    <Button size="lg" className="shadow-lg shadow-gold-500/20" asChild>
+                  <Magnetic className="w-full sm:w-auto">
+                    <Button
+                      size="lg"
+                      className="w-full shadow-lg shadow-gold-500/20 sm:w-auto"
+                      asChild
+                    >
                       <Link href="/register">
                         Mulai Gratis Sekarang
                         <ArrowRight />
                       </Link>
                     </Button>
                   </Magnetic>
-                  <Button size="lg" variant="outline" asChild>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full sm:w-auto"
+                    asChild
+                  >
                     <Link href="/demo">Lihat Demo Dashboard</Link>
                   </Button>
                 </div>
