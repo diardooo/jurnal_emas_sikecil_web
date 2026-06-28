@@ -15,6 +15,8 @@ import {
   ShieldCheck,
   Sparkles,
   Star,
+  Stethoscope,
+  Syringe,
   Target,
 } from "lucide-react";
 import { SiteHeader } from "@/components/marketing/site-header";
@@ -371,9 +373,20 @@ export default function LandingPage() {
   );
 }
 
+// Jadwal contoh untuk ilustrasi kalender (mencerminkan fitur pengingat & task).
+const heroSchedule = [
+  { icon: Syringe, color: "text-soft-orange", bg: "bg-soft-orange-soft", label: "Imunisasi DPT-HB-Hib", date: "22 Jun" },
+  { icon: Stethoscope, color: "text-sage", bg: "bg-sage-soft", label: "Posyandu bulanan", date: "25 Jun" },
+  { icon: Target, color: "text-gold-700", bg: "bg-gold-100", label: "Cek milestone 9 bln", date: "28 Jun" },
+];
+
 function HeroPreview() {
+  // Tinggi batang grafik berat badan (ilustrasi tren naik mengikuti kurva WHO).
+  const growthBars = [38, 50, 46, 60, 68, 64, 78, 86];
+
   return (
-    <div className="relative mx-auto max-w-md">
+    <div className="relative mx-auto max-w-md space-y-4">
+      {/* Kartu utama: profil anak + grafik pertumbuhan + milestone */}
       <div className="rounded-3xl border bg-card p-5 shadow-xl">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -390,36 +403,112 @@ function HeroPreview() {
           </Badge>
         </div>
 
-        <div className="mt-5 grid grid-cols-2 gap-3">
-          <div className="rounded-2xl bg-sage-soft p-4">
-            <HeartPulse className="h-5 w-5 text-sage" />
-            <p className="mt-2 font-display text-2xl font-extrabold text-navy">
-              8/12
+        {/* Grafik pertumbuhan dengan status z-score WHO */}
+        <div className="mt-5 rounded-2xl bg-secondary/50 p-4">
+          <div className="flex items-center justify-between">
+            <p className="flex items-center gap-1.5 text-xs font-semibold text-navy">
+              <LineChart className="h-4 w-4 text-gold-600" /> Berat badan
             </p>
-            <p className="text-xs text-navy-muted">Milestone tercapai</p>
+            <span className="rounded-full bg-sage-soft px-2 py-0.5 text-[10px] font-bold text-sage">
+              z-score +0,4 · Normal
+            </span>
           </div>
-          <div className="rounded-2xl bg-gold-50 p-4">
-            <Target className="h-5 w-5 text-gold-600" />
-            <p className="mt-2 font-display text-2xl font-extrabold text-navy">
-              60%
-            </p>
-            <p className="text-xs text-navy-muted">Goal finger food</p>
+          <div className="mt-3 flex h-16 items-end gap-1.5">
+            {growthBars.map((h, i) => (
+              <div
+                key={i}
+                className="flex-1 rounded-t bg-gold-400/80"
+                style={{ height: `${h}%` }}
+              />
+            ))}
           </div>
         </div>
 
-        <div className="mt-3 rounded-2xl border border-soft-orange/30 bg-soft-orange-soft p-4">
-          <p className="flex items-center gap-2 text-xs font-semibold text-soft-orange">
-            <CalendarHeart className="h-4 w-4" /> Imunisasi dalam 3 hari
-          </p>
-          <p className="mt-1 text-sm font-medium text-navy">
-            DPT-HB-Hib lanjutan • 22 Jun 2026
-          </p>
+        {/* Ringkasan milestone & goal */}
+        <div className="mt-3 grid grid-cols-2 gap-3">
+          <div className="rounded-2xl bg-navy/[0.04] p-3">
+            <HeartPulse className="h-4 w-4 text-sage" />
+            <p className="mt-1.5 font-display text-xl font-extrabold text-navy">
+              8/12
+            </p>
+            <p className="text-[11px] text-navy-muted">Milestone tercapai</p>
+          </div>
+          <div className="rounded-2xl bg-navy/[0.04] p-3">
+            <Target className="h-4 w-4 text-gold-600" />
+            <p className="mt-1.5 font-display text-xl font-extrabold text-navy">
+              60%
+            </p>
+            <p className="text-[11px] text-navy-muted">Goal finger food</p>
+          </div>
         </div>
       </div>
 
-      <div className="absolute -bottom-5 -left-5 hidden rounded-2xl border bg-background px-4 py-3 shadow-lg sm:block">
-        <p className="flex items-center gap-2 text-sm font-semibold text-navy">
-          <CheckCircle2 className="h-4 w-4 text-sage" /> Tummy time selesai
+      {/* Kartu kalender + jadwal */}
+      <div className="rounded-3xl border bg-card p-5 shadow-xl">
+        <div className="flex items-center justify-between">
+          <p className="flex items-center gap-1.5 font-display text-sm font-bold text-navy">
+            <CalendarHeart className="h-4 w-4 text-gold-600" /> Juni 2026
+          </p>
+          <span className="text-[11px] font-semibold text-navy-muted">
+            3 jadwal
+          </span>
+        </div>
+
+        {/* Mini grid kalender */}
+        <div className="mt-3 grid grid-cols-7 gap-1 text-center text-[9px] font-bold uppercase text-navy-muted">
+          {["S", "S", "R", "K", "J", "S", "M"].map((d, i) => (
+            <span key={i}>{d}</span>
+          ))}
+        </div>
+        <div className="mt-1 grid grid-cols-7 gap-1 text-center text-[10px]">
+          {Array.from({ length: 30 }).map((_, i) => {
+            const day = i + 1;
+            const marked = [22, 25, 28].includes(day);
+            const today = day === 20;
+            return (
+              <span
+                key={day}
+                className={`grid h-5 place-items-center rounded-full ${
+                  today
+                    ? "bg-navy font-bold text-cream"
+                    : marked
+                      ? "bg-gold-100 font-bold text-gold-700"
+                      : "text-navy-muted"
+                }`}
+              >
+                {day}
+              </span>
+            );
+          })}
+        </div>
+
+        {/* Daftar jadwal */}
+        <div className="mt-4 space-y-2 border-t border-border pt-4">
+          {heroSchedule.map((s) => (
+            <div key={s.label} className="flex items-center gap-3">
+              <span
+                className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg ${s.bg} ${s.color}`}
+              >
+                <s.icon className="h-3.5 w-3.5" />
+              </span>
+              <p className="flex-1 truncate text-xs font-medium text-navy">
+                {s.label}
+              </p>
+              <span className="text-[11px] font-semibold text-navy-muted">
+                {s.date}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Chip Pendamping AI mengambang */}
+      <div className="absolute -left-5 top-16 hidden rounded-2xl border bg-background px-3.5 py-2.5 shadow-lg sm:block">
+        <p className="flex items-center gap-2 text-xs font-semibold text-navy">
+          <span className="grid h-6 w-6 place-items-center rounded-full bg-gold-100">
+            <Sparkles className="h-3.5 w-3.5 text-gold-600" />
+          </span>
+          Pendamping AI siap menjawab
         </p>
       </div>
     </div>
