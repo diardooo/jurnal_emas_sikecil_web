@@ -25,12 +25,13 @@ export const navItems = [
   { label: "Pengaturan", href: "/settings", icon: Settings },
 ];
 
+// Bottom-bar primaries (4 most-used). The 5th slot is a "Lainnya" button that
+// opens the full drawer (same list as the sidebar) — see MobileNav.
 export const mobileNavItems = [
   { label: "Beranda", href: "/dashboard", icon: LayoutDashboard },
   { label: "Tumbuh", href: "/growth", icon: LineChart },
   { label: "Milestone", href: "/goals", icon: Target },
   { label: "Task", href: "/tasks", icon: ClipboardList },
-  { label: "Rutinitas", href: "/routines", icon: Repeat },
 ];
 
 export { CalendarCheck };

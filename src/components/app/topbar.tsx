@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { Notifications } from "@/components/app/notifications";
 import { ChildSwitcher } from "@/components/app/child-switcher";
 import { navItems } from "@/lib/nav";
+import { useUiStore } from "@/store/ui-store";
 import {
   Sheet,
   SheetContent,
@@ -22,9 +23,10 @@ const titles: Record<string, string> = Object.fromEntries(
 
 export function Topbar() {
   const pathname = usePathname();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const menuOpen = useUiStore((s) => s.mobileMenuOpen);
+  const setMenuOpen = useUiStore((s) => s.setMobileMenuOpen);
   // Safety net: always close the mobile menu when the route changes.
-  useEffect(() => setMenuOpen(false), [pathname]);
+  useEffect(() => setMenuOpen(false), [pathname, setMenuOpen]);
   const title = titles[pathname] ?? "Dashboard";
   const today = new Intl.DateTimeFormat("id-ID", {
     weekday: "long",

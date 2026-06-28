@@ -192,8 +192,13 @@ export function DashboardGuide() {
           })}
         </ol>
 
-        <div className="mt-5 flex items-center gap-3">
-          <Button size="sm" variant="ghost" onClick={dismiss}>
+        <div className="mt-5 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={dismiss}
+            className="shrink-0"
+          >
             <Check className="h-4 w-4" />{" "}
             {allDone ? "Tutup panduan" : "Mengerti, sembunyikan panduan"}
           </Button>

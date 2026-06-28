@@ -29,10 +29,10 @@ function genHistory(seed: number, density: number): boolean[] {
 export const mockChildren: Child[] = [
   {
     id: "c1",
-    name: "Bintang",
-    dob: "2025-09-10",
-    gender: "L",
-    photoUrl: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Bintang",
+    name: "Kyara Zivanya Adinegara",
+    dob: "2025-02-10",
+    gender: "P",
+    photoUrl: "https://api.dicebear.com/9.x/fun-emoji/svg?seed=Kyara",
     birthWeight: 3.2,
     birthHeight: 49,
     color: "#C9A227",
@@ -212,7 +212,7 @@ export function phaseOf(ageMinMonths: number): AgePhaseId {
 }
 
 /** Milestone database 0–6 tahun, mengacu WHO Motor Milestones, Denver II & KPSP/IDAI.
- *  Status di sini mencerminkan progres anak aktif (Bintang ~9 bln) untuk demo. */
+ *  Status di sini mencerminkan progres anak aktif (Kyara ~9 bln) untuk demo. */
 export const mockMilestones: Milestone[] = [
   // 0–3 bulan
   { id: "m01", title: "Mengangkat kepala saat tengkurap", description: "Mengangkat kepala sebentar ketika diposisikan tengkurap.", domain: "Motorik Kasar", ageMinMonths: 1, ageMaxMonths: 3, isCritical: true, status: "bisa", achievedAt: "2025-11-05" },
@@ -307,7 +307,7 @@ export const mockGoals: Goal[] = [
   {
     id: "g1",
     title: "Lancar makan finger food",
-    description: "Bintang mampu makan sendiri makanan potongan kecil.",
+    description: "Kyara mampu makan sendiri makanan potongan kecil.",
     domain: "Nutrisi & Pertumbuhan",
     progress: 60,
     targetDate: "2026-08-01",
@@ -475,7 +475,7 @@ export const mockJournal: Record<string, JournalEntry[]> = {
       date: "2026-06-18",
       mood: "bangga",
       title: "Menumpuk balok pertama!",
-      body: "Sore tadi Bintang berhasil menumpuk 2 balok untuk pertama kalinya. Ekspresinya bangga sekali waktu baloknya tidak roboh. Langsung tepuk tangan sendiri 👏",
+      body: "Sore tadi Kyara berhasil menumpuk 2 balok untuk pertama kalinya. Ekspresinya bangga sekali waktu baloknya tidak roboh. Langsung tepuk tangan sendiri 👏",
       tags: ["Milestone", "Main"],
       media: [],
     },
@@ -514,9 +514,9 @@ export const mockJournal: Record<string, JournalEntry[]> = {
 };
 
 export const mockNotifications: AppNotification[] = [
-  { id: "n1", type: "imunisasi", title: "Imunisasi DPT-HB-Hib", body: "Bintang dijadwalkan imunisasi lanjutan dalam 3 hari.", date: "2026-06-22", read: false },
+  { id: "n1", type: "imunisasi", title: "Imunisasi DPT-HB-Hib", body: "Kyara dijadwalkan imunisasi lanjutan dalam 3 hari.", date: "2026-06-22", read: false },
   { id: "n2", type: "posyandu", title: "Posyandu bulan ini", body: "Jangan lupa penimbangan rutin di Posyandu Melati.", date: "2026-06-24", read: false },
-  { id: "n3", type: "milestone", title: "Milestone baru relevan", body: "Di usia ini, coba stimulasi 'merangkak' untuk Bintang.", date: "2026-06-19", read: false },
+  { id: "n3", type: "milestone", title: "Milestone baru relevan", body: "Di usia ini, coba stimulasi 'merangkak' untuk Kyara.", date: "2026-06-19", read: false },
   { id: "n4", type: "habit", title: "Pengingat kebiasaan", body: "Waktunya 'Bacakan buku 15 menit' malam ini.", date: "2026-06-19", read: true },
   { id: "n5", type: "task", title: "Deadline mendekat", body: "'Daftar ulang PAUD Sania' jatuh tempo 25 Jun.", date: "2026-06-19", read: true },
 ];
