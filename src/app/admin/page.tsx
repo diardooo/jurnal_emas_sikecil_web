@@ -14,10 +14,11 @@ import {
 } from "recharts";
 import { signIn, signOut, useSession } from "@/lib/auth-client";
 import { MILESTONE_DOMAINS } from "@/lib/types";
+import { ACCESS_POLICY } from "@/lib/gating";
 import {
   adminApi,
   type AdminUser, type AdminChild, type AdminStats, type AdminMe,
-  type RolePermission, type DiscountCode, type SubscriptionRow,
+  type DiscountCode, type SubscriptionRow,
   type RefMilestone, type RefImmunization, type RefTooth, type RefSleep,
 } from "@/lib/admin-client";
 
@@ -672,58 +673,42 @@ function PageTidur({ showToast, openModal }: { showToast: (m: string) => void; o
 }
 
 // ── PAGE: ROLES
-function PageRoles({ showToast }: { showToast: (m: string) => void }) {
-  const data = useAsync(() => adminApi.roles(), []);
-  const [rows, setRows] = useState<RolePermission[]>([]);
-  const [saving, setSaving] = useState(false);
-  useEffect(() => { if (data.data) setRows(data.data); }, [data.data]);
-
-  const toggle = (id: string, key: "freeEnabled" | "premiumEnabled") => setRows((p) => p.map((r) => r.id === id ? { ...r, [key]: !r[key] } : r));
-  const save = async () => {
-    setSaving(true);
-    try { const saved = await adminApi.saveRoles(rows.map((r) => ({ id: r.id, freeEnabled: r.freeEnabled, premiumEnabled: r.premiumEnabled }))); setRows(saved); data.setData(saved); showToast("✅ Pengaturan akses role disimpan"); }
-    catch (e) { showToast(`⚠️ ${e instanceof Error ? e.message : "Gagal"}`); }
-    finally { setSaving(false); }
-  };
-
-  const freeCount = rows.filter((r) => r.freeEnabled).length;
-  const premiumCount = rows.filter((r) => r.premiumEnabled).length;
+function PageRoles() {
+  const rows = ACCESS_POLICY;
+  const freeCount = rows.filter((r) => r.free).length;
+  const premiumCount = rows.filter((r) => r.premium).length;
+  const Mark = ({ on }: { on: boolean }) =>
+    on ? <Check size={16} className="mx-auto text-[#10B981]" /> : <Lock size={14} className="mx-auto text-gray-300" />;
 
   return (
     <div>
-      <PageHead title="Manajemen Role & Akses" sub="Atur fitur/menu yang bisa diakses tiap role — tabel role_permissions">
-        <BtnPrimary onClick={save} disabled={saving}>{saving ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />} Simpan Perubahan</BtnPrimary>
-      </PageHead>
+      <PageHead title="Matriks Hak Akses Fitur" sub="Kebijakan Free vs Premium yang ditegakkan sistem (sumber: kode enforcement)" />
 
-      {data.loading && !data.data ? <Spinner /> : data.error ? <ErrorState msg={data.error} onRetry={data.reload} /> : (
-        <>
-          <div className="grid grid-cols-2 gap-4 mb-5">
-            <div className="bg-white rounded-xl p-5 shadow-[0_1px_4px_rgba(0,0,0,0.08)] border-l-4 border-gray-300">
-              <div className="flex items-center justify-between"><div><div className="flex items-center gap-2"><span className="text-base font-bold">Free</span><Badge type="gray">Gratis</Badge></div><div className="text-xs text-gray-400 mt-1">Rp 0 / selamanya</div></div><div className="text-right"><div className="text-2xl font-extrabold">{freeCount}<span className="text-sm text-gray-400">/{rows.length}</span></div><div className="text-[11px] text-gray-400">fitur aktif</div></div></div>
-            </div>
-            <div className="bg-white rounded-xl p-5 shadow-[0_1px_4px_rgba(0,0,0,0.08)] border-l-4 border-[#C9A227]">
-              <div className="flex items-center justify-between"><div><div className="flex items-center gap-2"><span className="text-base font-bold">Premium</span><Badge type="gold">⭐ Berbayar</Badge></div><div className="text-xs text-gray-400 mt-1">Rp 49rb/bln · Rp 399rb/thn</div></div><div className="text-right"><div className="text-2xl font-extrabold text-[#C9A227]">{premiumCount}<span className="text-sm text-gray-400">/{rows.length}</span></div><div className="text-[11px] text-gray-400">fitur aktif</div></div></div>
-            </div>
-          </div>
+      <div className="grid grid-cols-2 gap-4 mb-5">
+        <div className="bg-white rounded-xl p-5 shadow-[0_1px_4px_rgba(0,0,0,0.08)] border-l-4 border-gray-300">
+          <div className="flex items-center justify-between"><div><div className="flex items-center gap-2"><span className="text-base font-bold">Free</span><Badge type="gray">Gratis</Badge></div><div className="text-xs text-gray-400 mt-1">Rp 0 / selamanya</div></div><div className="text-right"><div className="text-2xl font-extrabold">{freeCount}<span className="text-sm text-gray-400">/{rows.length}</span></div><div className="text-[11px] text-gray-400">fitur</div></div></div>
+        </div>
+        <div className="bg-white rounded-xl p-5 shadow-[0_1px_4px_rgba(0,0,0,0.08)] border-l-4 border-[#C9A227]">
+          <div className="flex items-center justify-between"><div><div className="flex items-center gap-2"><span className="text-base font-bold">Premium</span><Badge type="gold">⭐ Berbayar</Badge></div><div className="text-xs text-gray-400 mt-1">Rp 49rb/bln · Rp 399rb/thn</div></div><div className="text-right"><div className="text-2xl font-extrabold text-[#C9A227]">{premiumCount}<span className="text-sm text-gray-400">/{rows.length}</span></div><div className="text-[11px] text-gray-400">fitur</div></div></div>
+        </div>
+      </div>
 
-          <Card className="overflow-hidden">
-            <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2"><ShieldCheck size={15} className="text-[#C9A227]" /><h3 className="text-sm font-bold">Matriks Hak Akses Fitur</h3></div>
-            <table className="w-full border-collapse">
-              <thead><tr><Th>Fitur / Menu</Th><th className="px-4 py-2.5 text-center text-[11px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50 border-b border-gray-100">Free</th><th className="px-4 py-2.5 text-center text-[11px] font-bold text-[#C9A227] uppercase tracking-wider bg-[rgba(201,162,39,0.06)] border-b border-gray-100">Premium</th></tr></thead>
-              <tbody>
-                {rows.map((r) => (
-                  <tr key={r.id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50/50">
-                    <td className="px-4 py-3 text-sm font-medium">{r.feature}</td>
-                    <td className="px-4 py-3 text-center"><div className="flex justify-center"><Toggle checked={r.freeEnabled} onChange={() => toggle(r.id, "freeEnabled")} /></div></td>
-                    <td className="px-4 py-3 text-center bg-[rgba(201,162,39,0.03)]"><div className="flex justify-center"><Toggle checked={r.premiumEnabled} onChange={() => toggle(r.id, "premiumEnabled")} /></div></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </Card>
-          <p className="text-[11px] text-gray-400 mt-3">💡 Tersimpan ke tabel role_permissions. Klik “Simpan Perubahan” untuk persist.</p>
-        </>
-      )}
+      <Card className="overflow-hidden">
+        <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2"><ShieldCheck size={15} className="text-[#C9A227]" /><h3 className="text-sm font-bold">Matriks Hak Akses Fitur</h3></div>
+        <table className="w-full border-collapse">
+          <thead><tr><Th>Fitur / Menu</Th><th className="px-4 py-2.5 text-center text-[11px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50 border-b border-gray-100">Free</th><th className="px-4 py-2.5 text-center text-[11px] font-bold text-[#C9A227] uppercase tracking-wider bg-[rgba(201,162,39,0.06)] border-b border-gray-100">Premium</th></tr></thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.feature} className="border-b border-gray-100 last:border-0 hover:bg-gray-50/50">
+                <td className="px-4 py-3 text-sm font-medium">{r.feature}{r.note && <div className="text-[11px] font-normal text-gray-400 mt-0.5">{r.note}</div>}</td>
+                <td className="px-4 py-3 text-center"><Mark on={r.free} /></td>
+                <td className="px-4 py-3 text-center bg-[rgba(201,162,39,0.03)]"><Mark on={r.premium} /></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Card>
+      <p className="text-[11px] text-gray-400 mt-3">🔒 Read-only — mencerminkan aturan yang benar-benar ditegakkan di kode (lib/gating.ts). Untuk mengubah kebijakan, ubah enforcement-nya.</p>
     </div>
   );
 }
@@ -1341,7 +1326,7 @@ function AdminShell({ me, onSignOut }: { me: AdminMe; onSignOut: () => void }) {
           {activePage === "tidur" && <PageTidur showToast={showToast} openModal={openModal} />}
           {activePage === "notifications" && <PageNotifications openModal={openModal} />}
           {activePage === "analytics" && <PageAnalytics refreshSignal={refreshSignal} />}
-          {activePage === "roles" && <PageRoles showToast={showToast} />}
+          {activePage === "roles" && <PageRoles />}
           {activePage === "settings" && <PageSettings showToast={showToast} />}
         </div>
       </main>

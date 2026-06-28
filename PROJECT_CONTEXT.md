@@ -506,6 +506,17 @@ npm run db:generate   # bila ada perubahan schema (additive)
   Input URL tetap sebagai fallback. Tanpa migrasi/endpoint/store baru. Gate hijau.
 - Lihat §10.11. **Foto milestone** masih tersisa (perlu kolom `photoUrl` + migrasi).
 
+**M34 — Matriks akses admin jadi NYATA (read-only, sumber kode) — ✅ SELESAI**
+- **Masalah:** tab "Role & Akses" punya toggle Free/Premium yang **tak berpengaruh**
+  (display-only) DAN isinya **salah** (klaim Imunisasi/Gigi/Tidur/notifikasi = premium,
+  padahal gratis). Kontrol admin palsu + menyesatkan.
+- **Solusi:** `lib/gating.ts` `ACCESS_POLICY` = sumber kebenaran tunggal yang mencerminkan
+  enforcement nyata (M28). Tab admin dirombak jadi **read-only** (✓/🔒, + catatan kuota:
+  Free 1 anak/3 coach, Premium tak terbatas/penuh) yang membaca `ACCESS_POLICY` — tak bisa
+  drift dari kode. Toggle & "Simpan" dihapus.
+- API `role_permissions` (PUT) kini tak dipakai UI (dibiarkan, harmless). Tanpa migrasi.
+- Gerbang: tsc bersih · lint 0 error (14 warning) · build sukses.
+
 **M32 — Bagikan laporan via link publik (de-stub) — ✅ SELESAI**
 - **Bug diperbaiki:** tombol "Bagikan via Link" hanya `toast` palsu (tak buat link).
 - **DB (migrasi 0010, additive):** `report_shares(id=token, userId, childId→cascade,
