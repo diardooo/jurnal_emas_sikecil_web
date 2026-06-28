@@ -19,7 +19,7 @@ import { useAppStore } from "@/store/app-store";
 import { cn, formatDateID } from "@/lib/utils";
 import type { AppNotification } from "@/lib/types";
 
-const iconFor: Record<AppNotification["type"], typeof Bell> = {
+const iconFor: Record<string, typeof Bell> = {
   imunisasi: Syringe,
   posyandu: CalendarHeart,
   task: ClipboardList,
@@ -58,8 +58,17 @@ export function Notifications() {
           )}
         </div>
         <div className="max-h-96 overflow-y-auto">
+          {notifications.length === 0 && (
+            <div className="px-4 py-10 text-center">
+              <Bell className="mx-auto h-7 w-7 text-muted-foreground/50" />
+              <p className="mt-2 text-sm font-semibold text-navy">Belum ada notifikasi</p>
+              <p className="mt-0.5 text-xs text-navy-muted">
+                Pengingat imunisasi, tugas, & milestone akan muncul di sini.
+              </p>
+            </div>
+          )}
           {notifications.map((n) => {
-            const Icon = iconFor[n.type];
+            const Icon = iconFor[n.type] ?? Bell;
             return (
               <button
                 key={n.id}

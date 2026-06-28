@@ -177,9 +177,19 @@ export interface Category {
   createdAt?: string;
 }
 
+/** Known notification kinds; admin broadcasts may use any string (e.g. "broadcast"). */
+export type NotificationType =
+  | "imunisasi"
+  | "posyandu"
+  | "task"
+  | "habit"
+  | "milestone"
+  | "broadcast"
+  | (string & {});
+
 export interface AppNotification {
   id: string;
-  type: "imunisasi" | "posyandu" | "task" | "habit" | "milestone";
+  type: NotificationType;
   title: string;
   body: string;
   date: string;
