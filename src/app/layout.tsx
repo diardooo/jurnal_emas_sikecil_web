@@ -15,11 +15,10 @@ const display = Baloo_2({
   display: "swap",
 });
 
+// Prefer an explicit NEXT_PUBLIC_APP_URL; otherwise fall back to the known
+// production domain so link previews resolve even if the env var is unset.
 const siteUrl =
-  process.env.NEXT_PUBLIC_APP_URL ??
-  (process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : "http://localhost:3000");
+  process.env.NEXT_PUBLIC_APP_URL ?? "https://jurnal-emas-sikecil-web.vercel.app";
 
 const title = "Jurnal Emas Si Kecil — Pendamping Tumbuh Kembang Anak";
 const description =
