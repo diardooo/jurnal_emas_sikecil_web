@@ -25,16 +25,28 @@ import { Badge } from "@/components/ui/badge";
 
 const modules = [
   {
+    icon: Sparkles,
+    title: "Pendamping AI (Pendamping Emas)",
+    desc: "Tanya apa saja soal tumbuh kembang — dijawab dari data anak Anda sendiri (milestone, pertumbuhan, red flag), berbasis pedoman WHO/IDAI. Bukan diagnosis, tapi penenang di tengah malam.",
+    color: "bg-gold-100 text-gold-700",
+  },
+  {
     icon: LineChart,
     title: "Tumbuh Kembang",
-    desc: "Grafik berat, tinggi & lingkar kepala dibandingkan kurva WHO, plus imunisasi (IDAI), gigi, dan pola tidur.",
+    desc: "Grafik berat, tinggi & lingkar kepala dengan status z-score WHO (deteksi stunting/wasting), plus imunisasi (IDAI), gigi, dan pola tidur.",
     color: "bg-gold-100 text-gold-700",
   },
   {
     icon: Target,
     title: "Goal & Milestone",
-    desc: "Milestone 0–6 tahun dikelompokkan per fase usia & domain — mengacu WHO, IDAI (KPSP) & Denver II.",
+    desc: "Milestone 0–6 tahun per fase usia & domain (WHO, IDAI/KPSP, Denver II) — dengan deteksi otomatis red flag bila ada keterlambatan kritis.",
     color: "bg-navy/10 text-navy",
+  },
+  {
+    icon: HeartPulse,
+    title: "Jurnal Emas",
+    desc: "Abadikan momen & catatan harian si Kecil lengkap dengan foto — timeline kenangan yang tumbuh bersama mereka.",
+    color: "bg-sage-soft text-sage",
   },
   {
     icon: ClipboardList,
@@ -51,7 +63,7 @@ const modules = [
   {
     icon: FileText,
     title: "Laporan Perkembangan",
-    desc: "Rekap per kategori perkembangan & grafik pertumbuhan — siap diunduh PDF untuk dibawa ke dokter.",
+    desc: "Rekap per domain & grafik pertumbuhan — unduh PDF atau bagikan via link read-only langsung ke dokter/nakes, tanpa mereka perlu login.",
     color: "bg-gold-100 text-gold-700",
   },
   {
@@ -90,32 +102,33 @@ const domains = [
   "Nutrisi & Pertumbuhan",
 ];
 
+// Ilustrasi skenario penggunaan (bukan klaim metrik) — menonjolkan fitur nyata.
 const testimonials = [
   {
     name: "Rara",
     role: "Ibu baru, anak 8 bulan",
     quote:
-      "Akhirnya tenang karena tahu milestone bayi saya normal. Reminder imunisasinya benar-benar penyelamat!",
+      "Tengah malam panik anak belum bisa apa, tanya Pendamping AI-nya — langsung dijawab dari data anak saya sendiri. Tenang seketika.",
   },
   {
     name: "Budi & Sari",
     role: "Orang tua pekerja",
     quote:
-      "Cepat diisi sambil kerja. Kami berdua bisa lihat progress anak kapan saja dari satu akun.",
+      "Grafik pertumbuhannya pakai z-score WHO, jadi tahu status anak beneran. Laporannya tinggal share link ke dokter, tanpa ribet.",
   },
   {
     name: "Dewi",
     role: "Ibu anak prasekolah",
     quote:
-      "Goal tracker-nya membantu saya menyiapkan si Kakak masuk SD dengan terstruktur.",
+      "Deteksi red flag-nya bikin saya nggak menunda ke nakes waktu si Kakak telat bicara. Goal tracker-nya juga rapi untuk persiapan SD.",
   },
 ];
 
 const stats = [
-  { value: "0–6", label: "Tahun usia anak dipantau" },
+  { value: "0–6 thn", label: "Rentang usia dipantau" },
   { value: "7", label: "Domain perkembangan" },
-  { value: "4", label: "Modul terintegrasi" },
-  { value: "100%", label: "Bahasa Indonesia" },
+  { value: "z-score", label: "Standar WHO untuk pertumbuhan" },
+  { value: "AI 24/7", label: "Pendamping berbasis data anak" },
 ];
 
 export default function LandingPage() {
@@ -130,7 +143,7 @@ export default function LandingPage() {
             <div className="animate-fade-in">
               <Badge variant="gold" className="mb-5 gap-1.5">
                 <Sparkles className="h-3.5 w-3.5" />
-                Pendamping tumbuh kembang #1 untuk orang tua Indonesia
+                Pendamping tumbuh kembang ber-AI & berbasis bukti ilmiah
               </Badge>
               <h1 className="font-display text-4xl font-extrabold leading-[1.1] tracking-tight text-navy sm:text-5xl lg:text-6xl text-balance">
                 Rayakan setiap{" "}
@@ -138,8 +151,9 @@ export default function LandingPage() {
                 si Kecil
               </h1>
               <p className="mt-5 max-w-lg text-lg leading-relaxed text-navy-muted">
-                Satu platform untuk memantau milestone, mengatur rutinitas, dan
-                membangun kebiasaan baik — berbasis bukti ilmiah WHO, IDAI &
+                Pantau milestone, pertumbuhan z-score WHO, dan rutinitas — plus{" "}
+                <span className="font-semibold text-navy">Pendamping AI</span> yang
+                menjawab dari data anak Anda sendiri. Berbasis bukti WHO, IDAI &
                 Denver.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -155,7 +169,7 @@ export default function LandingPage() {
               </div>
               <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-navy-muted">
                 <span className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-sage" /> Gratis 14 hari
+                  <CheckCircle2 className="h-4 w-4 text-sage" /> Gratis untuk memulai
                 </span>
                 <span className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-sage" /> Tanpa kartu kredit
@@ -289,8 +303,11 @@ export default function LandingPage() {
                 Testimoni
               </Badge>
               <h2 className="font-display text-3xl font-extrabold tracking-tight text-navy sm:text-4xl">
-                Dipercaya orang tua Indonesia
+                Dibuat untuk orang tua Indonesia
               </h2>
+              <p className="mt-3 text-sm text-navy-muted">
+                Ilustrasi skenario penggunaan fitur — bukan klaim metrik.
+              </p>
             </div>
             <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
               {testimonials.map((t) => (
@@ -336,8 +353,8 @@ export default function LandingPage() {
                 Jangan lewatkan momen emas tumbuh kembang si Kecil
               </h2>
               <p className="mx-auto mt-3 max-w-lg text-cream/70">
-                Bergabung dengan ribuan orang tua yang memantau perkembangan anak
-                secara konsisten dan menyenangkan.
+                Mulai pantau milestone, pertumbuhan, dan rutinitas si Kecil hari ini —
+                dipandu bukti ilmiah & Pendamping AI. Gratis untuk memulai.
               </p>
               <Button size="lg" className="mt-8" asChild>
                 <Link href="/register">

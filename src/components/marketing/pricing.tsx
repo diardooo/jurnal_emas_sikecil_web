@@ -9,21 +9,18 @@ import { cn, formatRupiah } from "@/lib/utils";
 
 const freeFeatures = [
   "1 profil anak",
-  "Maks 10 task aktif",
-  "Maks 3 habit",
-  "Milestone terbatas",
-  "Reminder terbatas",
-  "Template dasar",
+  "Milestone & pertumbuhan z-score WHO lengkap",
+  "Task, rutinitas & Jurnal Emas (tanpa foto)",
+  "Pendamping AI — 3 pertanyaan/hari",
+  "Pengingat imunisasi & posyandu",
 ];
 
 const premiumFeatures = [
-  "Hingga 5 profil anak",
-  "Task & habit unlimited",
-  "Milestone lengkap 0–6 tahun",
-  "Foto di setiap milestone",
-  "Export laporan PDF",
-  "Reminder & notifikasi penuh",
-  "Template siap pakai lengkap",
+  "Profil anak tak terbatas",
+  "Foto di Jurnal & milestone",
+  "Pendamping AI — kuota harian penuh",
+  "Export PDF & bagikan laporan via link",
+  "Semua fitur paket Gratis",
 ];
 
 export function Pricing() {
@@ -43,7 +40,8 @@ export function Pricing() {
             Mulai gratis, upgrade saat siap
           </h2>
           <p className="mt-3 text-navy-muted">
-            Coba semua fitur Premium gratis selama 14 hari. Tanpa kartu kredit.
+            Gratis selamanya untuk memulai. Upgrade ke Premium kapan saja — sekali
+            bayar, tanpa langganan otomatis.
           </p>
 
           <div className="mt-8 inline-flex items-center gap-3 rounded-full bg-background p-1.5 shadow-sm">
@@ -119,7 +117,7 @@ export function Pricing() {
               </span>
             </p>
             <Button className="mt-6 w-full" asChild>
-              <Link href="/register">Coba Premium 14 Hari</Link>
+              <Link href="/register">Mulai & Upgrade ke Premium</Link>
             </Button>
             <ul className="mt-8 space-y-3">
               {premiumFeatures.map((f) => (
