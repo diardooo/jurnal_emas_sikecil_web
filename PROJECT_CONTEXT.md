@@ -506,6 +506,25 @@ npm run db:generate   # bila ada perubahan schema (additive)
   Input URL tetap sebagai fallback. Tanpa migrasi/endpoint/store baru. Gate hijau.
 - Lihat §10.11. **Foto milestone** masih tersisa (perlu kolom `photoUrl` + migrasi).
 
+**M32 — Bagikan laporan via link publik (de-stub) — ✅ SELESAI**
+- **Bug diperbaiki:** tombol "Bagikan via Link" hanya `toast` palsu (tak buat link).
+- **DB (migrasi 0010, additive):** `report_shares(id=token, userId, childId→cascade,
+  fromDate, toDate, expiresAt, createdAt)`.
+- **API:** `POST /api/reports/share` (premium-gated, buat token + expiry 30 hari);
+  `GET /api/public/report/[token]` (**publik tanpa auth** — 404 tak ada, 410 expired;
+  expose hanya data laporan: anak, growth, milestone tercapai, imunisasi).
+- **Halaman publik `/r/[token]`** read-only (header anak+usia, ringkasan, tabel
+  pertumbuhan, milestone tercapai, disclaimer medis, CTA). Di luar grup (app) →
+  middleware allowlist tak melindungi → publik.
+- **UI:** reports "Bagikan via Link" → buat token + salin URL ke clipboard.
+- **Verifikasi:** roundtrip token dev PASS. Gerbang hijau.
+- **⚠️ Deploy (schema change):** migrasi **0010** ke prod **SEBELUM push**.
+
+**M31 — Fix notifikasi: tipe broadcast tak crash bell + empty state — ✅ SELESAI**
+- `iconFor[n.type]` tanpa fallback → broadcast admin (type non-standar) bikin `<Icon>`
+  undefined → dropdown notifikasi user crash. Perlebar `AppNotification.type`, fallback
+  ikon `Bell`, + empty state. Tanpa migrasi.
+
 **M30 — Panel langganan Premium sesuai model sekali-bayar — ✅ SELESAI**
 - **Bug diperbaiki:** tombol "Batalkan Langganan" memanggil `setPlan("free")` → mencabut
   premium yang sudah dibayar seketika. Pembayaran kita sekali-bayar (bukan recurring),

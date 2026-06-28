@@ -273,3 +273,20 @@ export const transactions = pgTable("transactions", {
   paidAt: timestamp("paid_at"),
   createdAt: createdAt(),
 });
+
+/**
+ * Public, read-only report share links. The row `id` is the URL token, so
+ * `/r/<id>` resolves a child's report without login (for sharing with a doctor).
+ * `expiresAt` bounds exposure; the owner can revoke by deleting the row.
+ */
+export const reportShares = pgTable("report_shares", {
+  id: id(),
+  userId: userId(),
+  childId: text("child_id")
+    .notNull()
+    .references(() => children.id, { onDelete: "cascade" }),
+  fromDate: date("from_date"),
+  toDate: date("to_date"),
+  expiresAt: timestamp("expires_at"),
+  createdAt: createdAt(),
+});

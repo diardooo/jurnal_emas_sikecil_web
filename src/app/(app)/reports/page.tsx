@@ -46,8 +46,39 @@ export default function ReportsPage() {
 
   const [from, setFrom] = useState("2026-01-01");
   const [to, setTo] = useState("2026-06-19");
+  const [sharing, setSharing] = useState(false);
 
   const isPremium = plan === "premium";
+
+  /** Create a public read-only report link and copy it to the clipboard. */
+  async function shareLink() {
+    if (sharing) return;
+    setSharing(true);
+    try {
+      const res = await fetch("/api/reports/share", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ childId: child.id, from, to }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { url?: string; error?: string };
+      if (!res.ok || !data.url) throw new Error(data.error ?? "Gagal membuat tautan");
+      try {
+        await navigator.clipboard.writeText(data.url);
+        toast.success("Tautan laporan disalin", {
+          description: "Berlaku 30 hari. Bagikan ke dokter/nakes — bisa dibuka tanpa login.",
+        });
+      } catch {
+        // Clipboard blocked (e.g. insecure context) — show the URL to copy manually.
+        toast.success("Tautan laporan dibuat", { description: data.url });
+      }
+    } catch (e) {
+      toast.error("Gagal membuat tautan", {
+        description: e instanceof Error ? e.message : undefined,
+      });
+    } finally {
+      setSharing(false);
+    }
+  }
 
   /** Print just the report to PDF (browser "Save as PDF"). The temporary
    *  document title becomes the suggested filename. */
@@ -107,11 +138,10 @@ export default function ReportsPage() {
                   <Button
                     variant="outline"
                     className="w-full"
-                    onClick={() => {
-                      toast.success("Tautan laporan disalin");
-                    }}
+                    onClick={shareLink}
+                    disabled={sharing}
                   >
-                    <Link2 /> Bagikan via Link
+                    <Link2 /> {sharing ? "Membuat tautan…" : "Bagikan via Link"}
                   </Button>
                   <Button
                     variant="ghost"
