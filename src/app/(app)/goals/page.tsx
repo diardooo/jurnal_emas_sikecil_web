@@ -61,6 +61,8 @@ export default function GoalsPage() {
     [childMonths, milestones],
   );
 
+  const habits = useAppStore((s) => s.habits);
+  const addHabit = useAppStore((s) => s.addHabit);
   const activities = activitiesForAge(childMonths);
 
   const filtered = useMemo(
@@ -157,28 +159,67 @@ export default function GoalsPage() {
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {activities.map((a) => {
               const meta = domainMeta[a.domain];
+              const added = habits.some(
+                (h) => h.name === a.title && h.childId === activeId,
+              );
               return (
                 <Card key={a.title}>
-                  <CardContent className="flex items-start gap-3 p-4">
-                    <span
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      <span
+                        className={cn(
+                          "grid h-9 w-9 shrink-0 place-items-center rounded-lg",
+                          meta.color,
+                        )}
+                      >
+                        <meta.icon className="h-[18px] w-[18px]" />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+                          {a.domain}
+                        </p>
+                        <p className="text-sm font-semibold text-navy">
+                          {a.title}
+                        </p>
+                        <p className="mt-0.5 text-xs text-navy-muted">
+                          {a.detail}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      disabled={added}
+                      onClick={() => {
+                        addHabit({
+                          id: `h-${Date.now()}`,
+                          name: a.title,
+                          description: a.detail,
+                          category: "Stimulasi Harian",
+                          targetPerWeek: 5,
+                          streak: 0,
+                          history: Array(84).fill(false),
+                          childId: activeId,
+                        });
+                        toast.success("Ditambahkan ke Rutinitas! 💪", {
+                          description: a.title,
+                        });
+                      }}
                       className={cn(
-                        "grid h-9 w-9 shrink-0 place-items-center rounded-lg",
-                        meta.color,
+                        "mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg border py-2 text-xs font-semibold transition-colors",
+                        added
+                          ? "cursor-default border-sage/30 bg-sage-soft text-sage"
+                          : "border-gold-300 bg-gold-50 text-gold-700 hover:bg-gold-100",
                       )}
                     >
-                      <meta.icon className="h-[18px] w-[18px]" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
-                        {a.domain}
-                      </p>
-                      <p className="text-sm font-semibold text-navy">
-                        {a.title}
-                      </p>
-                      <p className="mt-0.5 text-xs text-navy-muted">
-                        {a.detail}
-                      </p>
-                    </div>
+                      {added ? (
+                        <>
+                          <Check className="h-3.5 w-3.5" /> Sudah di Rutinitas
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="h-3.5 w-3.5" /> Tambah ke Rutinitas
+                        </>
+                      )}
+                    </button>
                   </CardContent>
                 </Card>
               );

@@ -506,6 +506,18 @@ npm run db:generate   # bila ada perubahan schema (additive)
   Input URL tetap sebagai fallback. Tanpa migrasi/endpoint/store baru. Gate hijau.
 - Lihat §10.11. **Foto milestone** masih tersisa (perlu kolom `photoUrl` + migrasi).
 
+### Sesi 2026-06-28 (lanjutan) — Template stimulasi → Rutinitas (M44)
+
+**M44 — Template Ide Stimulasi → Tambah ke Rutinitas — ✅ SELESAI**
+- **Fitur:** Tab "Ide Stimulasi" di halaman Goal & Milestone kini punya tombol
+  **"Tambah ke Rutinitas"** di setiap kartu aktivitas. Satu klik: aktivitas langsung
+  masuk ke Rutinitas (kategori "Stimulasi Harian", target 5×/minggu) via `addHabit()`.
+- **Duplicate guard:** jika habit dengan nama yang sama sudah ada untuk anak aktif,
+  tombol berubah jadi "Sudah di Rutinitas" (hijau, disabled) — tidak bisa double-add.
+- **Perubahan:** `goals/page.tsx` saja — tambah `habits`+`addHabit` dari store,
+  restruktur render kartu aktivitas. Tanpa migrasi DB, tanpa file baru.
+- **Gate:** tsc 0 error · lint 0 error · build ✅
+
 ### Sesi 2026-06-28 — Landing world-class + polish in-app (M37–M43)
 
 > Semua commit di bawah **belum di-push** (user yang push & deploy). Semua **tanpa
