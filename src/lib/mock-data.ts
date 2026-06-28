@@ -288,6 +288,59 @@ export const mockMilestones: Milestone[] = [
   { id: "m51", title: "Menoleh saat dipanggil nama", description: "Menoleh atau bereaksi saat namanya dipanggil.", domain: "Sosial-Emosional", ageMinMonths: 6, ageMaxMonths: 9, isCritical: true, status: "bisa", achievedAt: "2026-03-20" },
   { id: "m52", title: "Menunjuk untuk berbagi perhatian", description: "Menunjuk benda untuk menunjukkan ketertarikan kepada orang lain (joint attention).", domain: "Sosial-Emosional", ageMinMonths: 12, ageMaxMonths: 18, isCritical: true, status: "belum" },
   { id: "m53", title: "Mengikuti perintah 2 langkah", description: "Mengikuti instruksi dua langkah, mis. 'ambil sepatu lalu taruh di rak'.", domain: "Bahasa & Komunikasi", ageMinMonths: 24, ageMaxMonths: 36, isCritical: false, status: "belum" },
+
+  // — Ekspansi: 0–3 bulan —
+  { id: "m54", title: "Mengikuti benda bergerak 180°", description: "Mata mengikuti objek yang digerakkan dari sisi ke sisi di depannya.", domain: "Kognitif", ageMinMonths: 1, ageMaxMonths: 3, isCritical: false, status: "bisa", achievedAt: "2025-11-20" },
+  { id: "m55", title: "Tenang saat digendong / disusui", description: "Menenangkan diri saat direspons — tanda regulasi emosi awal.", domain: "Sosial-Emosional", ageMinMonths: 0, ageMaxMonths: 2, isCritical: false, status: "bisa", achievedAt: "2025-10-01" },
+
+  // — Ekspansi: 3–6 bulan —
+  { id: "m56", title: "Memasukkan tangan ke mulut", description: "Mengisap jari/tangan sendiri untuk eksplorasi dan kenyamanan.", domain: "Motorik Halus", ageMinMonths: 3, ageMaxMonths: 5, isCritical: false, status: "bisa", achievedAt: "2025-12-10" },
+  { id: "m57", title: "Bereaksi gembira saat bermain", description: "Menunjukkan kesenangan aktif: meronta, senyum lebar, tertawa saat diajak main.", domain: "Sosial-Emosional", ageMinMonths: 3, ageMaxMonths: 6, isCritical: true, status: "bisa", achievedAt: "2026-01-10" },
+  { id: "m58", title: "Merespons musik & ritme", description: "Menoleh atau menghentikan gerakan saat mendengar lagu/irama.", domain: "Sensorik", ageMinMonths: 4, ageMaxMonths: 6, isCritical: false, status: "bisa", achievedAt: "2026-01-20" },
+
+  // — Ekspansi: 6–9 bulan —
+  { id: "m59", title: "Bermain cilukba (object permanence)", description: "Mencari/menanti wajah yang bersembunyi — menunjukkan pemahaman objek tetap ada.", domain: "Kognitif", ageMinMonths: 6, ageMaxMonths: 9, isCritical: false, status: "bisa", achievedAt: "2026-03-10" },
+  { id: "m60", title: "Menirukan suara & ekspresi orang tua", description: "Mencoba menirukan suara, suku kata, atau gerakan wajah yang dicontohkan.", domain: "Bahasa & Komunikasi", ageMinMonths: 6, ageMaxMonths: 9, isCritical: false, status: "dicoba" },
+  { id: "m61", title: "Merangkak mundur atau berputar", description: "Bergerak mundur atau berputar sebagai tahap awal sebelum merangkak maju.", domain: "Motorik Kasar", ageMinMonths: 6, ageMaxMonths: 8, isCritical: false, status: "dicoba" },
+
+  // — Ekspansi: 9–12 bulan —
+  { id: "m62", title: "Berdiri sebentar tanpa pegangan", description: "Dapat berdiri beberapa detik tanpa berpegangan sebelum memulai langkah pertama.", domain: "Motorik Kasar", ageMinMonths: 10, ageMaxMonths: 12, isCritical: false, status: "belum" },
+  { id: "m63", title: "Memahami kata 'tidak'", description: "Menghentikan aktivitas atau menoleh saat mendengar kata 'tidak' dengan tegas.", domain: "Bahasa & Komunikasi", ageMinMonths: 9, ageMaxMonths: 12, isCritical: false, status: "belum" },
+  { id: "m64", title: "Minum dari gelas / sippy cup", description: "Mencoba minum dari cangkir dengan pegangan atau sippy cup, dengan sedikit bantuan.", domain: "Nutrisi & Pertumbuhan", ageMinMonths: 9, ageMaxMonths: 12, isCritical: false, status: "belum" },
+
+  // — Ekspansi: 12–18 bulan —
+  { id: "m65", title: "Berlari (meski sering jatuh)", description: "Berlari pendek dengan koordinasi yang masih berkembang.", domain: "Motorik Kasar", ageMinMonths: 14, ageMaxMonths: 18, isCritical: false, status: "belum" },
+  { id: "m66", title: "Menunjuk gambar di buku", description: "Menunjuk gambar spesifik saat orang tua menyebutkan namanya.", domain: "Bahasa & Komunikasi", ageMinMonths: 12, ageMaxMonths: 18, isCritical: false, status: "belum" },
+  { id: "m67", title: "Meniru kegiatan orang dewasa", description: "Meniru aktivitas rumah tangga: menyapu, mengelap, menelepon.", domain: "Sosial-Emosional", ageMinMonths: 12, ageMaxMonths: 18, isCritical: false, status: "belum" },
+
+  // — Ekspansi: 18–24 bulan —
+  { id: "m68", title: "Mengenal diri sendiri di cermin", description: "Bereaksi saat melihat bayangan diri di cermin (self-recognition).", domain: "Kognitif", ageMinMonths: 18, ageMaxMonths: 24, isCritical: false, status: "belum" },
+  { id: "m69", title: "Melepas sepatu & kaos kaki sendiri", description: "Dapat melepas alas kaki dan kaos kaki tanpa bantuan.", domain: "Sosial-Emosional", ageMinMonths: 18, ageMaxMonths: 24, isCritical: false, status: "belum" },
+  { id: "m70", title: "Menyebutkan 1–2 anggota tubuh", description: "Menunjuk dan menyebutkan nama bagian tubuh seperti mata, hidung, atau tangan.", domain: "Bahasa & Komunikasi", ageMinMonths: 18, ageMaxMonths: 24, isCritical: false, status: "belum" },
+
+  // — Ekspansi: 24–36 bulan —
+  { id: "m71", title: "Berhitung 1–3 dengan jari", description: "Menyebutkan angka 1, 2, 3 sambil menunjuk atau mengangkat jari.", domain: "Kognitif", ageMinMonths: 24, ageMaxMonths: 36, isCritical: false, status: "belum" },
+  { id: "m72", title: "Menyusun puzzle 4–6 keping", description: "Memasangkan keping puzzle sederhana ke tempat yang benar.", domain: "Kognitif", ageMinMonths: 24, ageMaxMonths: 36, isCritical: false, status: "belum" },
+  { id: "m73", title: "Mencuci tangan sendiri (dengan bantuan)", description: "Mengikuti langkah cuci tangan pakai sabun dengan bimbingan.", domain: "Sosial-Emosional", ageMinMonths: 24, ageMaxMonths: 36, isCritical: false, status: "belum" },
+  { id: "m74", title: "Bermain bersama anak lain (parallel play)", description: "Bermain berdampingan dengan anak lain, mulai berinteraksi sederhana.", domain: "Sosial-Emosional", ageMinMonths: 24, ageMaxMonths: 36, isCritical: false, status: "belum" },
+
+  // — Ekspansi: 3–4 tahun —
+  { id: "m75", title: "Menggambar orang (kepala & badan)", description: "Menggambar manusia dengan setidaknya kepala dan badan.", domain: "Motorik Halus", ageMinMonths: 36, ageMaxMonths: 48, isCritical: false, status: "belum" },
+  { id: "m76", title: "Menyebutkan nama lengkap & usia", description: "Dapat menjawab nama lengkap dan usianya ketika ditanya.", domain: "Bahasa & Komunikasi", ageMinMonths: 36, ageMaxMonths: 48, isCritical: false, status: "belum" },
+  { id: "m77", title: "Memakai kaos kaki sendiri", description: "Memakai kaos kaki dengan benar tanpa bantuan.", domain: "Sosial-Emosional", ageMinMonths: 36, ageMaxMonths: 48, isCritical: false, status: "belum" },
+  { id: "m78", title: "Memahami konsep besar / kecil", description: "Membedakan dan menyebutkan ukuran besar dan kecil pada benda.", domain: "Kognitif", ageMinMonths: 36, ageMaxMonths: 48, isCritical: false, status: "belum" },
+
+  // — Ekspansi: 4–5 tahun —
+  { id: "m79", title: "Berhitung 1–20", description: "Menyebutkan angka 1 sampai 20 secara berurutan.", domain: "Kognitif", ageMinMonths: 48, ageMaxMonths: 60, isCritical: false, status: "belum" },
+  { id: "m80", title: "Menulis beberapa huruf", description: "Menuliskan huruf dari namanya atau huruf yang dikenal.", domain: "Motorik Halus", ageMinMonths: 48, ageMaxMonths: 60, isCritical: false, status: "belum" },
+  { id: "m81", title: "Memahami konsep waktu (kemarin / besok)", description: "Menggunakan kata 'kemarin', 'sekarang', dan 'besok' dalam percakapan.", domain: "Kognitif", ageMinMonths: 48, ageMaxMonths: 60, isCritical: false, status: "belum" },
+  { id: "m82", title: "Memakai kancing / resleting sendiri", description: "Mengancingkan atau menarik resleting pakaian sendiri.", domain: "Sosial-Emosional", ageMinMonths: 48, ageMaxMonths: 60, isCritical: false, status: "belum" },
+
+  // — Ekspansi: 5–6 tahun —
+  { id: "m83", title: "Membaca kata sederhana", description: "Membaca kata-kata pendek yang sudah dikenal dari buku atau tulisan.", domain: "Kognitif", ageMinMonths: 60, ageMaxMonths: 72, isCritical: true, status: "belum" },
+  { id: "m84", title: "Penjumlahan dasar (1+1, 2+2)", description: "Melakukan operasi hitung sederhana dengan benda konkrit atau jari.", domain: "Kognitif", ageMinMonths: 60, ageMaxMonths: 72, isCritical: false, status: "belum" },
+  { id: "m85", title: "Membedakan kiri dan kanan", description: "Menunjukkan tangan kiri dan tangan kanan dengan benar.", domain: "Kognitif", ageMinMonths: 60, ageMaxMonths: 72, isCritical: false, status: "belum" },
+  { id: "m86", title: "Bermain kompetitif & menerima kalah", description: "Bermain permainan bergiliran atau kompetitif dan mulai bisa menerima kekalahan.", domain: "Sosial-Emosional", ageMinMonths: 60, ageMaxMonths: 72, isCritical: false, status: "belum" },
 ];
 
 export const mockSleepLogs: Record<string, SleepLog[]> = {

@@ -76,9 +76,9 @@ export function Sidebar() {
             size="sm"
             variant="navy"
             className="mt-3 w-full"
-            onClick={() => router.push("/settings")}
+            onClick={() => router.push("/settings?tab=billing")}
           >
-            Coba Gratis 14 Hari
+            Upgrade ke Emas Sekarang
           </Button>
         </div>
       )}

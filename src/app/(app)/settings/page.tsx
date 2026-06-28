@@ -253,6 +253,9 @@ function AccountTab({ session, onShowGuide }: { session: SessionData; onShowGuid
   );
 }
 
+const VALID_TABS = ["account", "notif", "billing"] as const;
+type SettingsTab = (typeof VALID_TABS)[number];
+
 export default function SettingsPage() {
   const plan = useAppStore((s) => s.plan);
   const setPlan = useAppStore((s) => s.setPlan);
@@ -261,6 +264,11 @@ export default function SettingsPage() {
   const expiresAt = useAppStore((s) => s.subscriptionExpiresAt);
   const { data: session } = useSession();
   const [checkingOut, setCheckingOut] = useState<"monthly" | "yearly" | null>(null);
+  const [activeTab, setActiveTab] = useState<SettingsTab>(() => {
+    if (typeof window === "undefined") return "account";
+    const t = new URLSearchParams(window.location.search).get("tab") ?? "";
+    return (VALID_TABS as readonly string[]).includes(t) ? (t as SettingsTab) : "account";
+  });
 
   // Returning from Midtrans Snap (?paid=1): reconcile against Midtrans in case
   // the webhook was missed/delayed, then re-sync the store so the plan updates.
@@ -327,7 +335,7 @@ export default function SettingsPage() {
         description="Kelola akun, notifikasi, dan langganan Anda."
       />
 
-      <Tabs defaultValue="account">
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as SettingsTab)}>
         <TabsList>
           <TabsTrigger value="account">
             <User className="h-4 w-4" /> Akun
