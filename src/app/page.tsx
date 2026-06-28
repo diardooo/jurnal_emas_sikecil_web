@@ -6,12 +6,14 @@ import {
   CalendarHeart,
   CheckCircle2,
   ClipboardList,
+  Download,
   FileText,
   Flame,
   HeartPulse,
   LineChart,
   Quote,
   Repeat,
+  Share2,
   ShieldCheck,
   Sparkles,
   Star,
@@ -380,6 +382,13 @@ const heroSchedule = [
   { icon: Target, color: "text-gold-700", bg: "bg-gold-100", label: "Cek milestone 9 bln", date: "28 Jun" },
 ];
 
+// Ringkasan per domain untuk ilustrasi laporan perkembangan.
+const heroReport = [
+  { label: "Motorik Kasar", pct: 90 },
+  { label: "Bahasa & Komunikasi", pct: 70 },
+  { label: "Sosial-Emosional", pct: 100 },
+];
+
 function HeroPreview() {
   // Tinggi batang grafik berat badan (ilustrasi tren naik mengikuti kurva WHO).
   const growthBars = [38, 50, 46, 60, 68, 64, 78, 86];
@@ -441,6 +450,10 @@ function HeroPreview() {
             <p className="text-[11px] text-navy-muted">Goal finger food</p>
           </div>
         </div>
+
+        <p className="mt-4 flex items-center gap-1.5 border-t border-border pt-3 text-[11px] font-medium text-sage">
+          <CheckCircle2 className="h-3.5 w-3.5 shrink-0" /> Status gizi akurat z-score WHO — deteksi dini stunting
+        </p>
       </div>
 
       {/* Kartu kalender + jadwal */}
@@ -500,6 +513,49 @@ function HeroPreview() {
             </div>
           ))}
         </div>
+
+        <p className="mt-4 flex items-center gap-1.5 border-t border-border pt-3 text-[11px] font-medium text-sage">
+          <CheckCircle2 className="h-3.5 w-3.5 shrink-0" /> Pengingat otomatis — jadwal imunisasi & posyandu tak terlewat
+        </p>
+      </div>
+
+      {/* Kartu laporan perkembangan */}
+      <div className="rounded-3xl border bg-card p-5 shadow-xl">
+        <div className="flex items-center justify-between gap-3">
+          <p className="flex items-center gap-1.5 font-display text-sm font-bold text-navy">
+            <FileText className="h-4 w-4 text-gold-600" /> Laporan Perkembangan
+          </p>
+          <div className="flex items-center gap-1.5">
+            <span className="grid h-7 w-7 place-items-center rounded-lg bg-gold-100 text-gold-700">
+              <Download className="h-3.5 w-3.5" />
+            </span>
+            <span className="grid h-7 w-7 place-items-center rounded-lg bg-navy/[0.06] text-navy">
+              <Share2 className="h-3.5 w-3.5" />
+            </span>
+          </div>
+        </div>
+
+        {/* Bar progres per domain */}
+        <div className="mt-4 space-y-3">
+          {heroReport.map((d) => (
+            <div key={d.label}>
+              <div className="flex items-center justify-between text-[11px] font-medium text-navy">
+                <span>{d.label}</span>
+                <span className="text-navy-muted">{d.pct}%</span>
+              </div>
+              <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-navy/[0.07]">
+                <div
+                  className="h-full rounded-full bg-gold-400"
+                  style={{ width: `${d.pct}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <p className="mt-4 flex items-center gap-1.5 border-t border-border pt-3 text-[11px] font-medium text-sage">
+          <ShieldCheck className="h-3.5 w-3.5" /> Bagikan link read-only ke dokter — tanpa login
+        </p>
       </div>
 
       {/* Chip Pendamping AI mengambang */}

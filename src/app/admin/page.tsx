@@ -288,7 +288,7 @@ function PageOverview({ setActivePage, refreshSignal }: { setActivePage: (p: Pag
         </div>
         <Async state={users}>
           {(list) => (
-            <table className="w-full border-collapse">
+            <div className="overflow-x-auto"><table className="w-full border-collapse">
               <thead><tr>{["User", "Registrasi", "Anak", "Plan", "Status"].map((h) => <Th key={h}>{h}</Th>)}</tr></thead>
               <tbody>
                 {list.slice(0, 5).map((u) => (
@@ -301,7 +301,7 @@ function PageOverview({ setActivePage, refreshSignal }: { setActivePage: (p: Pag
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           )}
         </Async>
       </Card>
@@ -388,7 +388,7 @@ function PageUsers({ showToast, openModal }: { showToast: (m: string) => void; o
           <IconBtn onClick={users.reload} title="Refresh"><RefreshCw size={13} /></IconBtn>
         </div>
         {users.loading && !users.data ? <Spinner /> : users.error ? <ErrorState msg={users.error} onRetry={users.reload} /> : (
-          <table className="w-full border-collapse">
+          <div className="overflow-x-auto"><table className="w-full border-collapse">
             <thead>
               <tr>
                 <th className="px-4 py-2.5 bg-gray-50 border-b border-gray-100"><input type="checkbox" className="rounded cursor-pointer accent-[#C9A227]" checked={allChecked} onChange={toggleAll} /></th>
@@ -419,7 +419,7 @@ function PageUsers({ showToast, openModal }: { showToast: (m: string) => void; o
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         )}
         <div className="px-5 py-3 border-t border-gray-100 text-xs text-gray-400">Menampilkan {filtered.length} dari {all.length} user</div>
       </Card>
@@ -462,7 +462,7 @@ function PageChildren({ showToast }: { showToast: (m: string) => void }) {
           <IconBtn onClick={children.reload} title="Refresh"><RefreshCw size={13} /></IconBtn>
         </div>
         {children.loading && !children.data ? <Spinner /> : children.error ? <ErrorState msg={children.error} onRetry={children.reload} /> : (
-          <table className="w-full border-collapse">
+          <div className="overflow-x-auto"><table className="w-full border-collapse">
             <thead><tr>{["Anak", "Orang Tua", "Tgl Lahir", "Usia", "BB / TB Lahir", "Aksi"].map((h) => <Th key={h}>{h}</Th>)}</tr></thead>
             <tbody>
               {filtered.length === 0 ? <tr><td colSpan={6} className="text-center py-10 text-gray-400 text-sm">Tidak ada data anak</td></tr> : filtered.map((c) => (
@@ -476,7 +476,7 @@ function PageChildren({ showToast }: { showToast: (m: string) => void }) {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         )}
       </Card>
     </div>
@@ -506,7 +506,7 @@ function PageSubscriptions({ showToast }: { showToast: (m: string) => void }) {
       <Card className="overflow-hidden">
         <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between"><h3 className="text-sm font-bold">Daftar Subscription</h3><IconBtn onClick={subs.reload} title="Refresh"><RefreshCw size={13} /></IconBtn></div>
         {subs.loading && !subs.data ? <Spinner /> : subs.error ? <ErrorState msg={subs.error} onRetry={subs.reload} /> : (
-          <table className="w-full border-collapse">
+          <div className="overflow-x-auto"><table className="w-full border-collapse">
             <thead><tr>{["User", "Plan", "Status", "Mulai", "Berakhir", "Payment ID"].map((h) => <Th key={h}>{h}</Th>)}</tr></thead>
             <tbody>
               {all.length === 0 ? <tr><td colSpan={6} className="text-center py-10 text-gray-400 text-sm">Belum ada langganan</td></tr> : all.map((s) => (
@@ -520,7 +520,7 @@ function PageSubscriptions({ showToast }: { showToast: (m: string) => void }) {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         )}
       </Card>
     </div>
@@ -541,7 +541,7 @@ function PageMilestones({ showToast, openModal }: { showToast: (m: string) => vo
         <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2"><Sprout size={15} className="text-[#10B981]" /><h3 className="text-sm font-bold">Master Milestone</h3><div className="flex-1" /><IconBtn onClick={data.reload} title="Refresh"><RefreshCw size={13} /></IconBtn></div>
         <Async state={data}>
           {(rows) => (
-            <table className="w-full border-collapse">
+            <div className="overflow-x-auto"><table className="w-full border-collapse">
               <thead><tr>{["Domain", "Usia (bln)", "Judul", "Kritis?", "Referensi", "Aksi"].map((h) => <Th key={h}>{h}</Th>)}</tr></thead>
               <tbody>
                 {rows.length === 0 ? <tr><td colSpan={6} className="text-center py-10 text-gray-400 text-sm">Belum ada data</td></tr> : rows.map((m) => (
@@ -555,7 +555,7 @@ function PageMilestones({ showToast, openModal }: { showToast: (m: string) => vo
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           )}
         </Async>
       </Card>
@@ -577,7 +577,7 @@ function PageImunisasi({ showToast, openModal }: { showToast: (m: string) => voi
         <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2"><Syringe size={15} className="text-[#EF4444]" /><h3 className="text-sm font-bold">Master Imunisasi</h3><div className="flex-1" /><IconBtn onClick={data.reload} title="Refresh"><RefreshCw size={13} /></IconBtn></div>
         <Async state={data}>
           {(rows) => (
-            <table className="w-full border-collapse">
+            <div className="overflow-x-auto"><table className="w-full border-collapse">
               <thead><tr>{["Vaksin", "Usia", "Dosis", "Tipe", "Keterangan", "Aksi"].map((h) => <Th key={h}>{h}</Th>)}</tr></thead>
               <tbody>
                 {rows.length === 0 ? <tr><td colSpan={6} className="text-center py-10 text-gray-400 text-sm">Belum ada data</td></tr> : rows.map((v) => (
@@ -591,7 +591,7 @@ function PageImunisasi({ showToast, openModal }: { showToast: (m: string) => voi
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           )}
         </Async>
       </Card>
@@ -613,7 +613,7 @@ function PageGigi({ showToast, openModal }: { showToast: (m: string) => void; op
         <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2"><Smile size={15} className="text-[#3B82F6]" /><h3 className="text-sm font-bold">Master Gigi Susu</h3><div className="flex-1" /><IconBtn onClick={data.reload} title="Refresh"><RefreshCw size={13} /></IconBtn></div>
         <Async state={data}>
           {(rows) => (
-            <table className="w-full border-collapse">
+            <div className="overflow-x-auto"><table className="w-full border-collapse">
               <thead><tr>{["Gigi", "Posisi", "Usia Tumbuh", "Usia Tanggal", "Jumlah", "Aksi"].map((h) => <Th key={h}>{h}</Th>)}</tr></thead>
               <tbody>
                 {rows.length === 0 ? <tr><td colSpan={6} className="text-center py-10 text-gray-400 text-sm">Belum ada data</td></tr> : rows.map((g) => (
@@ -627,7 +627,7 @@ function PageGigi({ showToast, openModal }: { showToast: (m: string) => void; op
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           )}
         </Async>
       </Card>
@@ -649,7 +649,7 @@ function PageTidur({ showToast, openModal }: { showToast: (m: string) => void; o
         <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2"><Moon size={15} className="text-[#8B5CF6]" /><h3 className="text-sm font-bold">Master Jadwal Tidur</h3><div className="flex-1" /><IconBtn onClick={data.reload} title="Refresh"><RefreshCw size={13} /></IconBtn></div>
         <Async state={data}>
           {(rows) => (
-            <table className="w-full border-collapse">
+            <div className="overflow-x-auto"><table className="w-full border-collapse">
               <thead><tr>{["Kelompok", "Usia", "Total/Hari", "Malam", "Siang", "Catatan", "Aksi"].map((h) => <Th key={h}>{h}</Th>)}</tr></thead>
               <tbody>
                 {rows.length === 0 ? <tr><td colSpan={7} className="text-center py-10 text-gray-400 text-sm">Belum ada data</td></tr> : rows.map((t) => (
@@ -664,7 +664,7 @@ function PageTidur({ showToast, openModal }: { showToast: (m: string) => void; o
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           )}
         </Async>
       </Card>
@@ -695,7 +695,7 @@ function PageRoles() {
 
       <Card className="overflow-hidden">
         <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2"><ShieldCheck size={15} className="text-[#C9A227]" /><h3 className="text-sm font-bold">Matriks Hak Akses Fitur</h3></div>
-        <table className="w-full border-collapse">
+        <div className="overflow-x-auto"><table className="w-full border-collapse">
           <thead><tr><Th>Fitur / Menu</Th><th className="px-4 py-2.5 text-center text-[11px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50 border-b border-gray-100">Free</th><th className="px-4 py-2.5 text-center text-[11px] font-bold text-[#C9A227] uppercase tracking-wider bg-[rgba(201,162,39,0.06)] border-b border-gray-100">Premium</th></tr></thead>
           <tbody>
             {rows.map((r) => (
@@ -706,7 +706,7 @@ function PageRoles() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </Card>
       <p className="text-[11px] text-gray-400 mt-3">🔒 Read-only — mencerminkan aturan yang benar-benar ditegakkan di kode (lib/gating.ts). Untuk mengubah kebijakan, ubah enforcement-nya.</p>
     </div>
@@ -898,7 +898,7 @@ function PageSettings({ showToast }: { showToast: (m: string) => void }) {
             </div>
             {discounts.loading && !discounts.data ? <Spinner /> : discounts.error ? <ErrorState msg={discounts.error} onRetry={discounts.reload} /> : (
               <div className="border border-gray-100 rounded-lg overflow-hidden">
-                <table className="w-full border-collapse">
+                <div className="overflow-x-auto"><table className="w-full border-collapse">
                   <thead><tr>{["Kode", "Diskon", "Deskripsi", "Penggunaan", "Berlaku s/d", "Status", "Aksi"].map((h) => <Th key={h}>{h}</Th>)}</tr></thead>
                   <tbody>
                     {(discounts.data ?? []).map((d) => (
@@ -913,7 +913,7 @@ function PageSettings({ showToast }: { showToast: (m: string) => void }) {
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                </table></div>
               </div>
             )}
           </div>
@@ -940,7 +940,7 @@ function PageSettings({ showToast }: { showToast: (m: string) => void }) {
               <div className="py-8 text-center text-sm text-gray-400">Belum ada aktivitas tercatat.</div>
             ) : (
               <div className="border border-gray-100 rounded-lg overflow-hidden max-h-[420px] overflow-y-auto">
-                <table className="w-full border-collapse">
+                <div className="overflow-x-auto"><table className="w-full border-collapse">
                   <thead className="sticky top-0 bg-white"><tr>{["Waktu", "Admin", "Aksi", "Detail"].map((h) => <Th key={h}>{h}</Th>)}</tr></thead>
                   <tbody>
                     {(audit.data ?? []).map((e) => (
@@ -952,7 +952,7 @@ function PageSettings({ showToast }: { showToast: (m: string) => void }) {
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                </table></div>
               </div>
             )}
           </div>
