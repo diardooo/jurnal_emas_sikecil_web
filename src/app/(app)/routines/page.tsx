@@ -8,6 +8,7 @@ import {
   Circle,
   CloudSun,
   Flame,
+  Lightbulb,
   Moon,
   Plus,
   Sun,
@@ -25,8 +26,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useAppStore } from "@/store/app-store";
+import { ACTIVITIES } from "@/lib/daily-activities";
 import { cn } from "@/lib/utils";
 import type { Habit, TodoCategory } from "@/lib/types";
+
+const STIMULASI_TITLES = new Set(
+  Object.values(ACTIVITIES).flatMap((acts) => acts.map((a) => a.title)),
+);
 
 const categoryMeta: Record<TodoCategory, { icon: typeof Sun; color: string }> = {
   "Rutinitas Pagi": { icon: Sun, color: "bg-gold-100 text-gold-700" },
@@ -295,6 +301,8 @@ function HabitCard({
 }) {
   const doneToday = h.history[h.history.length - 1];
   const c = consistency(h.history);
+  const isStimulasi =
+    h.category === "Stimulasi Harian" && STIMULASI_TITLES.has(h.name);
 
   return (
     <Card>
@@ -312,6 +320,11 @@ function HabitCard({
             <div className="flex flex-wrap items-center gap-2">
               <p className="font-display text-base font-bold text-navy">{h.name}</p>
               <Badge variant="secondary">{h.category}</Badge>
+              {isStimulasi && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-sage-soft px-2 py-0.5 text-[10px] font-semibold text-sage">
+                  <Lightbulb className="h-3 w-3" /> Ide Aplikasi
+                </span>
+              )}
             </div>
             <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-navy-muted">
               <span className="flex items-center gap-1 font-semibold text-soft-orange">

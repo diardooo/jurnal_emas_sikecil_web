@@ -63,6 +63,7 @@ export default function GoalsPage() {
 
   const habits = useAppStore((s) => s.habits);
   const addHabit = useAppStore((s) => s.addHabit);
+  const deleteHabit = useAppStore((s) => s.deleteHabit);
   const activities = activitiesForAge(childMonths);
 
   const filtered = useMemo(
@@ -189,18 +190,32 @@ export default function GoalsPage() {
                     <button
                       disabled={added}
                       onClick={() => {
+                        const title = a.title;
+                        const cId = activeId;
                         addHabit({
                           id: `h-${Date.now()}`,
-                          name: a.title,
+                          name: title,
                           description: a.detail,
                           category: "Stimulasi Harian",
                           targetPerWeek: 5,
                           streak: 0,
                           history: Array(84).fill(false),
-                          childId: activeId,
+                          childId: cId,
                         });
                         toast.success("Ditambahkan ke Rutinitas! 💪", {
-                          description: a.title,
+                          description: title,
+                          action: {
+                            label: "Batalkan",
+                            onClick: () => {
+                              const found = useAppStore
+                                .getState()
+                                .habits.find(
+                                  (h) =>
+                                    h.name === title && h.childId === cId,
+                                );
+                              if (found) deleteHabit(found.id);
+                            },
+                          },
                         });
                       }}
                       className={cn(

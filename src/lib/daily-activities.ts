@@ -13,7 +13,7 @@ export interface DailyActivity {
   domain: MilestoneDomain;
 }
 
-const ACTIVITIES: Record<AgePhaseId, DailyActivity[]> = {
+export const ACTIVITIES: Record<AgePhaseId, DailyActivity[]> = {
   "0-3": [
     { title: "Tummy time 2 menit", detail: "Tengkurapkan saat ia terjaga untuk menguatkan otot leher.", domain: "Motorik Kasar" },
     { title: "Tatap & tirukan", detail: "Dari jarak 20–30 cm, tatap matanya dan tirukan ekspresinya.", domain: "Sosial-Emosional" },
