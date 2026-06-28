@@ -238,9 +238,9 @@ function GrowthTab({
                 </tr>
               </thead>
               <tbody>
-                {[...records].reverse().map((r) => (
+                {[...records].reverse().map((r, i) => (
                   <tr
-                    key={r.id}
+                    key={r.id ?? `${r.ageMonths}-${r.date ?? i}`}
                     className="border-b align-top last:border-0 hover:bg-muted/40"
                   >
                     <td className="whitespace-nowrap px-4 py-3 font-medium text-navy sm:px-6">
