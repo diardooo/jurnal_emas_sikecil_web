@@ -78,7 +78,7 @@ export function Sidebar() {
             className="mt-3 w-full"
             onClick={() => router.push("/settings?tab=billing")}
           >
-            Upgrade ke Emas Sekarang
+            Upgrade Sekarang
           </Button>
         </div>
       )}
