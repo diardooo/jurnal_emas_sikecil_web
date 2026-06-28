@@ -8,7 +8,7 @@ import { JournalDialog } from "@/components/app/journal-dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { PhotoGallery } from "@/components/app/photo-gallery";
 import { useAppStore } from "@/store/app-store";
 import { MOODS, MOOD_META } from "@/lib/journal";
 import { cn, formatDateID } from "@/lib/utils";
@@ -196,30 +196,7 @@ function EntryCard({
                 {e.body}
               </p>
             )}
-            {e.media.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-2">
-                {e.media.map((url, i) => (
-                  <a
-                    key={url}
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="transition-transform hover:scale-[1.03]"
-                  >
-                    <Avatar className="h-24 w-24 rounded-xl border">
-                      <AvatarImage
-                        src={url}
-                        alt={`Foto ${i + 1}`}
-                        className="object-cover"
-                      />
-                      <AvatarFallback className="rounded-xl">
-                        <ImageIcon className="h-5 w-5 text-muted-foreground" />
-                      </AvatarFallback>
-                    </Avatar>
-                  </a>
-                ))}
-              </div>
-            )}
+            {e.media.length > 0 && <PhotoGallery media={e.media} />}
             {e.tags.length > 0 && (
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {e.tags.map((t) => (
