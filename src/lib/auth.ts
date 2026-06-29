@@ -51,6 +51,11 @@ export const auth = betterAuth({
       role: { type: "string", required: false, input: false },
       status: { type: "string", required: false, input: false },
     },
+    // Right to erasure (UU PDP): let users delete their account. Every app table
+    // FKs user.id with onDelete cascade, so removing the user row wipes all
+    // their children, journals, milestones, etc. Credential users must confirm
+    // with their password; the flow runs immediately (no email step required).
+    deleteUser: { enabled: true },
   },
   emailAndPassword: {
     enabled: true,

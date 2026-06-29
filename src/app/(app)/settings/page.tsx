@@ -23,6 +23,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAppStore } from "@/store/app-store";
 import { useTourStore } from "@/store/tour-store";
+import { DeleteAccountDialog } from "@/components/app/delete-account-dialog";
 import { authClient, useSession } from "@/lib/auth-client";
 import { formatRupiah } from "@/lib/utils";
 
@@ -263,6 +264,17 @@ function AccountTab({ session, onShowGuide }: { session: SessionData; onShowGuid
           >
             Mulai Tur
           </Button>
+        </div>
+
+        <Separator />
+        <div className="flex flex-col gap-3 rounded-xl border border-alert-red/30 bg-alert-red-soft/40 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-alert-red">Hapus akun</p>
+            <p className="text-xs text-navy-muted">
+              Menghapus akun & seluruh data secara permanen. Tidak bisa dibatalkan.
+            </p>
+          </div>
+          <DeleteAccountDialog />
         </div>
       </CardContent>
     </Card>
