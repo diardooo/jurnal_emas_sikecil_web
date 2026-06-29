@@ -97,12 +97,15 @@ export function ProductTour() {
       );
       if (el) {
         // Reveal the requested tab's content inside the spotlight first. Radix
-        // TabsTrigger activates on `mousedown` (button 0), not `click`, so a
-        // plain .click() does nothing — dispatch a real mousedown instead.
+        // TabsTrigger has no onClick; it activates on `onFocus` (automatic mode,
+        // our default) and `onMouseDown` (button 0). `.focus()` is the reliable
+        // cross-device trigger (mobile has no mouse events); the mousedown is a
+        // fallback for the rare case the trigger is already focused.
         if (tab) {
           const trigger = document.querySelector<HTMLElement>(
             `[data-tour-tab="${tab}"]`,
           );
+          trigger?.focus({ preventScroll: true });
           trigger?.dispatchEvent(
             new MouseEvent("mousedown", {
               bubbles: true,
