@@ -4,7 +4,6 @@ import {
   FileText,
   LayoutDashboard,
   LineChart,
-  Repeat,
   Settings,
   Sparkles,
   Target,
@@ -18,8 +17,7 @@ export const navItems = [
   { label: "Jurnal", href: "/journal", icon: BookHeart },
   { label: "Tumbuh Kembang", href: "/growth", icon: LineChart },
   { label: "Goal & Milestone", href: "/goals", icon: Target },
-  { label: "Task Manager", href: "/tasks", icon: ClipboardList },
-  { label: "Rutinitas", href: "/routines", icon: Repeat },
+  { label: "Catatan si Kecil", href: "/catatan", icon: ClipboardList },
   { label: "Profil Anak", href: "/children", icon: Baby },
   { label: "Laporan", href: "/reports", icon: FileText },
   { label: "Pengaturan", href: "/settings", icon: Settings },
@@ -31,7 +29,7 @@ export const mobileNavItems = [
   { label: "Beranda", href: "/dashboard", icon: LayoutDashboard },
   { label: "Tumbuh", href: "/growth", icon: LineChart },
   { label: "Milestone", href: "/goals", icon: Target },
-  { label: "Task", href: "/tasks", icon: ClipboardList },
+  { label: "Catatan", href: "/catatan", icon: ClipboardList },
 ];
 
 export { CalendarCheck };

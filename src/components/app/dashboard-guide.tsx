@@ -56,9 +56,9 @@ const steps: {
   {
     key: "task",
     icon: ClipboardList,
-    title: "Atur task & rutinitas",
-    desc: "Kelola tugas sekali-jadi dan rutinitas harian yang berulang.",
-    href: "/tasks",
+    title: "Catatan si Kecil",
+    desc: "Kelola PR Ibu (sekali beres) dan rutinitas & kebiasaan harian.",
+    href: "/catatan",
     cta: "Mulai atur",
   },
   {

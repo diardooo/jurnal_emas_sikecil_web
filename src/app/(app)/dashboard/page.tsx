@@ -91,7 +91,7 @@ export default function DashboardPage() {
       sub: "perlu diselesaikan",
       icon: ClipboardList,
       color: "bg-gold-100 text-gold-700",
-      href: "/tasks",
+      href: "/catatan?tab=pr",
     },
     {
       label: "Rutinitas hari ini",
@@ -99,7 +99,7 @@ export default function DashboardPage() {
       sub: "selesai",
       icon: ListTodo,
       color: "bg-sage-soft text-sage",
-      href: "/routines",
+      href: "/catatan?tab=rutinitas",
     },
     {
       label: "Kebiasaan check-in",
@@ -107,7 +107,7 @@ export default function DashboardPage() {
       sub: "hari ini",
       icon: Repeat,
       color: "bg-soft-orange-soft text-soft-orange",
-      href: "/routines",
+      href: "/catatan?tab=rutinitas",
     },
     {
       label: "Milestone tercapai",
@@ -151,7 +151,7 @@ export default function DashboardPage() {
               <p className="text-xs text-cream/70">hari beruntun</p>
             </div>
             <Button variant="navy" className="border border-cream/20" asChild>
-              <Link href="/tasks">
+              <Link href="/catatan?tab=pr">
                 <Plus /> Tambah Task
               </Link>
             </Button>
@@ -261,7 +261,7 @@ export default function DashboardPage() {
           <CardHeader className="flex-row items-center justify-between">
             <CardTitle>Task Hari Ini</CardTitle>
             <Button variant="ghost" size="sm" asChild>
-              <Link href="/tasks">
+              <Link href="/catatan?tab=pr">
                 Lihat semua <ArrowRight />
               </Link>
             </Button>

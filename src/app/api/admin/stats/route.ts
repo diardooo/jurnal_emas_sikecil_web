@@ -133,8 +133,8 @@ export async function GET(req: NextRequest) {
     { module: "Profil Anak", users: Number(uChildren), pct: pct(Number(uChildren)) },
     { module: "Tumbuh Kembang", users: Number(uGrowth), pct: pct(Number(uGrowth)) },
     { module: "Goal & Milestone", users: Number(uMilestones), pct: pct(Number(uMilestones)) },
-    { module: "Task Manager", users: Number(uTasks), pct: pct(Number(uTasks)) },
-    { module: "Rutinitas", users: Number(uHabits), pct: pct(Number(uHabits)) },
+    { module: "PR Ibu", users: Number(uTasks), pct: pct(Number(uTasks)) },
+    { module: "Rutinitas & Kebiasaan", users: Number(uHabits), pct: pct(Number(uHabits)) },
     { module: "Jurnal Emas", users: Number(uJournal), pct: pct(Number(uJournal)) },
     { module: "Imunisasi", users: Number(uImmun), pct: pct(Number(uImmun)) },
   ].sort((a, b) => b.users - a.users);

@@ -116,13 +116,13 @@ const modules = [
   },
   {
     icon: ClipboardList,
-    title: "Task Manager",
+    title: "PR Ibu",
     desc: "Urusan sekali-jadi yang punya tenggat (imunisasi, administrasi) — tampilan List, Kanban, & Kalender.",
     color: "bg-soft-orange-soft text-soft-orange",
   },
   {
     icon: Repeat,
-    title: "Rutinitas",
+    title: "Rutinitas & Kebiasaan",
     desc: "Checklist harian yang segar tiap pagi + pelacakan kebiasaan dengan streak & heatmap konsistensi.",
     color: "bg-sage-soft text-sage",
   },

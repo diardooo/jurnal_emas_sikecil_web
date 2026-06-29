@@ -125,43 +125,20 @@ export const tourSteps: TourStep[] = [
     body: "Buat target pribadimu sebagai orang tua dan pecah jadi langkah-langkah kecil yang bisa kamu centang dan pantau progresnya.",
   },
 
-  // ---- Task Manager: open each view ----
+  // ---- Catatan si Kecil: open each tab ----
   {
-    href: "/tasks",
-    selector: "task-panel",
-    tab: "task-list",
-    title: "Task Manager › List",
-    body: "Tampilan daftar yang ringkas — cara tercepat melihat dan menyelesaikan task satu per satu.",
+    href: "/catatan",
+    selector: "catatan-panel",
+    tab: "catatan-pr",
+    title: "Catatan si Kecil › PR Ibu",
+    body: "Urusan sekali beres yang punya tenggat — kontrol dokter, urus akta, beli MPASI. Bisa dilihat sebagai List, Kanban, atau Kalender.",
   },
   {
-    href: "/tasks",
-    selector: "task-panel",
-    tab: "task-kanban",
-    title: "Task Manager › Kanban",
-    body: "Papan kolom berdasarkan status. Geser task antar kolom untuk memantau progres secara visual.",
-  },
-  {
-    href: "/tasks",
-    selector: "task-panel",
-    tab: "task-calendar",
-    title: "Task Manager › Kalender",
-    body: "Lihat task tersusun berdasarkan tanggal — pas untuk merencanakan agenda harian si Kecil.",
-  },
-
-  // ---- Rutinitas: open each tab ----
-  {
-    href: "/routines",
-    selector: "routines-panel",
-    tab: "routines-today",
-    title: "Rutinitas › Hari Ini",
-    body: "Checklist harian yang otomatis disegarkan tiap pagi. Centang aktivitas rutin si Kecil sepanjang hari.",
-  },
-  {
-    href: "/routines",
-    selector: "routines-panel",
-    tab: "routines-habits",
-    title: "Rutinitas › Kebiasaan & Konsistensi",
-    body: "Lacak kebiasaan jangka panjang dengan peta konsistensi 4 minggu. Ide Stimulasi yang kamu tambahkan dari halaman Milestone muncul di sini dengan tanda 'Ide Aplikasi'.",
+    href: "/catatan",
+    selector: "catatan-panel",
+    tab: "catatan-rutinitas",
+    title: "Catatan si Kecil › Rutinitas & Kebiasaan",
+    body: "Dalam satu halaman: ceklis harian yang segar tiap pagi, plus pelacak kebiasaan dengan streak & konsistensi 4 minggu. Ide Stimulasi yang kamu tambahkan dari Milestone muncul di sini dengan tanda 'Ide Aplikasi'.",
   },
 
   // ---- Reports, profiles, upgrade ----

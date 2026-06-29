@@ -17,6 +17,7 @@ export default function robots(): MetadataRoute.Robots {
           "/journal",
           "/growth",
           "/goals",
+          "/catatan",
           "/tasks",
           "/routines",
           "/children",

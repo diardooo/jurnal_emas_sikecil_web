@@ -202,7 +202,7 @@ export default function GoalsPage() {
                           history: Array(84).fill(false),
                           childId: cId,
                         });
-                        toast.success("Ditambahkan ke Rutinitas! 💪", {
+                        toast.success("Ditambahkan ke Kebiasaan! 💪", {
                           description: title,
                           action: {
                             label: "Batalkan",
@@ -227,11 +227,11 @@ export default function GoalsPage() {
                     >
                       {added ? (
                         <>
-                          <Check className="h-3.5 w-3.5" /> Sudah di Rutinitas
+                          <Check className="h-3.5 w-3.5" /> Sudah di Kebiasaan
                         </>
                       ) : (
                         <>
-                          <Plus className="h-3.5 w-3.5" /> Tambah ke Rutinitas
+                          <Plus className="h-3.5 w-3.5" /> Tambah ke Kebiasaan
                         </>
                       )}
                     </button>
