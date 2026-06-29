@@ -109,18 +109,18 @@ export default function GrowthPage() {
         })}
       </div>
 
-      <Tabs defaultValue="pertumbuhan">
-        <TabsList data-tour="growth-tabs" className="w-full md:w-auto">
-          <TabsTrigger value="pertumbuhan">
+      <Tabs data-tour="growth-panel" defaultValue="pertumbuhan">
+        <TabsList className="w-full md:w-auto">
+          <TabsTrigger data-tour-tab="growth-pertumbuhan" value="pertumbuhan">
             <Scale className="h-4 w-4" /> Pertumbuhan
           </TabsTrigger>
-          <TabsTrigger value="imunisasi">
+          <TabsTrigger data-tour-tab="growth-imunisasi" value="imunisasi">
             <Syringe className="h-4 w-4" /> Imunisasi
           </TabsTrigger>
-          <TabsTrigger value="gigi">
+          <TabsTrigger data-tour-tab="growth-gigi" value="gigi">
             <Smile className="h-4 w-4" /> Gigi
           </TabsTrigger>
-          <TabsTrigger value="tidur">
+          <TabsTrigger data-tour-tab="growth-tidur" value="tidur">
             <Bed className="h-4 w-4" /> Tidur
           </TabsTrigger>
         </TabsList>

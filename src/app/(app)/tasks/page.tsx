@@ -146,15 +146,15 @@ export default function TasksPage() {
         </Select>
       </div>
 
-      <Tabs defaultValue="list">
-        <TabsList data-tour="task-views">
-          <TabsTrigger value="list">
+      <Tabs data-tour="task-panel" defaultValue="list">
+        <TabsList>
+          <TabsTrigger data-tour-tab="task-list" value="list">
             <List className="h-4 w-4" /> List
           </TabsTrigger>
-          <TabsTrigger value="kanban">
+          <TabsTrigger data-tour-tab="task-kanban" value="kanban">
             <Columns3 className="h-4 w-4" /> Kanban
           </TabsTrigger>
-          <TabsTrigger value="calendar">
+          <TabsTrigger data-tour-tab="task-calendar" value="calendar">
             <CalendarDays className="h-4 w-4" /> Kalender
           </TabsTrigger>
         </TabsList>

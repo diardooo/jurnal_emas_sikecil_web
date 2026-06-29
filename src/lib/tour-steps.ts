@@ -1,20 +1,22 @@
 /**
  * The first-login product walkthrough. Steps are walked in order; the engine
- * (components/app/product-tour.tsx) navigates to `href` first, then spotlights
+ * (components/app/product-tour.tsx) navigates to `href`, optionally opens the
+ * `tab` (clicks `[data-tour-tab]`) so its content is visible, then spotlights
  * the element matching `selector`. A step with no `selector` (or whose anchor
  * isn't found) renders as a centered card, so the tour never gets stuck.
  *
  * Ordering follows the parent's real journey: orient on the dashboard (its key
- * sections) → the flagship AI companion → daily logging → growth (with its four
- * tabs) → the standout milestone tracker (its tabs) → task views → routine tabs
- * → reports → child profiles → upgrade. Premium touchpoints are flagged so users
- * know what unlocks with Emas.
+ * sections) → the flagship AI companion → daily logging → growth (each tab) →
+ * the standout milestone tracker (each tab) → task views → routine tabs →
+ * reports → child profiles → upgrade. Premium touchpoints are flagged.
  */
 export type TourStep = {
   /** Navigate here before showing the step (omit to stay on the current page). */
   href?: string;
   /** `[data-tour="…"]` value to spotlight. Omit for a centered card. */
   selector?: string;
+  /** `[data-tour-tab="…"]` value to click first, revealing that tab's content. */
+  tab?: string;
   title: string;
   body: string;
   /** Tags the step as a paid-feature touchpoint (shows a "Fitur Emas" chip). */
@@ -24,7 +26,7 @@ export type TourStep = {
 export const tourSteps: TourStep[] = [
   {
     title: "Selamat datang di Jurnal Emas Si Kecil 👋",
-    body: "Satu aplikasi untuk memantau, mencatat, dan menstimulasi tumbuh kembang si Kecil 0–6 tahun. Yuk kenali fitur utamanya dalam ±2 menit — bisa dilewati kapan saja.",
+    body: "Satu aplikasi untuk memantau, mencatat, dan menstimulasi tumbuh kembang si Kecil 0–6 tahun. Yuk kenali fitur utamanya — tur akan membuka tiap bagian untukmu. Bisa dilewati kapan saja.",
   },
 
   // ---- Dashboard: orient on each key section ----
@@ -69,43 +71,97 @@ export const tourSteps: TourStep[] = [
     premium: true,
   },
 
-  // ---- Growth, with its four tabs ----
+  // ---- Tumbuh Kembang: open each tab ----
   {
     href: "/growth",
-    selector: "growth-tabs",
-    title: "Tumbuh Kembang — 4 pemantauan",
-    body: "Empat tab dalam satu halaman: Pertumbuhan (berat & tinggi vs kurva WHO), Imunisasi (jadwal & riwayat), Gigi (urutan tumbuh gigi), dan Tidur (pola istirahat). Ketuk tiap tab untuk mencatat & melihat grafiknya.",
+    selector: "growth-panel",
+    tab: "growth-pertumbuhan",
+    title: "Tumbuh Kembang › Pertumbuhan",
+    body: "Catat berat & tinggi badan dan lihat posisinya pada kurva pertumbuhan WHO. Membantu mendeteksi dini bila pertumbuhan perlu perhatian.",
+  },
+  {
+    href: "/growth",
+    selector: "growth-panel",
+    tab: "growth-imunisasi",
+    title: "Tumbuh Kembang › Imunisasi",
+    body: "Jadwal lengkap imunisasi sesuai usia beserta riwayatnya. Tandai yang sudah diberikan; yang akan datang muncul sebagai pengingat.",
+  },
+  {
+    href: "/growth",
+    selector: "growth-panel",
+    tab: "growth-gigi",
+    title: "Tumbuh Kembang › Gigi",
+    body: "Pantau urutan tumbuh gigi susu si Kecil — tandai gigi yang sudah muncul satu per satu.",
+  },
+  {
+    href: "/growth",
+    selector: "growth-panel",
+    tab: "growth-tidur",
+    title: "Tumbuh Kembang › Tidur",
+    body: "Catat pola tidur untuk memahami kualitas istirahat si Kecil dan membangun rutinitas tidur yang sehat.",
   },
 
-  // ---- Standout: milestone tracker, with its tabs ----
+  // ---- Goal & Milestone: open each tab ----
   {
     href: "/goals",
-    selector: "goals-tabs",
-    title: "Goal & Milestone 🌟 — unggulan",
-    body: "Tiga tab: Milestone Anak (acuan WHO, IDAI & Denver II), Ide Stimulasi (aktivitas siap pakai), dan Goal Orang Tua (target pribadimu). Foto momen milestone tersedia di Emas.",
+    selector: "goals-panel",
+    tab: "goals-milestone",
+    title: "Milestone Anak 🌟 — unggulan",
+    body: "Daftar capaian perkembangan 0–6 tahun mengacu WHO, IDAI (KPSP) & Denver II. Tandai tiap milestone: Belum, Sedang Dicoba, atau Sudah Bisa. Foto momen milestone tersedia di Emas.",
     premium: true,
   },
   {
     href: "/goals",
-    selector: "goals-tabs",
+    selector: "goals-panel",
+    tab: "goals-ide",
     title: "Ide Stimulasi → Rutinitas",
-    body: "Di tab 'Ide Stimulasi', tiap aktivitas punya tombol 'Tambah ke Rutinitas'. Sekali ketuk, ide itu masuk ke Rutinitas › Kebiasaan & Konsistensi dengan tanda 'Ide Aplikasi' agar mudah kamu pantau tiap hari.",
+    body: "Aktivitas stimulasi siap pakai sesuai usia. Tiap kartu punya tombol 'Tambah ke Rutinitas' — sekali ketuk, ide itu masuk ke Rutinitas › Kebiasaan & Konsistensi dengan tanda 'Ide Aplikasi' agar mudah dipantau harian.",
+  },
+  {
+    href: "/goals",
+    selector: "goals-panel",
+    tab: "goals-goal",
+    title: "Goal Orang Tua",
+    body: "Buat target pribadimu sebagai orang tua dan pecah jadi langkah-langkah kecil yang bisa kamu centang dan pantau progresnya.",
   },
 
-  // ---- Task views ----
+  // ---- Task Manager: open each view ----
   {
     href: "/tasks",
-    selector: "task-views",
-    title: "Task Manager — 3 tampilan",
-    body: "Lihat task dengan cara favoritmu: List (daftar ringkas), Kanban (geser antar kolom status), dan Kalender (lihat berdasarkan tanggal). Pilih tab yang paling pas dengan caramu bekerja.",
+    selector: "task-panel",
+    tab: "task-list",
+    title: "Task Manager › List",
+    body: "Tampilan daftar yang ringkas — cara tercepat melihat dan menyelesaikan task satu per satu.",
+  },
+  {
+    href: "/tasks",
+    selector: "task-panel",
+    tab: "task-kanban",
+    title: "Task Manager › Kanban",
+    body: "Papan kolom berdasarkan status. Geser task antar kolom untuk memantau progres secara visual.",
+  },
+  {
+    href: "/tasks",
+    selector: "task-panel",
+    tab: "task-calendar",
+    title: "Task Manager › Kalender",
+    body: "Lihat task tersusun berdasarkan tanggal — pas untuk merencanakan agenda harian si Kecil.",
   },
 
-  // ---- Routine tabs ----
+  // ---- Rutinitas: open each tab ----
   {
     href: "/routines",
-    selector: "routines-tabs",
-    title: "Rutinitas — 2 tab",
-    body: "Tab 'Hari Ini' berisi checklist yang segar tiap pagi. Tab 'Kebiasaan & Konsistensi' melacak habit jangka panjang dengan peta konsistensi 4 minggu — termasuk Ide Stimulasi yang kamu tambahkan dari halaman Milestone.",
+    selector: "routines-panel",
+    tab: "routines-today",
+    title: "Rutinitas › Hari Ini",
+    body: "Checklist harian yang otomatis disegarkan tiap pagi. Centang aktivitas rutin si Kecil sepanjang hari.",
+  },
+  {
+    href: "/routines",
+    selector: "routines-panel",
+    tab: "routines-habits",
+    title: "Rutinitas › Kebiasaan & Konsistensi",
+    body: "Lacak kebiasaan jangka panjang dengan peta konsistensi 4 minggu. Ide Stimulasi yang kamu tambahkan dari halaman Milestone muncul di sini dengan tanda 'Ide Aplikasi'.",
   },
 
   // ---- Reports, profiles, upgrade ----

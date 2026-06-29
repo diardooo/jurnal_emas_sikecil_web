@@ -12,7 +12,10 @@ import { cn } from "@/lib/utils";
 type Rect = { top: number; left: number; width: number; height: number };
 
 const PAD = 8; // spotlight padding around the target
+const MARGIN = 12; // gap between spotlight and tooltip
 const basePath = (href?: string) => (href ?? "").split("?")[0];
+const clamp = (v: number, lo: number, hi: number) =>
+  Math.min(Math.max(v, lo), Math.max(lo, hi));
 
 /** Read the live rect of a `data-tour` anchor, or null if absent/zero-size. */
 function measureSelector(selector?: string): Rect | null {
@@ -26,9 +29,9 @@ function measureSelector(selector?: string): Rect | null {
 
 /**
  * First-login walkthrough overlay. Mounted once in the app layout; drives the
- * user through tourSteps, navigating between pages and spotlighting anchors
- * tagged with `data-tour`. Resilient: if an anchor never mounts it degrades to a
- * centered card instead of blocking.
+ * user through tourSteps, navigating between pages, switching tabs (so the user
+ * sees what's inside), and spotlighting anchors tagged with `data-tour`.
+ * Resilient: if an anchor never mounts it degrades to a centered card.
  */
 export function ProductTour() {
   const router = useRouter();
@@ -47,12 +50,17 @@ export function ProductTour() {
 
   const [mounted, setMounted] = useState(false);
   const [rect, setRect] = useState<Rect | null>(null);
+  const [cardH, setCardH] = useState(0);
+  const cardRef = useRef<HTMLDivElement>(null);
   const autoStarted = useRef(false);
 
   useEffect(() => setMounted(true), []);
 
   const step = tourSteps[stepIndex];
   const isLast = stepIndex === tourSteps.length - 1;
+  const selector = step?.selector;
+  const href = step?.href;
+  const tab = step?.tab;
 
   // Auto-start once on first login, only after data is ready and on the
   // dashboard so the journey begins from a known place. Never in demo mode.
@@ -65,35 +73,20 @@ export function ProductTour() {
     start();
   }, [hydrated, demo, childCount, pathname, start]);
 
-  // Lock body scroll while the tour is open.
-  useEffect(() => {
-    if (!active) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [active]);
-
   // Navigate to the step's page if we aren't already there. Use replace so the
   // tour's hops don't pollute browser history (Back returns to pre-tour view).
   useEffect(() => {
-    if (!active || !step?.href) return;
-    if (basePath(pathname) !== basePath(step.href)) {
-      router.replace(step.href);
-    }
-  }, [active, step?.href, pathname, router]);
+    if (!active || !href) return;
+    if (basePath(pathname) !== basePath(href)) router.replace(href);
+  }, [active, href, pathname, router]);
 
-  const selector = step?.selector;
-  const href = step?.href;
-
-  // After (re)navigation, poll for the anchor until it mounts; give up after
-  // ~2.5s and fall back to a centered card so the tour can't stall.
+  // After (re)navigation: open the step's tab (so its content shows), scroll the
+  // anchor into view, then measure. Polls until the anchor mounts; gives up after
+  // ~2.5s and falls back to a centered card so the tour can't stall.
   useEffect(() => {
     if (!active) return;
     setRect(null);
     if (!selector) return;
-    // Only poll once we're on the right page (or the step has no page).
     if (href && basePath(pathname) !== basePath(href)) return;
 
     let raf = 0;
@@ -103,8 +96,14 @@ export function ProductTour() {
         `[data-tour="${selector}"]`,
       );
       if (el) {
+        // Reveal the requested tab's content inside the spotlight first.
+        if (tab) {
+          document
+            .querySelector<HTMLElement>(`[data-tour-tab="${tab}"]`)
+            ?.click();
+        }
         el.scrollIntoView({ block: "center", behavior: "auto" });
-        // measure on the next frame so layout settles after scroll
+        // Measure on the next frame so layout settles after the tab switch.
         raf = requestAnimationFrame(() => setRect(measureSelector(selector)));
         return;
       }
@@ -113,7 +112,7 @@ export function ProductTour() {
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [active, stepIndex, selector, href, pathname]);
+  }, [active, stepIndex, selector, href, tab, pathname]);
 
   // Keep the spotlight aligned on resize/scroll.
   useEffect(() => {
@@ -127,29 +126,40 @@ export function ProductTour() {
     };
   }, [active, selector]);
 
+  // Track the tooltip card's height so it can be kept inside the viewport even
+  // when the spotlighted region is taller than the screen.
+  useEffect(() => {
+    const h = cardRef.current?.offsetHeight ?? 0;
+    setCardH((prev) => (h && h !== prev ? h : prev));
+  });
+
   if (!mounted || !active || !step) return null;
 
   const dim = "rgba(15, 16, 40, 0.62)";
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const cardW = Math.min(vw * 0.92, 360);
 
-  // Tooltip placement: centered when no anchor, else above/below the rect.
-  const placeAbove = rect ? rect.top > window.innerHeight / 2 : false;
-  const cardStyle: React.CSSProperties = rect
-    ? {
-        position: "fixed",
-        left: Math.min(
-          Math.max(rect.left, 16),
-          Math.max(16, window.innerWidth - 376),
-        ),
-        ...(placeAbove
-          ? { top: Math.max(16, rect.top - PAD - 12), transform: "translateY(-100%)" }
-          : { top: rect.top + rect.height + PAD + 12 }),
-      }
-    : {
-        position: "fixed",
-        left: "50%",
-        top: "50%",
-        transform: "translate(-50%, -50%)",
-      };
+  // Tooltip placement: centered when no anchor; otherwise prefer below the rect,
+  // then above, then pinned to the bottom — always clamped into the viewport.
+  let cardStyle: React.CSSProperties;
+  if (rect) {
+    const left = clamp(rect.left, 16, vw - cardW - 16);
+    const below = rect.top + rect.height + PAD + MARGIN;
+    const above = rect.top - PAD - MARGIN - cardH;
+    let top: number;
+    if (below + cardH <= vh - 16) top = below;
+    else if (above >= 16) top = above;
+    else top = vh - cardH - 16;
+    cardStyle = { position: "fixed", left, top: clamp(top, 16, vh - cardH - 16) };
+  } else {
+    cardStyle = {
+      position: "fixed",
+      left: "50%",
+      top: "50%",
+      transform: "translate(-50%, -50%)",
+    };
+  }
 
   return createPortal(
     <div className="fixed inset-0 z-[100]" role="dialog" aria-modal="true">
@@ -175,14 +185,12 @@ export function ProductTour() {
           />
         </>
       ) : (
-        <div
-          style={{ position: "fixed", inset: 0, background: dim }}
-          onClick={(e) => e.stopPropagation()}
-        />
+        <div style={{ position: "fixed", inset: 0, background: dim }} />
       )}
 
       {/* Tooltip card */}
       <div
+        ref={cardRef}
         style={cardStyle}
         className="w-[min(92vw,360px)] rounded-2xl border border-gold-200 bg-background p-5 shadow-2xl"
       >

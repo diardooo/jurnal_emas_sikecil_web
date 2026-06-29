@@ -99,11 +99,11 @@ export default function GoalsPage() {
         </CardContent>
       </Card>
 
-      <Tabs defaultValue="milestone">
-        <TabsList data-tour="goals-tabs">
-          <TabsTrigger value="milestone">Milestone Anak</TabsTrigger>
-          <TabsTrigger value="ide">Ide Stimulasi</TabsTrigger>
-          <TabsTrigger value="goal">Goal Orang Tua</TabsTrigger>
+      <Tabs data-tour="goals-panel" defaultValue="milestone">
+        <TabsList>
+          <TabsTrigger data-tour-tab="goals-milestone" value="milestone">Milestone Anak</TabsTrigger>
+          <TabsTrigger data-tour-tab="goals-ide" value="ide">Ide Stimulasi</TabsTrigger>
+          <TabsTrigger data-tour-tab="goals-goal" value="goal">Goal Orang Tua</TabsTrigger>
         </TabsList>
 
         <TabsContent value="milestone" className="space-y-4">

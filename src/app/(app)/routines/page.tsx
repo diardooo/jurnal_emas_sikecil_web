@@ -56,12 +56,12 @@ export default function RoutinesPage() {
         action={<HabitDialog />}
       />
 
-      <Tabs defaultValue="today">
-        <TabsList data-tour="routines-tabs">
-          <TabsTrigger value="today">
+      <Tabs data-tour="routines-panel" defaultValue="today">
+        <TabsList>
+          <TabsTrigger data-tour-tab="routines-today" value="today">
             <Sun className="h-4 w-4" /> Hari Ini
           </TabsTrigger>
-          <TabsTrigger value="habits">
+          <TabsTrigger data-tour-tab="routines-habits" value="habits">
             <Flame className="h-4 w-4" /> Kebiasaan & Konsistensi
           </TabsTrigger>
         </TabsList>
