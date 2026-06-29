@@ -1,9 +1,15 @@
 import { Sidebar } from "@/components/app/sidebar";
 import { Topbar } from "@/components/app/topbar";
 import { MobileNav } from "@/components/app/mobile-nav";
+import type { Metadata } from "next";
 import { StoreHydrator } from "@/components/app/store-hydrator";
 import { DemoBanner } from "@/components/app/demo-banner";
 import { ProductTour } from "@/components/app/product-tour";
+
+// Authenticated pages hold private child data — keep them out of search engines.
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default function AppLayout({
   children,
