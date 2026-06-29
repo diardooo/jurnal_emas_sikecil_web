@@ -57,7 +57,7 @@ export default function RoutinesPage() {
       />
 
       <Tabs defaultValue="today">
-        <TabsList>
+        <TabsList data-tour="routines-tabs">
           <TabsTrigger value="today">
             <Sun className="h-4 w-4" /> Hari Ini
           </TabsTrigger>

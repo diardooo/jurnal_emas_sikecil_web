@@ -160,7 +160,10 @@ export default function DashboardPage() {
       </div>
 
       {/* Daily ritual */}
-      <Card className="border-gold-200 bg-gradient-to-br from-gold-50 to-background">
+      <Card
+        data-tour="dashboard-ritual"
+        className="border-gold-200 bg-gradient-to-br from-gold-50 to-background"
+      >
         <CardContent className="space-y-3 p-5">
           <p className="flex items-center gap-2 font-display font-bold text-navy">
             <Sparkles className="h-5 w-5 text-gold-600" /> Momen Hari Ini
@@ -234,7 +237,7 @@ export default function DashboardPage() {
       </Card>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div data-tour="dashboard-stats" className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {stats.map((s) => (
           <Link key={s.label} href={s.href}>
             <Card className="transition-all hover:-translate-y-0.5 hover:shadow-md">
@@ -252,7 +255,7 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div data-tour="dashboard-today" className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Today tasks */}
         <Card className="lg:col-span-2">
           <CardHeader className="flex-row items-center justify-between">

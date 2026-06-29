@@ -110,7 +110,7 @@ export default function GrowthPage() {
       </div>
 
       <Tabs defaultValue="pertumbuhan">
-        <TabsList className="w-full md:w-auto">
+        <TabsList data-tour="growth-tabs" className="w-full md:w-auto">
           <TabsTrigger value="pertumbuhan">
             <Scale className="h-4 w-4" /> Pertumbuhan
           </TabsTrigger>

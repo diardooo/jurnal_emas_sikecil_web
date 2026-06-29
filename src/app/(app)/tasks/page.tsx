@@ -147,7 +147,7 @@ export default function TasksPage() {
       </div>
 
       <Tabs defaultValue="list">
-        <TabsList>
+        <TabsList data-tour="task-views">
           <TabsTrigger value="list">
             <List className="h-4 w-4" /> List
           </TabsTrigger>

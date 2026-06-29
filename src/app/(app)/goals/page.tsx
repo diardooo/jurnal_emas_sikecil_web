@@ -100,7 +100,7 @@ export default function GoalsPage() {
       </Card>
 
       <Tabs defaultValue="milestone">
-        <TabsList>
+        <TabsList data-tour="goals-tabs">
           <TabsTrigger value="milestone">Milestone Anak</TabsTrigger>
           <TabsTrigger value="ide">Ide Stimulasi</TabsTrigger>
           <TabsTrigger value="goal">Goal Orang Tua</TabsTrigger>
