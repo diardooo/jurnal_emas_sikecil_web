@@ -2,7 +2,13 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { db } from "../db";
-import { account, session, user, verification } from "../db/schema/auth";
+import {
+  account,
+  rateLimit,
+  session,
+  user,
+  verification,
+} from "../db/schema/auth";
 import { resetPasswordEmail, sendEmail } from "./mailer";
 
 const hasGoogle =
@@ -14,8 +20,30 @@ export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET ?? "dev-secret-change-me",
   database: drizzleAdapter(db, {
     provider: "pg",
-    schema: { user, session, account, verification },
+    schema: { user, session, account, verification, rateLimit },
   }),
+  // Brute-force / abuse protection on the auth endpoints. Tight custom limits on
+  // the sensitive flows; a generous default everywhere else.
+  //
+  // Storage is opt-in to keep deploys safe: default "memory" works without any
+  // table (per-instance, but the custom limits still bite). Set
+  // AUTH_RATELIMIT_STORAGE=database AFTER applying the rate_limit migration to
+  // get limits shared across all serverless instances. (If "database" is set but
+  // the table is missing, auth requests fail — so migrate first.)
+  rateLimit: {
+    enabled: true,
+    storage:
+      process.env.AUTH_RATELIMIT_STORAGE === "database" ? "database" : "memory",
+    modelName: "rateLimit",
+    window: 60, // seconds
+    max: 100, // default: 100 requests / minute / IP
+    customRules: {
+      "/sign-in/email": { window: 60, max: 5 },
+      "/sign-up/email": { window: 60, max: 5 },
+      "/forget-password": { window: 60, max: 3 },
+      "/reset-password": { window: 60, max: 5 },
+    },
+  },
   user: {
     additionalFields: {
       phone: { type: "string", required: false },
