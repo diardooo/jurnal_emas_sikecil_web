@@ -47,6 +47,29 @@ import type {
 const today = () => new Date().toISOString().slice(0, 10);
 
 /**
+ * Daily reset of the "Hari Ini" checklist. Once per LOCAL calendar day, clear
+ * every todo's `done` flag so the list is fresh each morning (the UI has always
+ * promised this; this makes it real). The cleared flags are persisted to the
+ * server fire-and-forget. Idempotent across devices: a second device the same
+ * day finds nothing left to clear. Returns the todos to place in state.
+ */
+const TODOS_RESET_KEY = "je:todos-reset-date";
+const localDateKey = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+};
+function applyDailyTodoReset(todos: TodoItem[]): TodoItem[] {
+  if (typeof window === "undefined") return todos;
+  const key = localDateKey();
+  if (window.localStorage.getItem(TODOS_RESET_KEY) === key) return todos;
+  window.localStorage.setItem(TODOS_RESET_KEY, key);
+  const toClear = todos.filter((t) => t.done);
+  if (toClear.length === 0) return todos;
+  for (const t of toClear) apiPatch("todos", t.id, { done: false }).catch(() => {});
+  return todos.map((t) => (t.done ? { ...t, done: false } : t));
+}
+
+/**
  * Dashboard guide visibility is a per-device UI preference persisted in
  * localStorage (not server state) so a dismissed guide stays dismissed across
  * reloads. SSR-safe: defaults to shown when there's no window.
@@ -279,7 +302,7 @@ export const useAppStore = create<AppState>((set, get) => {
         children,
         activeChildId: children[0]?.id ?? "",
         tasks,
-        todos,
+        todos: applyDailyTodoReset(todos),
         habits,
         milestones: groupByChild(milestones),
         goals,
