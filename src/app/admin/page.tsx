@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   LayoutDashboard, Users, CreditCard, Sprout, Bell, TrendingUp,
   Settings, LogOut, Search, RefreshCw, Download, Plus, Eye,
@@ -1366,6 +1366,11 @@ export default function AdminDashboard() {
   const [checking, setChecking] = useState(true);
   const [denied, setDenied] = useState(false);
 
+  // Remember which user we've already verified so a window-focus session refresh
+  // (Better Auth returns a new session object) doesn't re-verify and unmount the
+  // shell — which used to reset the open admin section back to "overview".
+  const verifiedFor = useRef<string | null>(null);
+
   const verify = useCallback(() => {
     setChecking(true);
     adminApi.me()
@@ -1376,13 +1381,18 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (isPending) return;
-    if (!session) { setMe(null); setDenied(false); setChecking(false); return; }
+    const uid = session?.user?.id ?? null;
+    if (!uid) { verifiedFor.current = null; setMe(null); setDenied(false); setChecking(false); return; }
+    if (verifiedFor.current === uid) return; // already verified this user
+    verifiedFor.current = uid;
     verify();
   }, [isPending, session, verify]);
 
-  const handleSignOut = async () => { await signOut(); setMe(null); setDenied(false); };
+  const handleSignOut = async () => { verifiedFor.current = null; await signOut(); setMe(null); setDenied(false); };
 
-  if (isPending || checking) {
+  // Only show the full-screen loader on the FIRST load. Once `me` exists, any
+  // background re-check must not blank the screen / remount AdminShell.
+  if ((isPending || checking) && !me) {
     return <div className="min-h-screen flex items-center justify-center bg-[#1A1A2E] text-white/70 gap-2 text-sm"><Loader2 size={18} className="animate-spin" /> Memuat…</div>;
   }
   if (!me) return <AdminLogin denied={denied} onSuccess={verify} />;
