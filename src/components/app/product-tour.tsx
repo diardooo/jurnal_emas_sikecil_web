@@ -96,11 +96,20 @@ export function ProductTour() {
         `[data-tour="${selector}"]`,
       );
       if (el) {
-        // Reveal the requested tab's content inside the spotlight first.
+        // Reveal the requested tab's content inside the spotlight first. Radix
+        // TabsTrigger activates on `mousedown` (button 0), not `click`, so a
+        // plain .click() does nothing — dispatch a real mousedown instead.
         if (tab) {
-          document
-            .querySelector<HTMLElement>(`[data-tour-tab="${tab}"]`)
-            ?.click();
+          const trigger = document.querySelector<HTMLElement>(
+            `[data-tour-tab="${tab}"]`,
+          );
+          trigger?.dispatchEvent(
+            new MouseEvent("mousedown", {
+              bubbles: true,
+              cancelable: true,
+              button: 0,
+            }),
+          );
         }
         el.scrollIntoView({ block: "center", behavior: "auto" });
         // Measure on the next frame so layout settles after the tab switch.
