@@ -124,7 +124,10 @@ export default function DashboardPage() {
       <DashboardGuide />
 
       {/* Welcome banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-navy p-6 text-cream sm:p-8">
+      <div
+        data-tour="dashboard-hero"
+        className="relative overflow-hidden rounded-3xl bg-navy p-6 text-cream sm:p-8"
+      >
         <div className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-gold-500/20 blur-3xl" />
         <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">

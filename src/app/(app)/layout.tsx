@@ -3,6 +3,7 @@ import { Topbar } from "@/components/app/topbar";
 import { MobileNav } from "@/components/app/mobile-nav";
 import { StoreHydrator } from "@/components/app/store-hydrator";
 import { DemoBanner } from "@/components/app/demo-banner";
+import { ProductTour } from "@/components/app/product-tour";
 
 export default function AppLayout({
   children,
@@ -22,6 +23,7 @@ export default function AppLayout({
         </div>
         <MobileNav />
       </div>
+      <ProductTour />
     </StoreHydrator>
   );
 }

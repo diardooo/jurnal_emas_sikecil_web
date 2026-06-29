@@ -22,6 +22,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAppStore } from "@/store/app-store";
+import { useTourStore } from "@/store/tour-store";
 import { authClient, useSession } from "@/lib/auth-client";
 import { formatRupiah } from "@/lib/utils";
 
@@ -246,6 +247,21 @@ function AccountTab({ session, onShowGuide }: { session: SessionData; onShowGuid
           </div>
           <Button variant="outline" size="sm" onClick={onShowGuide}>
             Tampilkan Panduan
+          </Button>
+        </div>
+
+        <Separator />
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold text-navy">Tur Aplikasi</p>
+            <p className="text-xs text-navy-muted">Ulangi tur fitur langkah-demi-langkah keliling aplikasi.</p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => useTourStore.getState().start()}
+          >
+            Mulai Tur
           </Button>
         </div>
       </CardContent>
