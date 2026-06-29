@@ -18,11 +18,24 @@ export function renderOgCard() {
           flexDirection: "column",
           justifyContent: "center",
           padding: "80px",
+          position: "relative",
           background:
-            "linear-gradient(135deg, #1A1A2E 0%, #232347 55%, #1A1A2E 100%)",
+            "linear-gradient(160deg, #FFF8E7 0%, #FFFDF7 55%, #FFFFFF 100%)",
           fontFamily: "sans-serif",
         }}
       >
+        {/* Gold accent line at the top, mirroring the landing hero */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: "8px",
+            background:
+              "linear-gradient(90deg, transparent 0%, #C9A227 50%, transparent 100%)",
+          }}
+        />
         {/* Logo mark: gold tile + star */}
         <div style={{ display: "flex", alignItems: "center", gap: "28px" }}>
           <div
@@ -48,7 +61,7 @@ export function renderOgCard() {
               style={{
                 fontSize: "30px",
                 fontWeight: 800,
-                color: "#F5F1E6",
+                color: "#1A1A2E",
                 lineHeight: 1,
               }}
             >
@@ -74,7 +87,7 @@ export function renderOgCard() {
             display: "flex",
             fontSize: "68px",
             fontWeight: 800,
-            color: "#F5F1E6",
+            color: "#1A1A2E",
             lineHeight: 1.1,
             marginTop: "64px",
             maxWidth: "920px",
@@ -88,7 +101,7 @@ export function renderOgCard() {
           style={{
             display: "flex",
             fontSize: "30px",
-            color: "#B8B5C8",
+            color: "#5C5A6B",
             marginTop: "28px",
             maxWidth: "880px",
           }}
