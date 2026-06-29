@@ -22,16 +22,14 @@ const FLOATERS = [
   { e: "📖", className: "-right-2 bottom-2", delay: "1.6s" },
 ];
 
-export function LoadingScreen() {
+export function LoadingScreen({ messages }: { messages?: string[] }) {
+  const lines = messages?.length ? messages : MESSAGES;
   const [i, setI] = useState(0);
 
   useEffect(() => {
-    const t = setInterval(
-      () => setI((n) => (n + 1) % MESSAGES.length),
-      1500,
-    );
+    const t = setInterval(() => setI((n) => (n + 1) % lines.length), 1500);
     return () => clearInterval(t);
-  }, []);
+  }, [lines.length]);
 
   return (
     <div className="relative grid min-h-screen place-items-center overflow-hidden bg-cream/40 px-6">
@@ -67,7 +65,7 @@ export function LoadingScreen() {
           key={i}
           className="mt-2 h-5 animate-fade-in text-sm font-medium text-navy-muted"
         >
-          {MESSAGES[i]}
+          {lines[i]}
         </p>
 
         {/* Indeterminate loading bar */}
