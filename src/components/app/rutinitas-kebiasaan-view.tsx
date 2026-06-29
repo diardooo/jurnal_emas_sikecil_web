@@ -53,13 +53,10 @@ const allCategories: TodoCategory[] = [
 export function RutinitasKebiasaanView() {
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-sm text-navy-muted">
-          Ceklis harian yang segar tiap pagi, plus kebiasaan yang kamu rawat
-          pelan-pelan.
-        </p>
-        <HabitDialog />
-      </div>
+      <p className="text-sm text-navy-muted">
+        Ceklis harian yang segar tiap pagi, plus kebiasaan yang kamu rawat
+        pelan-pelan.
+      </p>
 
       <section className="space-y-4">
         <SectionTitle icon={Sun} title="Hari Ini" hint="Disegarkan otomatis tiap pagi" />
@@ -67,7 +64,12 @@ export function RutinitasKebiasaanView() {
       </section>
 
       <section className="space-y-4">
-        <SectionTitle icon={Flame} title="Kebiasaan" hint="Konsistensi 4 minggu & streak" />
+        <SectionTitle
+          icon={Flame}
+          title="Kebiasaan"
+          hint="Konsistensi 4 minggu & streak"
+          action={<HabitDialog />}
+        />
         <HabitsList />
       </section>
     </div>
@@ -78,22 +80,27 @@ function SectionTitle({
   icon: Icon,
   title,
   hint,
+  action,
 }: {
   icon: typeof Sun;
   title: string;
   hint: string;
+  action?: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center gap-2.5">
-      <span className="grid h-8 w-8 place-items-center rounded-lg bg-gold-100 text-gold-700">
-        <Icon className="h-[18px] w-[18px]" />
-      </span>
-      <div>
-        <h3 className="font-display text-lg font-extrabold leading-none text-navy">
-          {title}
-        </h3>
-        <p className="mt-0.5 text-xs text-navy-muted">{hint}</p>
+    <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center gap-2.5">
+        <span className="grid h-8 w-8 place-items-center rounded-lg bg-gold-100 text-gold-700">
+          <Icon className="h-[18px] w-[18px]" />
+        </span>
+        <div>
+          <h3 className="font-display text-lg font-extrabold leading-none text-navy">
+            {title}
+          </h3>
+          <p className="mt-0.5 text-xs text-navy-muted">{hint}</p>
+        </div>
       </div>
+      {action}
     </div>
   );
 }

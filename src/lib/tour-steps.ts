@@ -129,16 +129,16 @@ export const tourSteps: TourStep[] = [
   {
     href: "/catatan",
     selector: "catatan-panel",
-    tab: "catatan-pr",
-    title: "Catatan si Kecil › PR Ibu",
-    body: "Urusan sekali beres yang punya tenggat — kontrol dokter, urus akta, beli MPASI. Bisa dilihat sebagai List, Kanban, atau Kalender.",
+    tab: "catatan-rutinitas",
+    title: "Catatan si Kecil › Rutinitas & Kebiasaan",
+    body: "Halaman yang paling sering kamu buka: ceklis harian yang segar tiap pagi, plus pelacak kebiasaan dengan streak & konsistensi 4 minggu. Ide Stimulasi yang kamu tambahkan dari Milestone muncul di sini dengan tanda 'Ide Aplikasi'.",
   },
   {
     href: "/catatan",
     selector: "catatan-panel",
-    tab: "catatan-rutinitas",
-    title: "Catatan si Kecil › Rutinitas & Kebiasaan",
-    body: "Dalam satu halaman: ceklis harian yang segar tiap pagi, plus pelacak kebiasaan dengan streak & konsistensi 4 minggu. Ide Stimulasi yang kamu tambahkan dari Milestone muncul di sini dengan tanda 'Ide Aplikasi'.",
+    tab: "catatan-pr",
+    title: "Catatan si Kecil › PR Ibu",
+    body: "Urusan sekali beres yang punya tenggat — kontrol dokter, urus akta, beli MPASI. Lihat sekaligus dalam kalender & daftar.",
   },
 
   // ---- Reports, profiles, upgrade ----
