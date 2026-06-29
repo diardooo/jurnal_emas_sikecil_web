@@ -24,24 +24,49 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAppStore } from "@/store/app-store";
-import type { Priority } from "@/lib/types";
+import type { Priority, Task } from "@/lib/types";
 
 const ADD_NEW = "__add_new__";
 
-export function TaskDialog() {
+/**
+ * Add or edit a task. Pass a `task` to edit it (prefilled, saves via updateTask);
+ * omit it to create a new one. A custom `trigger` lets callers render their own
+ * button (e.g. a pencil icon on a list row).
+ */
+export function TaskDialog({
+  task,
+  trigger,
+}: {
+  task?: Task;
+  trigger?: React.ReactNode;
+}) {
+  const isEdit = !!task;
   const addTask = useAppStore((s) => s.addTask);
+  const updateTask = useAppStore((s) => s.updateTask);
   const activeId = useAppStore((s) => s.activeChildId);
   const categories = useAppStore((s) => s.taskCategories);
   const addCategory = useAppStore((s) => s.addTaskCategory);
 
   const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [priority, setPriority] = useState<Priority>("sedang");
-  const [category, setCategory] = useState<string>(categories[0] ?? "Lain-lain");
+  const [title, setTitle] = useState(task?.title ?? "");
+  const [description, setDescription] = useState(task?.description ?? "");
+  const [priority, setPriority] = useState<Priority>(task?.priority ?? "sedang");
+  const [category, setCategory] = useState<string>(
+    task?.category ?? categories[0] ?? "Lain-lain",
+  );
   const [customMode, setCustomMode] = useState(false);
   const [customCategory, setCustomCategory] = useState("");
-  const [dueDate, setDueDate] = useState("");
+  const [dueDate, setDueDate] = useState(task?.dueDate ?? "");
+
+  function reset() {
+    setTitle(task?.title ?? "");
+    setDescription(task?.description ?? "");
+    setPriority(task?.priority ?? "sedang");
+    setCategory(task?.category ?? categories[0] ?? "Lain-lain");
+    setCustomMode(false);
+    setCustomCategory("");
+    setDueDate(task?.dueDate ?? "");
+  }
 
   function submit() {
     if (!title.trim()) {
@@ -57,35 +82,51 @@ export function TaskDialog() {
       finalCategory = customCategory.trim();
       addCategory(finalCategory);
     }
-    addTask({
-      id: `t-${Date.now()}`,
-      title,
-      description,
-      priority,
-      category: finalCategory,
-      dueDate: dueDate || undefined,
-      status: "todo",
-      childId: activeId,
-    });
-    toast.success("Task ditambahkan", { description: title });
+
+    if (isEdit) {
+      updateTask(task!.id, {
+        title,
+        description,
+        priority,
+        category: finalCategory,
+        dueDate: dueDate || undefined,
+      });
+      toast.success("Perubahan disimpan", { description: title });
+    } else {
+      addTask({
+        id: `t-${Date.now()}`,
+        title,
+        description,
+        priority,
+        category: finalCategory,
+        dueDate: dueDate || undefined,
+        status: "todo",
+        childId: activeId,
+      });
+      toast.success("Task ditambahkan", { description: title });
+    }
     setOpen(false);
-    setTitle("");
-    setDescription("");
-    setDueDate("");
-    setCustomMode(false);
-    setCustomCategory("");
+    if (!isEdit) reset();
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (!o) reset();
+      }}
+    >
       <DialogTrigger asChild>
-        <Button>
-          <Plus /> Tambah Task
-        </Button>
+        {trigger ?? (
+          <Button>
+            <Plus /> Tambah Task
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Tambah Task Baru</DialogTitle>
+          <DialogTitle>{isEdit ? "Edit Task" : "Tambah Task Baru"}</DialogTitle>
           <DialogDescription>
             Untuk hal yang dikerjakan sekali & punya tenggat — mis. jadwal dokter,
             urus dokumen, beli kebutuhan si Kecil.
@@ -177,7 +218,9 @@ export function TaskDialog() {
           <Button variant="ghost" onClick={() => setOpen(false)}>
             Batal
           </Button>
-          <Button onClick={submit}>Simpan Task</Button>
+          <Button onClick={submit}>
+            {isEdit ? "Simpan Perubahan" : "Simpan Task"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

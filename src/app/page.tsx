@@ -117,7 +117,7 @@ const modules = [
   {
     icon: ClipboardList,
     title: "PR Ibu",
-    desc: "Urusan sekali-jadi yang punya tenggat (imunisasi, administrasi) — tampilan List, Kanban, & Kalender.",
+    desc: "Urusan sekali-jadi yang punya tenggat (imunisasi, administrasi) — tampilan daftar & kalender sekaligus.",
     color: "bg-soft-orange-soft text-soft-orange",
   },
   {
