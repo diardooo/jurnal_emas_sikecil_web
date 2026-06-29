@@ -121,6 +121,10 @@ const config: Config = {
         "spin-slow": {
           to: { transform: "rotate(360deg)" },
         },
+        "loading-bar": {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(260%)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -133,6 +137,7 @@ const config: Config = {
         shimmer: "shimmer 2.5s infinite",
         marquee: "marquee 32s linear infinite",
         "spin-slow": "spin-slow 26s linear infinite",
+        "loading-bar": "loading-bar 1.3s ease-in-out infinite",
       },
     },
   },

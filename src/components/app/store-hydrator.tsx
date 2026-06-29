@@ -2,9 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
-import { Logo } from "@/components/brand/logo";
 import { useAppStore } from "@/store/app-store";
+import { LoadingScreen } from "@/components/app/loading-screen";
 
 export function isDemo() {
   if (typeof document === "undefined") return false;
@@ -55,14 +54,7 @@ export function StoreHydrator({ children }: { children: React.ReactNode }) {
   }
 
   if (!hydrated || childCount === 0) {
-    return (
-      <FullScreen>
-        <Logo />
-        <div className="mt-6 flex items-center gap-2 text-sm text-navy-muted">
-          <Loader2 className="h-4 w-4 animate-spin" /> Memuat data si Kecil…
-        </div>
-      </FullScreen>
-    );
+    return <LoadingScreen />;
   }
 
   return <>{children}</>;
