@@ -518,6 +518,112 @@ npm run db:generate   # bila ada perubahan schema (additive)
   restruktur render kartu aktivitas. Tanpa migrasi DB, tanpa file baru.
 - **Gate:** tsc 0 error · lint 0 error · build ✅
 
+### Sesi 2026-06-30 — Restruktur "Catatan si Kecil" + kesiapan launch (M44–M58)
+
+> ⚠️ **Beda dari sesi sebelumnya: sesi ini ADA migrasi DB** — `0012`
+> (`push_subscriptions`, untuk Web Push). User **sudah** migrasi prod & menambah
+> env (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`,
+> `CRON_SECRET`) lalu redeploy. Dependensi baru: `web-push`, `@vercel/analytics`,
+> `@vercel/speed-insights`. Sisa commit tanpa migrasi. Gerbang tiap commit hijau
+> (tsc 0 · lint 0 error · build). Belum di-push (user yang push & deploy).
+> **Sisa eksternal (butuh user):** domain Resend berbayar, Midtrans production,
+> Enable Analytics/Speed Insights di dashboard Vercel.
+
+**M58 — Admin dashboard responsif di HP — ✅ SELESAI** (`a12c1f4`)
+- Admin dulu desktop-only: sidebar `fixed w-[250px]` + main `ml-[250px]` → di HP
+  konten ~110px (hancur); grid statistik kolom tetap 5/3/2 tanpa breakpoint.
+- Sidebar → **drawer** mobile (hamburger di topbar + backdrop, tutup saat pilih
+  menu); rail tetap di `lg`. `main` lepas margin di mobile (`lg:ml-[250px]`) +
+  `min-w-0` (tabel scroll, bukan jebol). Semua grid responsif; bulk-bar `flex-wrap`.
+
+**M57 — Audit pra-launch: buang "Bunda" + higienis SEO/PWA — ✅ SELESAI** (`3cb6483`)
+- Audit menyeluruh: keamanan API (semua route dijaga `getUser`/`getAdmin`/factory
+  `resource`/`adminResource`, webhook verifikasi signature, report publik token+
+  expiry — **tak ada bocor**), security headers, sitemap/robots, a11y (`alt`,
+  `_blank` aman) — semua sudah solid.
+- Fix: hilangkan sapaan **"Bunda/Bun"** (tak universal) di dashboard, digest push,
+  onboarding, email reset/verifikasi → pakai nama bila ada / netral. `robots`
+  disallow `/demo`. `manifest` + `id`/`orientation`/`categories`.
+
+**M56 — Prompt "Tambah ke Layar Utama" (PWA) — ✅ SELESAI** (`dd4c022`)
+- `components/app/install-prompt.tsx`: banner dismissible di shell app — Android
+  pakai `beforeinstallprompt` (tombol Pasang), iOS Safari instruksi Share→Tambah
+  ke Layar Utama. Sembunyi bila sudah terpasang/ditutup (localStorage), dilewati
+  di in-app browser.
+
+**M55 — Notifikasi & pengingat kebiasaan jujur — ✅ SELESAI** (`e20322c`)
+- Hapus 6 toggle palsu (localStorage tak berefek) di Pengaturan→Notifikasi → ganti
+  daftar jujur (aktif: "Ringkasan pagi" + daftar "Segera hadir"). Kartu kebiasaan:
+  jam pakai ikon `Clock` + label "Target" (bukan `Bell`/kesan alarm); field dialog
+  "Pengingat"→"Waktu target".
+
+**M54 — Vercel Analytics + Speed Insights — ✅ SELESAI** (`83ac9f1`)
+- Pasang `<Analytics/>` + `<SpeedInsights/>` global di root layout (deps baru).
+  User perlu **Enable** di dashboard Vercel agar data mulai masuk.
+
+**M53 — Logo baru gold-journal di SEMUA tempat → SVG transparan — ✅ SELESAI** (`6b4b3fa`,`10f3332`,`5ff9325`)
+- Ganti mark "tile+bintang" lama dengan maskot buku-emas: lewat satu `LogoMark`
+  menyebar ke sidebar/topbar/auth/footer/header/onboarding/loading/404, plus
+  favicon, ikon PWA/apple, dan kartu OG.
+- Mulanya PNG; lalu pindah ke **SVG vektor** (`public/brand/logo.svg`, trace 314
+  path) — tajam di ukuran kecil. **Buang background putih** (path `#FDFDFD`) →
+  transparan, dan set viewBox dari bbox asli (auto-trim) supaya **tak terpotong**.
+  PNG ikon di-generate dari SVG via `sharp` (favicon 64 · apple 180 · PWA 192/512
+  · OG 256; apple & 512 maskable diberi bg cream). Generator "JE" lama dihapus.
+
+**M52 — Fix deep-link `?tab` reaktif (Pengaturan) — ✅ SELESAI** (`e2d9eed`)
+- Tab dibaca sekali dari `window.location` saat mount → navigasi client
+  (`router.push`) ke `/settings?tab=billing` tak terbaca (selalu jatuh ke Akun).
+  Ganti ke `useSearchParams` reaktif + sync, dibungkus `Suspense`. Semua jalur
+  Upgrade kini buka tab Langganan.
+
+**M51 — Tukar nav + Upgrade CTA ke Langganan + nama demo — ✅ SELESAI** (`e4db718`)
+- Sidebar/bottom-nav: **Jurnal** di atas **Catatan si Kecil**. 4 tombol Upgrade
+  (Jurnal/Goals/Laporan/Profil Anak) deep-link `?tab=billing` (sebelumnya jatuh ke
+  Akun). Anak contoh landing "Bintang"→"Kyara Zivanya Adinegara".
+
+**M50 — Ekspor data "Unduh data saya" (UU PDP/GDPR) — ✅ SELESAI** (`430c082`)
+- `GET /api/me/export` → kumpulkan profil + semua data anak jadi 1 JSON unduhan
+  (kecuali baris internal: token push, counter rate-limit, hash sandi). Tombol di
+  Pengaturan→Akun. Privasi diperbarui (data push + hak ekspor).
+
+**M49 — Pengingat ke HP (Web Push) + cron digest pagi — ✅ SELESAI** (`9c67588`) ⚠️ **MIGRASI `0012`**
+- Tabel `push_subscriptions` (migrasi `0012`). `lib/push.ts` (kirim via VAPID,
+  prune langganan mati 404/410). Route `/api/push/{subscribe,unsubscribe,test}` +
+  `/api/cron/morning-digest` (hitung rutinitas & PR jatuh tempo → 1 nudge; dijaga
+  `CRON_SECRET`; `vercel.json` jadwal 00:00 UTC = 07:00 WIB). `public/sw.js` +
+  `lib/use-push.ts`. UI: kartu "Pengingat ke HP" (aktif/tes/mati). PWA:
+  `manifest.webmanifest` + ikon (+ favicon pertama). **Degrade aman** tanpa env
+  VAPID. Android jalan tanpa install; iOS perlu add-to-home-screen.
+
+**M48 — Tombol "Tambah" terpadu (Catatan) — ✅ SELESAI** (`1673af7`)
+- Satu tombol "Tambah" di header Catatan → tanya jenis (tugas sekali / rutinitas
+  harian / kebiasaan) → buka form yang tepat + loncat ke tab yang benar.
+  `TaskDialog`/`HabitDialog` dukung controlled-open. Tombol kontekstual lama tetap
+  (additive).
+
+**M47 — PR Ibu: hapus Kanban, list+kalender bareng, edit task — ✅ SELESAI** (`470cb7e`)
+- Kanban dihapus; List (kiri) + Kalender (kanan) tampil bersamaan. Baris list:
+  deskripsi + badge prioritas + chip tenggat + tombol **Edit** (pensil) + hapus.
+  Kalender pakai bulan & hari nyata (bukan hardcode Juni 2026). `task-dialog.tsx`
+  dukung mode edit (`updateTask`).
+
+**M46 — Reorder tab/nav by usage + pindah tombol Tambah Kebiasaan — ✅ SELESAI** (`202cf95`)
+- Tab "Rutinitas & Kebiasaan" jadi default/kiri, "PR Ibu" kedua. Tombol "Tambah
+  Kebiasaan" pindah ke header bagian Kebiasaan (bukan area ceklis). Sidebar/bottom-
+  nav diurut by frekuensi pakai.
+
+**M45 — Ceklis "Hari Ini" reset tiap pagi (realisasi) — ✅ SELESAI** (`d8c78c1`)
+- Sebelumnya hanya label "disegarkan tiap pagi", tak ada mekanisme. `applyDailyTodoReset`
+  + `je:todos-reset-date` + `localDateKey()`: sekali per hari lokal, clear `done`
+  semua todo (fire-and-forget `apiPatch`) saat hydrate. Demo tak tersentuh.
+
+**M44 — Gabung Task Manager + Rutinitas → "Catatan si Kecil" — ✅ SELESAI** (`85164e2`)
+- Menu baru `/catatan` 2 tab: **PR Ibu** (tasks) + **Rutinitas & Kebiasaan** (ceklis
+  harian + habit jadi 1 halaman, tanpa sub-tab). `/tasks` & `/routines` → redirect.
+  Middleware/robots/dashboard/goals/landing/admin-stats disesuaikan. Walkthrough/tour
+  diringkas ke 2 langkah catatan. Cek menyeluruh agar tak merusak fitur terkait.
+
 ### Sesi 2026-06-28 — Landing world-class + polish in-app (M37–M43)
 
 > Semua commit di bawah **belum di-push** (user yang push & deploy). Semua **tanpa
