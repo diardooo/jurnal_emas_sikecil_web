@@ -136,7 +136,7 @@ export default function DashboardPage() {
               <AvatarFallback>{initials(child.name)}</AvatarFallback>
             </Avatar>
             <div>
-              <p className="text-sm text-cream/70">Selamat pagi, Bunda 👋</p>
+              <p className="text-sm text-cream/70">Selamat datang kembali 👋</p>
               <h2 className="font-display text-2xl font-extrabold">
                 {child.name}
               </h2>

@@ -218,7 +218,7 @@ export default function OnboardingPage() {
                 </div>
                 <div>
                   <h1 className="font-display text-2xl font-extrabold text-navy">
-                    Semua siap, {name || "Bunda"}!
+                    Semua siap{name ? `, ${name}` : ""}!
                   </h1>
                   <p className="mx-auto mt-2 max-w-sm text-sm text-navy-muted">
                     Profil {name || "si Kecil"} telah dibuat. Mari mulai

@@ -62,7 +62,7 @@ export function emailLayout(title: string, bodyHtml: string) {
 export function resetPasswordEmail(name: string, url: string) {
   return emailLayout(
     "Atur Ulang Kata Sandi",
-    `<p>Halo ${name || "Bunda/Ayah"},</p>
+    `<p>Halo${name ? ` ${name}` : ""},</p>
      <p>Kami menerima permintaan untuk mengatur ulang kata sandi akun Anda. Klik tombol di bawah (berlaku 1 jam):</p>
      <p style="margin:20px 0"><a href="${url}" style="background:#C9A227;color:#1A1A2E;text-decoration:none;font-weight:700;padding:10px 18px;border-radius:8px;display:inline-block">Atur Ulang Sandi</a></p>
      <p style="font-size:12px;color:#6B7280">Atau salin tautan ini: <br>${url}</p>`,
@@ -72,7 +72,7 @@ export function resetPasswordEmail(name: string, url: string) {
 export function verifyEmail(name: string, url: string) {
   return emailLayout(
     "Verifikasi Email Anda",
-    `<p>Halo ${name || "Bunda/Ayah"},</p>
+    `<p>Halo${name ? ` ${name}` : ""},</p>
      <p>Terima kasih sudah mendaftar. Verifikasi email Anda dengan menekan tombol di bawah:</p>
      <p style="margin:20px 0"><a href="${url}" style="background:#C9A227;color:#1A1A2E;text-decoration:none;font-weight:700;padding:10px 18px;border-radius:8px;display:inline-block">Verifikasi Email</a></p>
      <p style="font-size:12px;color:#6B7280">Atau salin tautan ini: <br>${url}</p>`,

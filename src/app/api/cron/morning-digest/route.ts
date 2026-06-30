@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
     if (taskCount) parts.push(`${taskCount} PR jatuh tempo`);
 
     const res = await sendToUser(userId, {
-      title: "Selamat pagi, Bun! ☀️",
+      title: "Selamat pagi! ☀️",
       body: `Ada ${parts.join(" & ")} menunggu hari ini. Yuk dicek 💛`,
       url: "/catatan",
       tag: "morning-digest",
