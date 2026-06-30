@@ -176,6 +176,14 @@ Script seed-admin membuat:
 3. Verifikasi: buka domain produksi → `/` landing, `/demo` jalan tanpa login,
    `/login` → register akun baru → masuk → `/dashboard`.
 
+> **Boot guard env produksi (JES-101).** Sejak `src/instrumentation.ts`, server
+> akan **gagal boot (fail fast)** bila di produksi `BETTER_AUTH_SECRET` kosong /
+> < 32 karakter / masih nilai default, `BETTER_AUTH_URL` bukan HTTPS, atau
+> `DATABASE_URL` kosong. Jadi pastikan ketiganya benar **sebelum** Deploy. Guard
+> ini dilewati saat `next build` (CI) dan tidak berpengaruh di dev/demo.
+> Bila pernah memakai secret lama yang lemah, **rotasi** `BETTER_AUTH_SECRET`
+> sekarang (`openssl rand -base64 32`) lalu Redeploy.
+
 Setelah A7: **login, register, logout, seluruh app user, dan admin dashboard sudah aktif.**
 
 ---
