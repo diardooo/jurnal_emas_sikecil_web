@@ -20,6 +20,7 @@ export default function PrivacyPage() {
         <p>• <strong>Data akun:</strong> nama, email, dan (opsional) nomor WhatsApp serta foto profil.</p>
         <p>• <strong>Data anak:</strong> nama, tanggal lahir, jenis kelamin, pengukuran pertumbuhan (berat, tinggi, lingkar kepala), milestone, imunisasi, gigi, pola tidur, catatan jurnal, dan foto yang Anda unggah.</p>
         <p>• <strong>Data teknis:</strong> sesi login untuk menjaga keamanan akun.</p>
+        <p>• <strong>Langganan notifikasi:</strong> bila Anda mengaktifkan pengingat ke HP, kami menyimpan token langganan push perangkat Anda (tanpa isi pesan) agar bisa mengirim notifikasi. Bisa dimatikan kapan saja dari Pengaturan.</p>
       </LegalSection>
 
       <LegalSection title="2. Bagaimana data digunakan">
@@ -39,7 +40,7 @@ export default function PrivacyPage() {
       </LegalSection>
 
       <LegalSection title="5. Hak Anda">
-        <p>Anda dapat melihat dan memperbarui data kapan saja dari dalam aplikasi. Menghapus akun akan menghapus seluruh data anak yang terkait secara permanen (cascade). Hubungi kami bila perlu bantuan.</p>
+        <p>Anda dapat melihat dan memperbarui data kapan saja dari dalam aplikasi. Anda juga bisa <strong>mengunduh seluruh data</strong> Anda &amp; anak dalam satu berkas (Pengaturan → Akun → &quot;Unduh data saya&quot;). Menghapus akun akan menghapus seluruh data anak yang terkait secara permanen (cascade). Hubungi kami bila perlu bantuan.</p>
       </LegalSection>
 
       <LegalSection title="6. Bukan nasihat medis">

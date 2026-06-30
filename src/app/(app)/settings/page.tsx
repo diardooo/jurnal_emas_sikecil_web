@@ -7,6 +7,7 @@ import {
   CreditCard,
   Crown,
   Check,
+  Download,
   Smartphone,
   Sparkles,
   User,
@@ -371,6 +372,21 @@ function AccountTab({ session, onShowGuide }: { session: SessionData; onShowGuid
             onClick={() => useTourStore.getState().start()}
           >
             Mulai Tur
+          </Button>
+        </div>
+
+        <Separator />
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold text-navy">Unduh data saya</p>
+            <p className="text-xs text-navy-muted">
+              Salinan lengkap data kamu & si Kecil dalam satu berkas JSON.
+            </p>
+          </div>
+          <Button variant="outline" size="sm" asChild>
+            <a href="/api/me/export" download>
+              <Download className="h-4 w-4" /> Unduh
+            </a>
           </Button>
         </div>
 
