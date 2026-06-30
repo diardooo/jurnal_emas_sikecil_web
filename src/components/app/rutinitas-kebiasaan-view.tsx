@@ -3,7 +3,7 @@
 import { useState } from "react";
 import {
   Baby,
-  Bell,
+  Clock,
   CheckCircle2,
   Circle,
   CloudSun,
@@ -360,7 +360,7 @@ function HabitCard({
               <span>Target {h.targetPerWeek}x/minggu</span>
               {h.reminderTime && (
                 <span className="flex items-center gap-1">
-                  <Bell className="h-3.5 w-3.5" /> {h.reminderTime}
+                  <Clock className="h-3.5 w-3.5" /> Target {h.reminderTime}
                 </span>
               )}
             </div>

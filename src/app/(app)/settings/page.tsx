@@ -21,7 +21,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -33,30 +32,6 @@ import { usePush } from "@/lib/use-push";
 import { formatRupiah } from "@/lib/utils";
 
 type SessionData = ReturnType<typeof useSession>["data"];
-
-const notifSettings = [
-  { id: "imun", label: "Reminder imunisasi", desc: "Berdasarkan usia anak", on: true },
-  { id: "posyandu", label: "Reminder posyandu", desc: "Penimbangan bulanan", on: true },
-  { id: "task", label: "Deadline task", desc: "Saat task mendekati tenggat", on: true },
-  { id: "habit", label: "Pengingat kebiasaan", desc: "Sesuai waktu yang diatur", on: false },
-  { id: "milestone", label: "Milestone baru", desc: "Yang relevan dengan usia", on: true },
-  { id: "email", label: "Notifikasi email", desc: "Ringkasan mingguan via email", on: false },
-];
-
-// Per-device notification preferences. Persisted in localStorage for now; when
-// the server-side notification generator (§10.7) lands, move these to the DB so
-// the backend can honor them. Lazy-read so there's no SSR mismatch.
-const NOTIF_PREFS_KEY = "je:notif-prefs";
-function readNotifPrefs(): Record<string, boolean> {
-  const base = Object.fromEntries(notifSettings.map((n) => [n.id, n.on]));
-  if (typeof window === "undefined") return base;
-  try {
-    const raw = window.localStorage.getItem(NOTIF_PREFS_KEY);
-    return raw ? { ...base, ...(JSON.parse(raw) as Record<string, boolean>) } : base;
-  } catch {
-    return base;
-  }
-}
 
 /** Real phone reminders via Web Push — the one functional toggle here. */
 function PushReminderCard() {
@@ -160,48 +135,54 @@ function PushReminderCard() {
   );
 }
 
+const upcomingReminders = [
+  "Pengingat imunisasi berdasarkan usia anak",
+  "Pengingat posyandu bulanan",
+  "Pengingat kebiasaan sesuai waktu target",
+  "Milestone baru yang relevan dengan usia",
+  "Ringkasan mingguan via email",
+];
+
 function NotifTab() {
-  const [prefs, setPrefs] = useState<Record<string, boolean>>(readNotifPrefs);
-
-  function toggle(id: string, value: boolean) {
-    setPrefs((prev) => {
-      const next = { ...prev, [id]: value };
-      try {
-        window.localStorage.setItem(NOTIF_PREFS_KEY, JSON.stringify(next));
-      } catch {
-        /* storage unavailable — keep in-memory */
-      }
-      return next;
-    });
-    const label = notifSettings.find((n) => n.id === id)?.label;
-    toast(value ? "Notifikasi diaktifkan" : "Notifikasi dimatikan", {
-      description: label,
-    });
-  }
-
   return (
     <div className="space-y-6">
       <PushReminderCard />
       <Card>
         <CardHeader>
-          <CardTitle>Preferensi Notifikasi</CardTitle>
+          <CardTitle>Pengingat yang kamu terima</CardTitle>
         </CardHeader>
-        <CardContent className="divide-y">
-          {notifSettings.map((n) => (
-            <div
-              key={n.id}
-              className="flex items-center justify-between py-4 first:pt-0"
-            >
-              <div>
-                <p className="text-sm font-semibold text-navy">{n.label}</p>
-                <p className="text-xs text-navy-muted">{n.desc}</p>
-              </div>
-              <Switch
-                checked={prefs[n.id]}
-                onCheckedChange={(v) => toggle(n.id, v)}
-              />
+        <CardContent className="space-y-5">
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-sage-soft text-sage">
+              <Check className="h-4 w-4" />
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-navy">Ringkasan pagi</p>
+              <p className="text-xs text-navy-muted">
+                Setiap pagi: rutinitas &amp; PR yang jatuh tempo hari ini —
+                selama “Pengingat ke HP” di atas aktif.
+              </p>
             </div>
-          ))}
+          </div>
+
+          <Separator />
+
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Segera hadir
+            </p>
+            <ul className="space-y-1.5">
+              {upcomingReminders.map((s) => (
+                <li
+                  key={s}
+                  className="flex items-center gap-2 text-sm text-navy-muted"
+                >
+                  <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40" />
+                  {s}
+                </li>
+              ))}
+            </ul>
+          </div>
         </CardContent>
       </Card>
     </div>

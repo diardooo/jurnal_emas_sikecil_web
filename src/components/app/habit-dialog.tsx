@@ -168,7 +168,7 @@ export function HabitDialog({
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="h-rem">Pengingat</Label>
+              <Label htmlFor="h-rem">Waktu target</Label>
               <Input
                 id="h-rem"
                 type="time"
