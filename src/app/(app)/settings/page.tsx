@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Bell,
   BellOff,
@@ -408,19 +409,28 @@ function AccountTab({ session, onShowGuide }: { session: SessionData; onShowGuid
 const VALID_TABS = ["account", "notif", "billing"] as const;
 type SettingsTab = (typeof VALID_TABS)[number];
 
-export default function SettingsPage() {
+function SettingsView() {
   const plan = useAppStore((s) => s.plan);
   const setPlan = useAppStore((s) => s.setPlan);
   const setShowGuide = useAppStore((s) => s.setShowGuide);
   const hydrate = useAppStore((s) => s.hydrate);
   const expiresAt = useAppStore((s) => s.subscriptionExpiresAt);
   const { data: session } = useSession();
+  const searchParams = useSearchParams();
   const [checkingOut, setCheckingOut] = useState<"monthly" | "yearly" | null>(null);
   const [activeTab, setActiveTab] = useState<SettingsTab>(() => {
-    if (typeof window === "undefined") return "account";
-    const t = new URLSearchParams(window.location.search).get("tab") ?? "";
+    const t = searchParams.get("tab") ?? "";
     return (VALID_TABS as readonly string[]).includes(t) ? (t as SettingsTab) : "account";
   });
+
+  // Honor ?tab= deep links (e.g. an "Upgrade" CTA → ?tab=billing) reactively —
+  // client navigations don't remount this page, so seed-on-mount isn't enough.
+  useEffect(() => {
+    const t = searchParams.get("tab");
+    if (t && (VALID_TABS as readonly string[]).includes(t)) {
+      setActiveTab(t as SettingsTab);
+    }
+  }, [searchParams]);
 
   // Returning from Midtrans Snap (?paid=1): reconcile against Midtrans in case
   // the webhook was missed/delayed, then re-sync the store so the plan updates.
@@ -655,5 +665,14 @@ export default function SettingsPage() {
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+export default function SettingsPage() {
+  // useSearchParams requires a Suspense boundary at the page level.
+  return (
+    <Suspense fallback={null}>
+      <SettingsView />
+    </Suspense>
   );
 }
