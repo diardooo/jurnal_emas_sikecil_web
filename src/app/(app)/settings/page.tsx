@@ -3,9 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import {
   Bell,
+  BellOff,
   CreditCard,
   Crown,
   Check,
+  Smartphone,
   Sparkles,
   User,
   Loader2,
@@ -25,6 +27,7 @@ import { useAppStore } from "@/store/app-store";
 import { useTourStore } from "@/store/tour-store";
 import { DeleteAccountDialog } from "@/components/app/delete-account-dialog";
 import { authClient, useSession } from "@/lib/auth-client";
+import { usePush } from "@/lib/use-push";
 import { formatRupiah } from "@/lib/utils";
 
 type SessionData = ReturnType<typeof useSession>["data"];
@@ -53,6 +56,108 @@ function readNotifPrefs(): Record<string, boolean> {
   }
 }
 
+/** Real phone reminders via Web Push — the one functional toggle here. */
+function PushReminderCard() {
+  const { status, busy, enable, disable } = usePush();
+  const [testing, setTesting] = useState(false);
+
+  async function onEnable() {
+    const ok = await enable();
+    if (ok) {
+      toast.success("Pengingat ke HP aktif! 🔔", {
+        description: "Kamu akan dapat notifikasi walau aplikasi ditutup.",
+      });
+    } else {
+      toast.error("Belum bisa diaktifkan", {
+        description: "Pastikan kamu menekan “Izinkan” saat diminta notifikasi.",
+      });
+    }
+  }
+
+  async function onDisable() {
+    await disable();
+    toast("Pengingat ke HP dimatikan");
+  }
+
+  async function onTest() {
+    setTesting(true);
+    try {
+      const res = await fetch("/api/push/test", { method: "POST" });
+      if (res.ok) {
+        toast.success("Notifikasi tes dikirim 🔔", {
+          description: "Cek layar HP-mu sebentar lagi.",
+        });
+      } else {
+        const d = (await res.json().catch(() => ({}))) as { error?: string };
+        toast.error("Gagal kirim tes", { description: d.error });
+      }
+    } finally {
+      setTesting(false);
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Smartphone className="h-5 w-5 text-gold-600" /> Pengingat ke HP
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-sm text-navy-muted">
+          Aktifkan agar Jurnal Emas bisa mengirim notifikasi langsung ke HP-mu —
+          ceklis pagi & PR yang jatuh tempo — walaupun aplikasi sedang ditutup.
+        </p>
+
+        {status === "loading" && (
+          <p className="mt-4 text-sm text-muted-foreground">Memeriksa perangkat…</p>
+        )}
+
+        {status === "unsupported" && (
+          <p className="mt-4 rounded-xl bg-muted/50 p-3 text-sm text-navy-muted">
+            Browser ini belum mendukung notifikasi. Di iPhone, buka lewat Safari
+            lalu “Tambahkan ke Layar Utama” dulu, baru aktifkan dari sana.
+          </p>
+        )}
+
+        {status === "denied" && (
+          <p className="mt-4 rounded-xl bg-alert-red-soft/50 p-3 text-sm text-alert-red">
+            Notifikasi diblokir untuk situs ini. Aktifkan lagi lewat ikon gembok
+            di address bar → Notifikasi → Izinkan, lalu muat ulang halaman.
+          </p>
+        )}
+
+        {status === "off" && (
+          <Button className="mt-4" onClick={onEnable} disabled={busy}>
+            {busy ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Bell className="h-4 w-4" />
+            )}
+            Aktifkan pengingat ke HP
+          </Button>
+        )}
+
+        {status === "on" && (
+          <div className="mt-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <Badge variant="gold">Aktif di perangkat ini</Badge>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Button variant="outline" size="sm" onClick={onTest} disabled={testing}>
+                {testing && <Loader2 className="h-4 w-4 animate-spin" />} Kirim notifikasi tes
+              </Button>
+              <Button variant="ghost" size="sm" onClick={onDisable} disabled={busy}>
+                <BellOff className="h-4 w-4" /> Matikan
+              </Button>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 function NotifTab() {
   const [prefs, setPrefs] = useState<Record<string, boolean>>(readNotifPrefs);
 
@@ -73,28 +178,31 @@ function NotifTab() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Preferensi Notifikasi</CardTitle>
-      </CardHeader>
-      <CardContent className="divide-y">
-        {notifSettings.map((n) => (
-          <div
-            key={n.id}
-            className="flex items-center justify-between py-4 first:pt-0"
-          >
-            <div>
-              <p className="text-sm font-semibold text-navy">{n.label}</p>
-              <p className="text-xs text-navy-muted">{n.desc}</p>
+    <div className="space-y-6">
+      <PushReminderCard />
+      <Card>
+        <CardHeader>
+          <CardTitle>Preferensi Notifikasi</CardTitle>
+        </CardHeader>
+        <CardContent className="divide-y">
+          {notifSettings.map((n) => (
+            <div
+              key={n.id}
+              className="flex items-center justify-between py-4 first:pt-0"
+            >
+              <div>
+                <p className="text-sm font-semibold text-navy">{n.label}</p>
+                <p className="text-xs text-navy-muted">{n.desc}</p>
+              </div>
+              <Switch
+                checked={prefs[n.id]}
+                onCheckedChange={(v) => toggle(n.id, v)}
+              />
             </div>
-            <Switch
-              checked={prefs[n.id]}
-              onCheckedChange={(v) => toggle(n.id, v)}
-            />
-          </div>
-        ))}
-      </CardContent>
-    </Card>
+          ))}
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 

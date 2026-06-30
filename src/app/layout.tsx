@@ -30,6 +30,12 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title,
   description,
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Jurnal Emas",
+  },
   keywords: [
     "parenting",
     "tumbuh kembang anak",

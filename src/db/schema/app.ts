@@ -234,6 +234,23 @@ export const coachMessages = pgTable("coach_messages", {
   createdAt: createdAt(),
 });
 
+/**
+ * Web Push subscriptions — one row per browser/device that opted in to phone
+ * reminders. `endpoint` is the push service URL (unique per device); `p256dh` &
+ * `auth` are the encryption keys the browser hands us at subscribe time. We send
+ * notifications by POSTing to `endpoint` signed with our VAPID private key.
+ * A 404/410 from the push service means the subscription is dead → delete the row.
+ */
+export const pushSubscriptions = pgTable("push_subscriptions", {
+  id: id(),
+  userId: userId(),
+  endpoint: text("endpoint").notNull().unique(),
+  p256dh: text("p256dh").notNull(),
+  auth: text("auth").notNull(),
+  userAgent: text("user_agent"),
+  createdAt: createdAt(),
+});
+
 export const notifications = pgTable("notifications", {
   id: id(),
   userId: userId(),
