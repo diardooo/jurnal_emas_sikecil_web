@@ -1,13 +1,19 @@
+import { readFile } from "node:fs/promises";
 import { ImageResponse } from "next/og";
 
 /** Dimensions shared by the Open Graph and Twitter card routes. */
 export const ogSize = { width: 1200, height: 630 };
 
 /**
- * Branded social-share card rendered at request time (no static asset needed).
- * Reused by app/opengraph-image.tsx and app/twitter-image.tsx.
+ * Branded social-share card rendered at request time. Reused by
+ * app/opengraph-image.tsx and app/twitter-image.tsx. The logo is read from a
+ * colocated asset (bundled via import.meta.url) and embedded as a data URI so
+ * it renders inside next/og's ImageResponse.
  */
-export function renderOgCard() {
+export async function renderOgCard() {
+  const logo = await readFile(new URL("./og-logo.png", import.meta.url));
+  const logoSrc = `data:image/png;base64,${logo.toString("base64")}`;
+
   return new ImageResponse(
     (
       <div
@@ -36,26 +42,16 @@ export function renderOgCard() {
               "linear-gradient(90deg, transparent 0%, #C9A227 50%, transparent 100%)",
           }}
         />
-        {/* Logo mark: gold tile + star */}
+        {/* Logo mark: brand image */}
         <div style={{ display: "flex", alignItems: "center", gap: "28px" }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "112px",
-              height: "112px",
-              borderRadius: "28px",
-              background: "linear-gradient(135deg, #E0B84C 0%, #C9A227 100%)",
-            }}
-          >
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M12 2.5l2.6 5.5 6 .8-4.4 4.2 1.1 6L12 16.9 6.7 19l1.1-6L3.4 8.8l6-.8L12 2.5z"
-                fill="#1A1A2E"
-              />
-            </svg>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={logoSrc}
+            width={112}
+            height={112}
+            style={{ borderRadius: "28px" }}
+            alt=""
+          />
           <div style={{ display: "flex", flexDirection: "column" }}>
             <span
               style={{
