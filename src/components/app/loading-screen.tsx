@@ -49,8 +49,8 @@ export function LoadingScreen({ messages }: { messages?: string[] }) {
               {f.e}
             </span>
           ))}
-          <div className="animate-float">
-            <LogoMark className="h-16 w-16 rounded-3xl shadow-lg" />
+          <div className="animate-float drop-shadow-lg">
+            <LogoMark className="h-20 w-20" />
           </div>
         </div>
 
