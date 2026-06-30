@@ -6,7 +6,7 @@ import {
   Settings, LogOut, Search, RefreshCw, Download, Plus, Eye,
   Pencil, Ban, X, Megaphone, AlertCircle, CheckCircle2, Clock,
   Wifi, WifiOff, Baby, Syringe, Smile, Moon, ShieldCheck,
-  MessageCircle, Tag, Trash2, Check, Loader2, Lock, History,
+  MessageCircle, Tag, Trash2, Check, Loader2, Lock, History, Menu,
 } from "lucide-react";
 import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
@@ -239,7 +239,7 @@ function PageOverview({ setActivePage, refreshSignal }: { setActivePage: (p: Pag
       <Async state={stats}>
         {(s) => (
           <>
-            <div className="grid grid-cols-5 gap-4 mb-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
               <StatCard label="Total User" value={s.totalUsers.toLocaleString("id-ID")} icon="👥" change={`+${s.newThisWeek} minggu ini`} up />
               <StatCard label="User Aktif" value={s.active7d.toLocaleString("id-ID")} icon="🟢" change={`${s.activeNow} online · ${s.active24h} hari ini`} up />
               <StatCard label="User Premium" value={s.premium.toLocaleString("id-ID")} icon="⭐" change={s.totalUsers ? `${Math.round((s.premium / s.totalUsers) * 100)}% konversi` : "—"} up />
@@ -247,7 +247,7 @@ function PageOverview({ setActivePage, refreshSignal }: { setActivePage: (p: Pag
               <StatCard label="Milestone Tercapai" value={s.milestonesAchieved.toLocaleString("id-ID")} icon="🌱" change={`${s.tasksDone} task selesai`} up />
             </div>
 
-            <div className="grid grid-cols-[2fr_1fr] gap-4 mb-6">
+            <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4 mb-6">
               <Card>
                 <CardHeader title="📈 User Baru per Bulan" meta="Dari created_at user" />
                 <div className="p-5 pt-3">
@@ -356,7 +356,7 @@ function PageUsers({ showToast, openModal }: { showToast: (m: string) => void; o
         <BtnPrimary onClick={() => openModal("add-user", users.reload)}><Plus size={14} /> Tambah User</BtnPrimary>
       </PageHead>
 
-      <div className="grid grid-cols-3 gap-3 mb-5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-5">
         {[[all.length, "Total User", ""], [all.filter((u) => u.plan === "premium").length, "User Premium", "gold"], [all.filter((u) => u.status === "suspended").length, "User Suspended", "red"]].map(([v, l, t]) => (
           <div key={l as string} className="bg-white rounded-xl p-4 shadow-[0_1px_4px_rgba(0,0,0,0.08)] text-center">
             <div className="text-2xl font-extrabold" style={{ color: t === "gold" ? G.gold : t === "red" ? G.red : G.dark }}>{v as number}</div>
@@ -366,7 +366,7 @@ function PageUsers({ showToast, openModal }: { showToast: (m: string) => void; o
       </div>
 
       {selected.size > 0 && (
-        <div className="flex items-center gap-2.5 bg-[#1A1A2E] text-white rounded-xl px-4 py-2.5 mb-3">
+        <div className="flex flex-wrap items-center gap-2.5 bg-[#1A1A2E] text-white rounded-xl px-4 py-2.5 mb-3">
           <span className="text-sm font-semibold">{selected.size} dipilih</span>
           <div className="flex-1" />
           <BtnWa onClick={() => openModal("wa-broadcast", selectedUsers.filter((u) => u.phone))}><MessageCircle size={14} /> Broadcast WhatsApp</BtnWa>
@@ -444,7 +444,7 @@ function PageChildren({ showToast }: { showToast: (m: string) => void }) {
         <BtnGhost onClick={() => { downloadCsv(`anak-${Date.now()}.csv`, filtered.map((c) => ({ id: c.id, nama: c.name, gender: c.gender, lahir: c.dob, usia: ageFromDob(c.dob), orangtua: c.parentName, email_ortu: c.parentEmail, hp_ortu: c.parentPhone ?? "" }))); showToast(`📤 ${filtered.length} data anak diexport`); }}><Download size={14} /> Export</BtnGhost>
       </PageHead>
 
-      <div className="grid grid-cols-3 gap-3 mb-5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-5">
         {[[all.length, "Total Anak", ""], [all.filter((c) => c.gender === "L").length, "Laki-laki", "blue"], [all.filter((c) => c.gender === "P").length, "Perempuan", "purple"]].map(([v, l, t]) => (
           <div key={l as string} className="bg-white rounded-xl px-4 py-3 shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
             <div className="text-xs text-gray-400">{l as string}</div>
@@ -497,7 +497,7 @@ function PageSubscriptions({ showToast }: { showToast: (m: string) => void }) {
         <BtnGhost onClick={() => { downloadCsv(`langganan-${Date.now()}.csv`, all.map((s) => ({ id: s.id, user: s.userName, email: s.userEmail, plan: s.plan, status: s.status, mulai: s.startedAt, berakhir: s.expiresAt ?? "", payment_id: s.paymentId ?? "" }))); showToast(`📤 ${all.length} langganan diexport`); }}><Download size={14} /> Export</BtnGhost>
       </PageHead>
 
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <StatCard label="Total Langganan" value={String(all.length)} icon="💳" change="Record di DB" up />
         <StatCard label="Premium Aktif" value={String(premium)} icon="⭐" change={`${all.length - premium} free`} up />
         <StatCard label="Integrasi Midtrans" value={midtransOn ? "Aktif" : "—"} icon="🔌" change={midtransOn ? "Pembayaran live (terhubung)" : "Belum aktif (set server key)"} up={!!midtransOn} />
@@ -684,7 +684,7 @@ function PageRoles() {
     <div>
       <PageHead title="Matriks Hak Akses Fitur" sub="Kebijakan Free vs Premium yang ditegakkan sistem (sumber: kode enforcement)" />
 
-      <div className="grid grid-cols-2 gap-4 mb-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
         <div className="bg-white rounded-xl p-5 shadow-[0_1px_4px_rgba(0,0,0,0.08)] border-l-4 border-gray-300">
           <div className="flex items-center justify-between"><div><div className="flex items-center gap-2"><span className="text-base font-bold">Free</span><Badge type="gray">Gratis</Badge></div><div className="text-xs text-gray-400 mt-1">Rp 0 / selamanya</div></div><div className="text-right"><div className="text-2xl font-extrabold">{freeCount}<span className="text-sm text-gray-400">/{rows.length}</span></div><div className="text-[11px] text-gray-400">fitur</div></div></div>
         </div>
@@ -772,14 +772,14 @@ function PageAnalytics({ refreshSignal }: { refreshSignal: number }) {
       <Async state={stats}>
         {(s) => (
           <>
-          <div className="grid grid-cols-5 gap-4 mb-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
             <StatCard label="Total User" value={s.totalUsers.toLocaleString("id-ID")} icon="👥" change={`+${s.newThisWeek} minggu ini`} up />
             <StatCard label="User Aktif (7 hari)" value={s.active7d.toLocaleString("id-ID")} icon="🟢" change={`${s.activeNow} online · ${s.active24h} hari ini`} up />
             <StatCard label="MRR (estimasi)" value={`Rp ${s.mrr.toLocaleString("id-ID")}`} icon="💰" change={`${s.premium} premium × harga bln`} up />
             <StatCard label="Milestone Tercapai" value={s.milestonesAchieved.toLocaleString("id-ID")} icon="🌱" change={`${s.tasksDone} task selesai`} up />
             <StatCard label="Konten Referensi" value={String(s.contentCounts.milestones + s.contentCounts.immunizations + s.contentCounts.teeth + s.contentCounts.sleep)} icon="📚" change={`${s.contentCounts.milestones} milestone · ${s.contentCounts.immunizations} vaksin`} up />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Card>
           <CardHeader title="🚀 Funnel Aktivasi" meta="· % dari total user" />
           <div className="p-5 pt-3">
@@ -869,7 +869,7 @@ function PageSettings({ showToast }: { showToast: (m: string) => void }) {
       <p className="text-sm text-gray-400 mb-5">Tersimpan ke tabel platform_settings & discount_codes</p>
 
       {settings.loading && !settings.data ? <Spinner /> : settings.error ? <ErrorState msg={settings.error} onRetry={settings.reload} /> : (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="bg-white rounded-xl shadow-[0_1px_4px_rgba(0,0,0,0.08)] p-5">
             <h4 className="text-sm font-bold mb-3.5 flex items-center gap-2"><Settings size={14} /> Pengaturan Umum</h4>
             <FormGroup label="Nama Platform"><Input value={form.platform_name ?? ""} onChange={(e) => setF("platform_name", e.target.value)} /></FormGroup>
@@ -920,7 +920,7 @@ function PageSettings({ showToast }: { showToast: (m: string) => void }) {
 
           <div className="bg-white rounded-xl shadow-[0_1px_4px_rgba(0,0,0,0.08)] p-5 col-span-2">
             <h4 className="text-sm font-bold mb-3.5 flex items-center gap-2"><Wifi size={14} /> Integrasi API <span className="ml-1 text-[10px] font-normal text-gray-400">(status sebenarnya)</span></h4>
-            <div className="grid grid-cols-2 gap-x-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
               {integrations.map((item) => (
                 <div key={item.name} className="flex items-center justify-between py-2 border-b border-gray-100"><div><div className="text-sm font-medium">{item.name}</div><div className="text-[11px] text-gray-400">{item.desc}</div></div>{
                   item.manual ? <Badge type="orange"><AlertCircle size={9} /> Manual</Badge>
@@ -993,7 +993,7 @@ function ModalUserDetail({ user, onClose, showToast }: { user: AdminUser; onClos
           <div className="flex gap-1.5 mt-1.5"><Badge type={user.plan === "premium" ? "gold" : "gray"}>{planLabel(user.plan)}</Badge><Badge type={user.status === "active" ? "green" : "red"}>{user.status === "active" ? "● Aktif" : "⊘ Suspended"}</Badge>{user.role !== "user" && <Badge type="purple">{user.role}</Badge>}</div>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-2.5 mb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-3">
         {[["Bergabung", fmtDate(user.createdAt)], ["Jumlah Anak", `${user.kids}`], ["Plan Status", user.planStatus ?? "—"], ["Expired", fmtDate(user.expiresAt)]].map(([k, v]) => (
           <div key={k}><div className="text-[10px] text-gray-400 font-semibold uppercase mb-0.5">{k}</div><div className="text-sm font-semibold">{v}</div></div>
         ))}
@@ -1027,7 +1027,7 @@ function ModalEditUser({ user, reload, onClose, showToast }: { user: AdminUser; 
     <Modal id="modal-edit-user" title="✏️ Edit User" open onClose={onClose}
       footer={<><BtnGhost onClick={onClose}>Batal</BtnGhost><BtnPrimary onClick={save} disabled={saving}>{saving ? <Loader2 size={14} className="animate-spin" /> : null} Simpan Perubahan</BtnPrimary></>}>
       <div className="flex items-center gap-3 mb-4"><AvatarCircle name={form.name} color={colorOf(user.id)} size="lg" /><div className="text-xs text-gray-400">ID #{user.id.slice(0, 8)} · Bergabung {fmtDate(user.createdAt)}</div></div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <FormGroup label="Nama Lengkap"><Input value={form.name} onChange={(e) => set({ name: e.target.value })} /></FormGroup>
         <FormGroup label="Email"><Input type="email" value={form.email} onChange={(e) => set({ email: e.target.value })} /></FormGroup>
         <FormGroup label="Nomor HP / WhatsApp"><Input value={form.phone} onChange={(e) => set({ phone: e.target.value })} placeholder="08xx-xxxx-xxxx" /></FormGroup>
@@ -1053,7 +1053,7 @@ function ModalAddUser({ reload, onClose, showToast }: { reload: () => Promise<vo
   return (
     <Modal id="modal-add-user" title="➕ Tambah User Manual" open onClose={onClose}
       footer={<><BtnGhost onClick={onClose}>Batal</BtnGhost><BtnPrimary onClick={save} disabled={saving}>{saving ? <Loader2 size={14} className="animate-spin" /> : null} Simpan User</BtnPrimary></>}>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <FormGroup label="Nama Lengkap"><Input value={form.name} onChange={(e) => set({ name: e.target.value })} placeholder="cth: Siti Rahayu" /></FormGroup>
         <FormGroup label="Email"><Input type="email" value={form.email} onChange={(e) => set({ email: e.target.value })} placeholder="email@gmail.com" /></FormGroup>
         <FormGroup label="Password Sementara"><Input type="password" value={form.password} onChange={(e) => set({ password: e.target.value })} placeholder="Min. 8 karakter" /></FormGroup>
@@ -1116,7 +1116,7 @@ function ModalAddContent({ kind, item, reload, onClose, showToast }: { kind: str
   return (
     <Modal id="modal-add-content" title={`${editing ? "✏️ Edit" : "➕ Tambah"} ${CONTENT_TITLE[kind]}`} open onClose={onClose}
       footer={<><BtnGhost onClick={onClose}>Batal</BtnGhost><BtnPrimary onClick={save} disabled={saving}>{saving ? <Loader2 size={14} className="animate-spin" /> : null} Simpan</BtnPrimary></>}>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {fields.map((f) => (
           <div key={f.key} className={f.full ? "col-span-2" : ""}>
             <FormGroup label={f.label}>
@@ -1151,7 +1151,7 @@ function ModalBroadcast({ onClose, showToast }: { onClose: () => void; showToast
   return (
     <Modal id="modal-broadcast" title="📢 Kirim Broadcast Notifikasi" open onClose={onClose}
       footer={<><BtnGhost onClick={onClose}>Batal</BtnGhost><BtnPrimary onClick={send} disabled={sending}>{sending ? <Loader2 size={14} className="animate-spin" /> : null} Kirim Broadcast</BtnPrimary></>}>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <FormGroup label="Tipe Notifikasi"><Select value={form.type} onChange={(e) => set({ type: e.target.value })}><option>Informasi Umum</option><option>Promo / Penawaran</option><option>Update Fitur</option><option>Konten Parenting</option><option>Imunisasi</option></Select></FormGroup>
         <FormGroup label="Target Penerima"><Select value={form.target} onChange={(e) => set({ target: e.target.value })}><option value="all">Semua User</option><option value="free">User Free saja</option><option value="premium">User Premium saja</option></Select></FormGroup>
       </div>
@@ -1215,10 +1215,12 @@ const NAV_ITEMS: { id: PageId; label: string; icon: React.ReactNode; group: "uta
   { id: "settings", label: "Pengaturan", icon: <Settings size={15} />, group: "sistem" },
 ];
 
-function AdminSidebar({ activePage, setActivePage, me, onSignOut }: { activePage: PageId; setActivePage: (p: PageId) => void; me: AdminMe; onSignOut: () => void }) {
+function AdminSidebar({ activePage, setActivePage, me, onSignOut, open, onClose }: { activePage: PageId; setActivePage: (p: PageId) => void; me: AdminMe; onSignOut: () => void; open: boolean; onClose: () => void }) {
   const groups: { key: "utama" | "konten" | "sistem"; label: string }[] = [{ key: "utama", label: "Utama" }, { key: "konten", label: "Konten" }, { key: "sistem", label: "Sistem" }];
   return (
-    <nav className="w-[250px] bg-[#1A1A2E] text-white fixed top-0 left-0 h-screen flex flex-col z-[100] overflow-y-auto">
+    <>
+    {open && <div onClick={onClose} className="fixed inset-0 bg-black/50 z-[99] lg:hidden" />}
+    <nav className={`w-[250px] bg-[#1A1A2E] text-white fixed top-0 left-0 h-screen flex flex-col z-[100] overflow-y-auto transition-transform duration-200 lg:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full"}`}>
       <div className="px-5 py-6 border-b border-white/[0.08]"><div className="flex items-center gap-2.5"><div className="w-9 h-9 bg-[#C9A227] rounded-lg flex items-center justify-center text-lg font-bold text-[#1A1A2E] flex-shrink-0">✨</div><div><div className="text-[13px] font-bold leading-tight">Jurnal Emas Si Kecil</div><div className="text-[10px] text-white/40">Admin Panel v1.0</div></div></div></div>
       <div className="mx-5 my-3 bg-[rgba(201,162,39,0.15)] border border-[rgba(201,162,39,0.3)] rounded-md py-1.5 text-center text-[11px] text-[#C9A227] font-semibold">🔐 {me.role === "superadmin" ? "Super Admin" : "Admin"}</div>
       <div className="flex-1 py-1">
@@ -1226,7 +1228,7 @@ function AdminSidebar({ activePage, setActivePage, me, onSignOut }: { activePage
           <div key={g.key}>
             <div className="px-5 py-1.5 mt-1 text-[10px] font-bold text-white/30 uppercase tracking-widest">{g.label}</div>
             {NAV_ITEMS.filter((i) => i.group === g.key).map((item) => (
-              <button key={item.id} onClick={() => setActivePage(item.id)} className={`w-full flex items-center gap-2.5 px-5 py-2.5 text-[13.5px] font-medium transition-colors relative text-left ${activePage === item.id ? "bg-[rgba(201,162,39,0.15)] text-[#C9A227]" : "text-white/60 hover:bg-white/[0.06] hover:text-white"}`}>
+              <button key={item.id} onClick={() => { setActivePage(item.id); onClose(); }} className={`w-full flex items-center gap-2.5 px-5 py-2.5 text-[13.5px] font-medium transition-colors relative text-left ${activePage === item.id ? "bg-[rgba(201,162,39,0.15)] text-[#C9A227]" : "text-white/60 hover:bg-white/[0.06] hover:text-white"}`}>
                 {activePage === item.id && <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#C9A227] rounded-r" />}
                 <span className="w-5 flex justify-center">{item.icon}</span><span className="flex-1">{item.label}</span>
               </button>
@@ -1240,6 +1242,7 @@ function AdminSidebar({ activePage, setActivePage, me, onSignOut }: { activePage
         <button onClick={onSignOut} title="Keluar"><LogOut size={14} className="text-white/30 cursor-pointer hover:text-white/60 transition-colors" /></button>
       </div>
     </nav>
+    </>
   );
 }
 
@@ -1249,13 +1252,17 @@ const PAGE_LABELS: Record<PageId, string> = {
   notifications: "Notifikasi", analytics: "Analytics", roles: "Manajemen Role", settings: "Pengaturan",
 };
 
-function AdminTopbar({ activePage, setActivePage, onRefresh }: { activePage: PageId; setActivePage: (p: PageId) => void; onRefresh: () => void }) {
+function AdminTopbar({ activePage, setActivePage, onRefresh, onMenu }: { activePage: PageId; setActivePage: (p: PageId) => void; onRefresh: () => void; onMenu: () => void }) {
   return (
-    <div className="bg-white border-b border-gray-200 px-7 h-[60px] flex items-center justify-between sticky top-0 z-50">
-      <div className="flex items-center gap-3"><h1 className="text-[17px] font-bold text-[#1A1A2E]">{PAGE_LABELS[activePage]}</h1><span className="text-xs text-gray-400">Dashboard / {PAGE_LABELS[activePage]}</span></div>
-      <div className="flex items-center gap-3">
+    <div className="bg-white border-b border-gray-200 px-4 lg:px-7 h-[60px] flex items-center justify-between sticky top-0 z-50">
+      <div className="flex items-center gap-2 lg:gap-3 min-w-0">
+        <button onClick={onMenu} aria-label="Menu" className="lg:hidden -ml-1 p-2 border border-gray-200 rounded-lg bg-white text-gray-500 hover:bg-gray-50"><Menu size={16} /></button>
+        <h1 className="text-[15px] lg:text-[17px] font-bold text-[#1A1A2E] truncate">{PAGE_LABELS[activePage]}</h1>
+        <span className="hidden md:inline text-xs text-gray-400">Dashboard / {PAGE_LABELS[activePage]}</span>
+      </div>
+      <div className="flex items-center gap-2 lg:gap-3 shrink-0">
         <button onClick={() => setActivePage("notifications")} className="relative p-2 border border-gray-200 rounded-lg bg-white flex items-center hover:bg-gray-50"><Bell size={15} className="text-gray-500" /><span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full border border-white" /></button>
-        <BtnPrimary onClick={onRefresh}><RefreshCw size={13} /> Refresh</BtnPrimary>
+        <BtnPrimary onClick={onRefresh}><RefreshCw size={13} /> <span className="hidden sm:inline">Refresh</span></BtnPrimary>
       </div>
     </div>
   );
@@ -1309,6 +1316,7 @@ type ModalState =
 
 function AdminShell({ me, onSignOut }: { me: AdminMe; onSignOut: () => void }) {
   const [activePage, setActivePage] = useState<PageId>("overview");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [modal, setModal] = useState<ModalState>(null);
   const [refreshSignal, setRefreshSignal] = useState(0);
@@ -1328,10 +1336,10 @@ function AdminShell({ me, onSignOut }: { me: AdminMe; onSignOut: () => void }) {
 
   return (
     <div className="flex min-h-screen text-[#1A1A2E]" style={{ background: "#F4F6FA", fontSize: 14, fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
-      <AdminSidebar activePage={activePage} setActivePage={setActivePage} me={me} onSignOut={onSignOut} />
-      <main className="ml-[250px] flex-1 flex flex-col min-h-screen">
-        <AdminTopbar activePage={activePage} setActivePage={setActivePage} onRefresh={handleRefresh} />
-        <div className="p-7 flex-1">
+      <AdminSidebar activePage={activePage} setActivePage={setActivePage} me={me} onSignOut={onSignOut} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <main className="lg:ml-[250px] flex-1 flex flex-col min-h-screen min-w-0">
+        <AdminTopbar activePage={activePage} setActivePage={setActivePage} onRefresh={handleRefresh} onMenu={() => setSidebarOpen(true)} />
+        <div className="p-4 lg:p-7 flex-1">
           {activePage === "overview" && <PageOverview setActivePage={setActivePage} refreshSignal={refreshSignal} />}
           {activePage === "users" && <PageUsers showToast={showToast} openModal={openModal} />}
           {activePage === "children" && <PageChildren showToast={showToast} />}
