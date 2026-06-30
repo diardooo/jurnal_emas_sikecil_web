@@ -31,23 +31,35 @@ const ADD_NEW = "__add_new__";
 /**
  * Add or edit a task. Pass a `task` to edit it (prefilled, saves via updateTask);
  * omit it to create a new one. A custom `trigger` lets callers render their own
- * button (e.g. a pencil icon on a list row).
+ * button (e.g. a pencil icon on a list row). Pass `open`/`onOpenChange` to drive
+ * it from outside (e.g. the unified "Tambah" chooser) — in that mode no built-in
+ * trigger is rendered.
  */
 export function TaskDialog({
   task,
   trigger,
+  open: openProp,
+  onOpenChange,
 }: {
   task?: Task;
   trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
   const isEdit = !!task;
+  const isControlled = openProp !== undefined;
   const addTask = useAppStore((s) => s.addTask);
   const updateTask = useAppStore((s) => s.updateTask);
   const activeId = useAppStore((s) => s.activeChildId);
   const categories = useAppStore((s) => s.taskCategories);
   const addCategory = useAppStore((s) => s.addTaskCategory);
 
-  const [open, setOpen] = useState(false);
+  const [openState, setOpenState] = useState(false);
+  const open = isControlled ? openProp : openState;
+  const setOpen = (o: boolean) => {
+    if (!isControlled) setOpenState(o);
+    onOpenChange?.(o);
+  };
   const [title, setTitle] = useState(task?.title ?? "");
   const [description, setDescription] = useState(task?.description ?? "");
   const [priority, setPriority] = useState<Priority>(task?.priority ?? "sedang");
@@ -117,13 +129,15 @@ export function TaskDialog({
         if (!o) reset();
       }}
     >
-      <DialogTrigger asChild>
-        {trigger ?? (
-          <Button>
-            <Plus /> Tambah Task
-          </Button>
-        )}
-      </DialogTrigger>
+      {!isControlled && (
+        <DialogTrigger asChild>
+          {trigger ?? (
+            <Button>
+              <Plus /> Tambah Task
+            </Button>
+          )}
+        </DialogTrigger>
+      )}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit Task" : "Tambah Task Baru"}</DialogTitle>

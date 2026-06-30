@@ -26,13 +26,29 @@ import { useAppStore } from "@/store/app-store";
 
 const ADD_NEW = "__add_new__";
 
-export function HabitDialog() {
+/**
+ * Add a new habit. Pass `open`/`onOpenChange` to drive it from outside (e.g. the
+ * unified "Tambah" chooser) — in that mode no built-in trigger is rendered.
+ */
+export function HabitDialog({
+  open: openProp,
+  onOpenChange,
+}: {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+} = {}) {
+  const isControlled = openProp !== undefined;
   const addHabit = useAppStore((s) => s.addHabit);
   const activeId = useAppStore((s) => s.activeChildId);
   const categories = useAppStore((s) => s.habitCategories);
   const addCategory = useAppStore((s) => s.addHabitCategory);
 
-  const [open, setOpen] = useState(false);
+  const [openState, setOpenState] = useState(false);
+  const open = isControlled ? openProp : openState;
+  const setOpen = (o: boolean) => {
+    if (!isControlled) setOpenState(o);
+    onOpenChange?.(o);
+  };
   const [name, setName] = useState("");
   const [category, setCategory] = useState<string>(
     categories[1] ?? categories[0] ?? "Stimulasi Harian",
@@ -76,11 +92,13 @@ export function HabitDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus /> Tambah Kebiasaan
-        </Button>
-      </DialogTrigger>
+      {!isControlled && (
+        <DialogTrigger asChild>
+          <Button>
+            <Plus /> Tambah Kebiasaan
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Mulai Kebiasaan Baru</DialogTitle>

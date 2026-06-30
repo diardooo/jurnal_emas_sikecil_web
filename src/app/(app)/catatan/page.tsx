@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/app/page-header";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { PrIbuView } from "@/components/app/pr-ibu-view";
 import { RutinitasKebiasaanView } from "@/components/app/rutinitas-kebiasaan-view";
+import { QuickAdd } from "@/components/app/quick-add";
 
 const VALID_TABS = ["rutinitas", "pr"] as const;
 type CatatanTab = (typeof VALID_TABS)[number];
@@ -25,6 +26,7 @@ export default function CatatanPage() {
       <PageHeader
         title="Catatan si Kecil"
         description="Semua catatan harianmu di satu tempat — urusan yang harus diselesaikan dan kebiasaan yang dirawat tiap hari."
+        action={<QuickAdd onSwitchTab={setTab} />}
       />
 
       <Tabs
