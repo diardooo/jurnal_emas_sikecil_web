@@ -44,7 +44,7 @@ export function JournalDialog({
   function upsellPhoto() {
     toast("Foto jurnal khusus Premium", {
       description: "Upgrade ke Emas untuk menambahkan foto pada catatan.",
-      action: { label: "Upgrade", onClick: () => (window.location.href = "/settings") },
+      action: { label: "Upgrade", onClick: () => (window.location.href = "/settings?tab=billing") },
     });
   }
   const isEdit = !!entry;

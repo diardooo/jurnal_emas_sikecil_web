@@ -161,7 +161,7 @@ export default function ReportsPage() {
                     Upgrade untuk mengunduh & membagikan laporan.
                   </p>
                   <Button size="sm" className="mt-3 w-full" asChild>
-                    <a href="/settings">Upgrade ke Emas</a>
+                    <a href="/settings?tab=billing">Upgrade ke Emas</a>
                   </Button>
                 </div>
               )}

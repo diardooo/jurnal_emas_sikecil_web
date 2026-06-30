@@ -69,7 +69,7 @@ export function HeroPreview() {
                 👶
               </div>
               <div>
-                <p className="font-display font-bold text-navy">Bintang</p>
+                <p className="font-display font-bold text-navy">Kyara Zivanya Adinegara</p>
                 <p className="text-xs text-navy-muted">9 bulan 9 hari</p>
               </div>
             </div>

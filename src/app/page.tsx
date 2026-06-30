@@ -409,7 +409,7 @@ export default function LandingPage() {
                     <div>
                       <p className="text-xs text-navy-muted">Selamat pagi 👋</p>
                       <p className="font-display text-lg font-extrabold text-navy">
-                        Dashboard Bintang
+                        Dashboard Kyara
                       </p>
                     </div>
                     <Badge variant="success" className="gap-1">

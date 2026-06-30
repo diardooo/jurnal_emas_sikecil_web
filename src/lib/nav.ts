@@ -15,8 +15,8 @@ import {
 // occasional ones at the bottom.
 export const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Catatan si Kecil", href: "/catatan", icon: ClipboardList },
   { label: "Jurnal", href: "/journal", icon: BookHeart },
+  { label: "Catatan si Kecil", href: "/catatan", icon: ClipboardList },
   { label: "Tumbuh Kembang", href: "/growth", icon: LineChart },
   { label: "Goal & Milestone", href: "/goals", icon: Target },
   { label: "Pendamping AI", href: "/coach", icon: Sparkles },
@@ -29,8 +29,8 @@ export const navItems = [
 // opens the full drawer (same list as the sidebar) — see MobileNav.
 export const mobileNavItems = [
   { label: "Beranda", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Catatan", href: "/catatan", icon: ClipboardList },
   { label: "Jurnal", href: "/journal", icon: BookHeart },
+  { label: "Catatan", href: "/catatan", icon: ClipboardList },
   { label: "Milestone", href: "/goals", icon: Target },
 ];
 

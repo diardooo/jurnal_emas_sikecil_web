@@ -436,7 +436,7 @@ function MilestoneRow({ milestone: m }: { milestone: Milestone }) {
   function upsellPhoto() {
     toast("Foto momen khusus Premium", {
       description: "Upgrade ke Emas untuk mengabadikan momen milestone.",
-      action: { label: "Upgrade", onClick: () => (window.location.href = "/settings") },
+      action: { label: "Upgrade", onClick: () => (window.location.href = "/settings?tab=billing") },
     });
   }
 

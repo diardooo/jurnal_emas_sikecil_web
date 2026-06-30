@@ -35,7 +35,7 @@ export default function ChildrenPage() {
     if (atFreeLimit) {
       toast("Tambah anak khusus Premium", {
         description: `Akun Free dibatasi ${FREE_CHILD_LIMIT} anak. Upgrade ke Emas untuk menambah anak lain.`,
-        action: { label: "Upgrade", onClick: () => router.push("/settings") },
+        action: { label: "Upgrade", onClick: () => router.push("/settings?tab=billing") },
       });
       return;
     }
