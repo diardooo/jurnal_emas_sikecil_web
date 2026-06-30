@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -6,19 +5,14 @@ export function LogoMark({ className }: { className?: string }) {
   return (
     <span
       className={cn(
-        "relative block h-9 w-9 shrink-0 overflow-hidden rounded-xl shadow-sm",
+        "relative block h-10 w-10 shrink-0 overflow-hidden rounded-xl shadow-sm",
         className,
       )}
       aria-hidden
     >
-      <Image
-        src="/brand/logo.png"
-        alt=""
-        fill
-        sizes="64px"
-        className="object-cover"
-        priority
-      />
+      {/* Plain <img>: next/image blocks SVG by default (dangerouslyAllowSVG). */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/brand/logo.svg" alt="" className="h-full w-full object-cover" />
     </span>
   );
 }
