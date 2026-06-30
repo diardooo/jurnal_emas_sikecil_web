@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { StoreHydrator } from "@/components/app/store-hydrator";
 import { DemoBanner } from "@/components/app/demo-banner";
 import { ProductTour } from "@/components/app/product-tour";
+import { InstallPrompt } from "@/components/app/install-prompt";
 
 // Authenticated pages hold private child data — keep them out of search engines.
 export const metadata: Metadata = {
@@ -30,6 +31,7 @@ export default function AppLayout({
         <MobileNav />
       </div>
       <ProductTour />
+      <InstallPrompt />
     </StoreHydrator>
   );
 }
