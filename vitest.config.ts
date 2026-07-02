@@ -98,6 +98,14 @@ export default defineConfig({
           functions: 100,
           lines: 100,
         },
+        // JES-107 — analytics taxonomy + payload builder. The client dispatcher
+        // (track.ts) is a thin, window-gated side effect and is not thresholded.
+        "src/lib/analytics/events.ts": {
+          statements: 100,
+          branches: 100,
+          functions: 100,
+          lines: 100,
+        },
       },
     },
   },
