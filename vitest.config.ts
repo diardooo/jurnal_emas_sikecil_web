@@ -106,6 +106,14 @@ export default defineConfig({
           functions: 100,
           lines: 100,
         },
+        // JES-106 — Sentry DSN gate + PII scrubbing. The Sentry init files
+        // (sentry.*.config.ts, instrumentation*) are thin SDK wiring, not tested.
+        "src/lib/observability.ts": {
+          statements: 100,
+          branches: 90,
+          functions: 100,
+          lines: 100,
+        },
       },
     },
   },
