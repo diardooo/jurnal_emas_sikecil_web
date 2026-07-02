@@ -55,6 +55,22 @@ export default defineConfig({
           functions: 100,
           lines: 100,
         },
+        // JES-105 (integration, via pglite). The per-user scoping in the
+        // resource() factory and the payment settlement idempotency are now
+        // exercised against a real (in-memory) Postgres. Thresholds lock that in
+        // so a removed `userId`/ownership filter or a broken settlement fails.
+        "src/lib/api.ts": {
+          statements: 95,
+          branches: 80,
+          functions: 100,
+          lines: 95,
+        },
+        "src/lib/payment-apply.ts": {
+          statements: 100,
+          branches: 88,
+          functions: 100,
+          lines: 100,
+        },
       },
     },
   },
