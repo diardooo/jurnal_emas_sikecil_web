@@ -38,6 +38,23 @@ export default defineConfig({
           functions: 100,
           lines: 95,
         },
+        // JES-104. red-flags + coach-context are fully line-covered; the small
+        // branch remainder is unreachable `?? 0` defensive fallbacks. midtrans.ts
+        // (network calls) and payment-apply.ts (DB orchestration) are only
+        // partially unit-coverable — their remaining paths get real coverage from
+        // the integration harness in JES-105, so no file threshold here yet.
+        "src/lib/red-flags.ts": {
+          statements: 100,
+          branches: 80,
+          functions: 100,
+          lines: 100,
+        },
+        "src/lib/coach-context.ts": {
+          statements: 100,
+          branches: 80,
+          functions: 100,
+          lines: 100,
+        },
       },
     },
   },

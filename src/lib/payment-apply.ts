@@ -17,6 +17,27 @@ export type MidtransOutcome = {
 };
 
 /**
+ * Pure money-decision: does a Midtrans transaction status mean the order is
+ * settled (money in), failed, or still pending? A credit-card "capture" is only
+ * money-in once fraud screening returns "accept"; a "capture" + "deny" is a
+ * failure. Extracted so the safety-critical classification is unit-testable
+ * without a database (the DB orchestration lives in `applyOrderOutcome`).
+ */
+export function classifyMidtransOutcome(
+  transactionStatus: string,
+  fraudStatus?: string | null,
+): { settled: boolean; failed: boolean } {
+  const ts = transactionStatus;
+  const settled = ts === "settlement" || (ts === "capture" && fraudStatus === "accept");
+  const failed =
+    ts === "deny" ||
+    ts === "cancel" ||
+    ts === "expire" ||
+    (ts === "capture" && fraudStatus === "deny");
+  return { settled, failed };
+}
+
+/**
  * Reflect a Midtrans transaction outcome on the transactions row and the
  * subscription. Idempotent: re-running for the same settled order does not
  * stack extra days, and a failed checkout never downgrades a still-valid
@@ -27,13 +48,7 @@ export async function applyOrderOutcome(
   o: MidtransOutcome,
 ): Promise<{ plan: string; status: string } | null> {
   const ts = o.transactionStatus;
-  // A credit-card "capture" is only money-in once fraud screening accepts it.
-  const settled = ts === "settlement" || (ts === "capture" && o.fraudStatus === "accept");
-  const failed =
-    ts === "deny" ||
-    ts === "cancel" ||
-    ts === "expire" ||
-    (ts === "capture" && o.fraudStatus === "deny");
+  const { settled, failed } = classifyMidtransOutcome(ts, o.fraudStatus);
 
   // Payment-history row (idempotent by order_id).
   await db
