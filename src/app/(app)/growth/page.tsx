@@ -66,6 +66,10 @@ export default function GrowthPage() {
   const age = getAge(child.dob);
   const records = growthMap[activeId] ?? [];
   const latest = records[records.length - 1];
+  // Months elapsed since the last measurement — used to flag stale data so the
+  // WHO status badges aren't read as the child's current condition.
+  const monthsSinceLatest = latest ? age.months - latest.ageMonths : 0;
+  const staleGrowth = latest != null && monthsSinceLatest >= 2;
 
   return (
     <div className="space-y-6">
@@ -74,6 +78,18 @@ export default function GrowthPage() {
         description={`Pantau pertumbuhan ${child.name} berdasarkan standar WHO & IDAI.`}
         action={<MeasurementDialog />}
       />
+
+      {staleGrowth && (
+        <div className="flex items-start gap-3 rounded-xl border border-gold-200 bg-gold-50 p-4">
+          <Info className="mt-0.5 h-5 w-5 shrink-0 text-soft-orange" />
+          <p className="text-sm text-navy-muted">
+            Pengukuran terakhir sudah <strong>{monthsSinceLatest} bulan</strong>{" "}
+            lalu (saat usia {latest.ageMonths} bln). Status di bawah menilai data
+            tersebut, <strong>bukan</strong> kondisi {child.name} saat ini —
+            tambah pengukuran terbaru untuk hasil yang akurat.
+          </p>
+        </div>
+      )}
 
       {/* Summary cards with WHO status */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
