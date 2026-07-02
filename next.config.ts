@@ -1,9 +1,10 @@
-/** @type {import('next').NextConfig} */
+import type { NextConfig } from "next";
+import { buildCsp } from "./src/lib/csp";
 
-// Conservative security headers applied to every route. A strict Content-
-// Security-Policy is intentionally omitted for now — it needs careful allow-
-// listing (Cloudinary, Google OAuth, Gemini, Next inline styles) and is best
-// added separately with testing to avoid breaking those integrations.
+// Conservative security headers applied to every route. The Content-Security-
+// Policy ships in REPORT-ONLY mode first (see src/lib/csp.ts): it never blocks,
+// only reports violations to /api/csp-report, so a strict policy can be tuned
+// against real traffic before it is enforced (JES-108 → enforce is JES-109).
 const securityHeaders = [
   // Force HTTPS for 2 years (ignored on http/localhost). Safe once the prod
   // domain is HTTPS-only, which Vercel is.
@@ -23,9 +24,11 @@ const securityHeaders = [
     value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
   },
   { key: "X-DNS-Prefetch-Control", value: "on" },
+  // Report-only CSP — observe first, enforce later.
+  { key: "Content-Security-Policy-Report-Only", value: buildCsp() },
 ];
 
-const nextConfig = {
+const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false, // hide "X-Powered-By: Next.js"
   images: {

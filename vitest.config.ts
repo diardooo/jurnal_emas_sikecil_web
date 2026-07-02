@@ -84,6 +84,13 @@ export default defineConfig({
           functions: 100,
           lines: 100,
         },
+        // JES-108 — CSP builder.
+        "src/lib/csp.ts": {
+          statements: 100,
+          branches: 100,
+          functions: 100,
+          lines: 100,
+        },
       },
     },
   },
