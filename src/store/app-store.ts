@@ -162,6 +162,8 @@ interface AppState {
   plan: SubscriptionPlan;
   subscriptionId?: string;
   subscriptionExpiresAt?: string | null;
+  /** Signed-in user id; scopes per-device prefs (e.g. the tour) to the account. */
+  userId: string;
   showGuide: boolean;
 
   hydrate: () => Promise<void>;
@@ -248,6 +250,7 @@ export const useAppStore = create<AppState>((set, get) => {
     taskCategories: [...taskCategories],
     habitCategories: [...habitCategories],
     plan: "free",
+    userId: "",
     showGuide: true,
 
     hydrate: async () => {
@@ -296,6 +299,7 @@ export const useAppStore = create<AppState>((set, get) => {
       set({
         hydrated: true,
         demo: false,
+        userId: me.user.id,
         plan: me.plan,
         subscriptionId: me.subscription?.id,
         subscriptionExpiresAt: me.subscription?.expiresAt ?? null,

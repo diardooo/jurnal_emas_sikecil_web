@@ -351,7 +351,9 @@ function AccountTab({ session, onShowGuide }: { session: SessionData; onShowGuid
           <Button
             variant="outline"
             size="sm"
-            onClick={() => useTourStore.getState().start()}
+            onClick={() =>
+              useTourStore.getState().start(useAppStore.getState().userId)
+            }
           >
             Mulai Tur
           </Button>

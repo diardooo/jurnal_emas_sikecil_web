@@ -40,6 +40,7 @@ export function ProductTour() {
   const hydrated = useAppStore((s) => s.hydrated);
   const demo = useAppStore((s) => s.demo);
   const childCount = useAppStore((s) => s.children.length);
+  const userId = useAppStore((s) => s.userId);
 
   const active = useTourStore((s) => s.active);
   const stepIndex = useTourStore((s) => s.stepIndex);
@@ -66,12 +67,12 @@ export function ProductTour() {
   // dashboard so the journey begins from a known place. Never in demo mode.
   useEffect(() => {
     if (autoStarted.current) return;
-    if (!hydrated || demo || childCount === 0) return;
-    if (hasSeenTour()) return;
+    if (!hydrated || demo || childCount === 0 || !userId) return;
+    if (hasSeenTour(userId)) return;
     if (!pathname.startsWith("/dashboard")) return;
     autoStarted.current = true;
-    start();
-  }, [hydrated, demo, childCount, pathname, start]);
+    start(userId);
+  }, [hydrated, demo, childCount, userId, pathname, start]);
 
   // Navigate to the step's page if we aren't already there. Use replace so the
   // tour's hops don't pollute browser history (Back returns to pre-tour view).
