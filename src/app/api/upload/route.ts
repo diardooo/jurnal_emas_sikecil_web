@@ -4,6 +4,7 @@ import { cloudinaryConfigured, uploadImage } from "@/lib/cloudinary";
 import { isPremium, premiumRequired } from "@/lib/plan";
 import { sniffImageMime } from "@/lib/image-sniff";
 import { isPremiumPurpose, resolveUploadFolder } from "@/lib/upload-policy";
+import { t } from "@/lib/i18n";
 
 export const runtime = "nodejs";
 const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
@@ -14,10 +15,7 @@ export async function POST(req: NextRequest) {
   if (!user) return unauthorized();
 
   if (!cloudinaryConfigured()) {
-    return NextResponse.json(
-      { error: "Upload belum aktif — set CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET di .env" },
-      { status: 503 },
-    );
+    return NextResponse.json({ error: t("upload.notActive") }, { status: 503 });
   }
 
   const form = await req.formData().catch(() => null);
@@ -25,19 +23,21 @@ export async function POST(req: NextRequest) {
   // Journal & milestone photos are Premium; profile/child photos are free.
   const purpose = String(form?.get("purpose") ?? "");
   if (isPremiumPurpose(purpose) && !(await isPremium(user.id))) {
-    return premiumRequired("Foto jurnal & milestone khusus Premium. Upgrade ke Emas untuk menambahkan foto.");
+    return premiumRequired(t("upload.premiumOnly"));
   }
 
   const file = form?.get("file");
-  if (!(file instanceof Blob)) return NextResponse.json({ error: "File tidak ditemukan" }, { status: 400 });
-  if (file.size > MAX_BYTES) return NextResponse.json({ error: "Ukuran maksimum 5 MB" }, { status: 400 });
-  if (!file.type.startsWith("image/")) return NextResponse.json({ error: "Hanya file gambar" }, { status: 400 });
+  if (!(file instanceof Blob)) return NextResponse.json({ error: t("upload.notFound") }, { status: 400 });
+  if (file.size > MAX_BYTES) {
+    return NextResponse.json({ error: t("upload.tooLarge", { mb: MAX_BYTES / (1024 * 1024) }) }, { status: 400 });
+  }
+  if (!file.type.startsWith("image/")) return NextResponse.json({ error: t("upload.notImageType") }, { status: 400 });
 
   // Content-type is client-set and spoofable — verify the actual bytes are a
   // real image before sending anything to Cloudinary.
   const head = new Uint8Array(await file.slice(0, 16).arrayBuffer());
   if (!sniffImageMime(head)) {
-    return NextResponse.json({ error: "Berkas bukan gambar yang valid (JPG/PNG/GIF/WebP)" }, { status: 400 });
+    return NextResponse.json({ error: t("upload.notImage") }, { status: 400 });
   }
 
   try {

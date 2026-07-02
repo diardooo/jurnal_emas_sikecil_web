@@ -91,6 +91,13 @@ export default defineConfig({
           functions: 100,
           lines: 100,
         },
+        // JES-113 — i18n translate layer.
+        "src/lib/i18n/index.ts": {
+          statements: 100,
+          branches: 100,
+          functions: 100,
+          lines: 100,
+        },
       },
     },
   },
