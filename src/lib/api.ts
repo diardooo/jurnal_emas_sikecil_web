@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { and, asc, eq, getTableColumns } from "drizzle-orm";
+import { and, asc, eq, getTableColumns, isNull } from "drizzle-orm";
 import type { PgTable } from "drizzle-orm/pg-core";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
@@ -45,13 +45,20 @@ type AnyTable = PgTable & {
   userId: any;
   childId?: any;
   createdAt?: any;
+  deletedAt?: any;
 };
 
 async function ownsChild(userId: string, childId: string) {
   const rows = await db
     .select({ id: children.id })
     .from(children)
-    .where(and(eq(children.id, childId), eq(children.userId, userId)))
+    .where(
+      and(
+        eq(children.id, childId),
+        eq(children.userId, userId),
+        isNull(children.deletedAt), // can't attach data to a trashed child
+      ),
+    )
     .limit(1);
   return rows.length > 0;
 }
@@ -64,12 +71,16 @@ export function resource(table: AnyTable) {
   const cols = getTableColumns(table) as Record<string, unknown>;
   const hasChild = "childId" in cols;
   const hasCreatedAt = "createdAt" in cols;
+  // Soft-delete aware (JES-114): tables with a `deletedAt` column hide trashed
+  // rows from reads and DELETE marks instead of destroying.
+  const hasDeletedAt = "deletedAt" in cols;
 
   async function GET(req: NextRequest) {
     const userInfo = await getUser(req);
     if (!userInfo) return unauthorized();
     const childId = req.nextUrl.searchParams.get("childId");
     const filters = [eq(table.userId, userInfo.id)];
+    if (hasDeletedAt) filters.push(isNull(table.deletedAt));
     if (hasChild && childId) filters.push(eq(table.childId, childId));
     const rows = await db
       .select()
@@ -104,10 +115,12 @@ export function resource(table: AnyTable) {
     const { id } = await ctx.params;
     const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
     const data = sanitize(table, body);
+    const filters = [eq(table.id, id), eq(table.userId, userInfo.id)];
+    if (hasDeletedAt) filters.push(isNull(table.deletedAt)); // can't edit trashed rows
     const [row] = await db
       .update(table)
       .set(data)
-      .where(and(eq(table.id, id), eq(table.userId, userInfo.id)))
+      .where(and(...filters))
       .returning();
     if (!row) return notFound();
     return NextResponse.json(row);
@@ -120,6 +133,23 @@ export function resource(table: AnyTable) {
     const userInfo = await getUser(req);
     if (!userInfo) return unauthorized();
     const { id } = await ctx.params;
+    // Soft-delete when supported: move to Trash (restorable ≤30d) instead of
+    // destroying. Already-trashed rows return 404 (idempotent from the UI's view).
+    if (hasDeletedAt) {
+      const [row] = await db
+        .update(table)
+        .set({ deletedAt: new Date() })
+        .where(
+          and(
+            eq(table.id, id),
+            eq(table.userId, userInfo.id),
+            isNull(table.deletedAt),
+          ),
+        )
+        .returning();
+      if (!row) return notFound();
+      return NextResponse.json({ ok: true, softDeleted: true });
+    }
     const [row] = await db
       .delete(table)
       .where(and(eq(table.id, id), eq(table.userId, userInfo.id)))

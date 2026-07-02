@@ -27,6 +27,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAppStore } from "@/store/app-store";
 import { useTourStore } from "@/store/tour-store";
 import { DeleteAccountDialog } from "@/components/app/delete-account-dialog";
+import { TrashChildrenCard } from "@/components/app/trash-children-card";
 import { authClient, useSession } from "@/lib/auth-client";
 import { usePush } from "@/lib/use-push";
 import { formatRupiah } from "@/lib/utils";
@@ -271,6 +272,7 @@ function AccountTab({ session, onShowGuide }: { session: SessionData; onShowGuid
   }
 
   return (
+    <div className="space-y-6">
     <Card>
       <CardHeader>
         <CardTitle>Profil Akun</CardTitle>
@@ -386,6 +388,8 @@ function AccountTab({ session, onShowGuide }: { session: SessionData; onShowGuid
         </div>
       </CardContent>
     </Card>
+    <TrashChildrenCard />
+    </div>
   );
 }
 

@@ -1,0 +1,1 @@
+ALTER TABLE "children" ADD COLUMN "deleted_at" timestamp;

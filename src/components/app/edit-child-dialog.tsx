@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Loader2, Pencil, RefreshCw, Upload } from "lucide-react";
+import { Loader2, Pencil, RefreshCw, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -22,7 +22,9 @@ import type { Child, Gender } from "@/lib/types";
 
 export function EditChildDialog({ child }: { child: Child }) {
   const updateChild = useAppStore((s) => s.updateChild);
+  const removeChild = useAppStore((s) => s.removeChild);
   const [open, setOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [name, setName] = useState(child.name);
   const [dob, setDob] = useState(child.dob);
   const [gender, setGender] = useState<Gender>(child.gender);
@@ -81,6 +83,27 @@ export function EditChildDialog({ child }: { child: Child }) {
     });
     toast.success("Data anak diperbarui", { description: name });
     setOpen(false);
+  }
+
+  async function onDelete() {
+    if (
+      !window.confirm(
+        `Pindahkan ${child.name} ke Sampah? Semua jurnal, milestone, dan pertumbuhannya ikut disembunyikan. Bisa dipulihkan dalam 30 hari lewat Pengaturan.`,
+      )
+    )
+      return;
+    setDeleting(true);
+    try {
+      await removeChild(child.id);
+      toast.success(`${child.name} dipindahkan ke Sampah`, {
+        description: "Bisa dipulihkan dalam 30 hari di Pengaturan.",
+      });
+      setOpen(false);
+    } catch {
+      toast.error("Gagal menghapus. Coba lagi.");
+    } finally {
+      setDeleting(false);
+    }
   }
 
   return (
@@ -205,11 +228,26 @@ export function EditChildDialog({ child }: { child: Child }) {
             </div>
           </div>
         </div>
-        <DialogFooter>
-          <Button variant="ghost" onClick={() => setOpen(false)}>
-            Batal
+        <DialogFooter className="sm:justify-between">
+          <Button
+            variant="outline"
+            onClick={onDelete}
+            disabled={deleting}
+            className="border-alert-red/40 text-alert-red hover:bg-alert-red-soft hover:text-alert-red"
+          >
+            {deleting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Trash2 className="h-4 w-4" />
+            )}
+            Hapus Anak
           </Button>
-          <Button onClick={submit}>Simpan Perubahan</Button>
+          <div className="flex gap-2">
+            <Button variant="ghost" onClick={() => setOpen(false)}>
+              Batal
+            </Button>
+            <Button onClick={submit}>Simpan Perubahan</Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

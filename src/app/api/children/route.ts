@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { asc, count, eq } from "drizzle-orm";
+import { and, asc, count, eq, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import { children, immunizations, milestones, teeth } from "@/db/schema/app";
 import { refImmunizations, refMilestones, refTeeth } from "@/db/schema/admin";
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
     const [{ n }] = await db
       .select({ n: count() })
       .from(children)
-      .where(eq(children.userId, user.id));
+      .where(and(eq(children.userId, user.id), isNull(children.deletedAt)));
     if (Number(n) >= FREE_CHILD_LIMIT) {
       return premiumRequired(
         `Akun Free dibatasi ${FREE_CHILD_LIMIT} anak. Upgrade ke Emas untuk menambah anak lain.`,

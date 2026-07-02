@@ -173,6 +173,8 @@ interface AppState {
   /** Resolves after the server write completes (await before navigating). */
   addChild: (child: Child) => Promise<void>;
   updateChild: (id: string, patch: Partial<Child>) => void;
+  /** Soft-delete: moves the child to Trash (restorable ≤30d). Resolves after the server write. */
+  removeChild: (id: string) => Promise<void>;
 
   addGrowthRecord: (childId: string, record: GrowthRecord) => void;
   deleteGrowthRecord: (childId: string, id: string) => void;
@@ -385,6 +387,19 @@ export const useAppStore = create<AppState>((set, get) => {
         children: s.children.map((c) => (c.id === id ? { ...c, ...patch } : c)),
       }));
       save(() => apiPatch("children", id, patch));
+    },
+    removeChild: (id) => {
+      // Optimistically drop from the UI; the server soft-deletes (Trash, 30d).
+      set((s) => {
+        const remaining = s.children.filter((c) => c.id !== id);
+        return {
+          children: remaining,
+          activeChildId:
+            s.activeChildId === id ? (remaining[0]?.id ?? "") : s.activeChildId,
+        };
+      });
+      if (get().demo) return Promise.resolve();
+      return persist(apiDelete("children", id)).then(() => undefined);
     },
 
     addGrowthRecord: (childId, record) => {

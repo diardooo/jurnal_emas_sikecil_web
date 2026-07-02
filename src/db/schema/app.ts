@@ -34,6 +34,10 @@ export const children = pgTable("children", {
   birthHeight: doublePrecision("birth_height"),
   color: text("color").notNull().default("#C9A227"),
   createdAt: createdAt(),
+  // Soft-delete (JES-114): non-null = in Trash. Hidden from every read, restorable
+  // for 30 days, then hard-purged by the purge-deleted cron. Protects a child's
+  // whole record (journals, milestones, growth…) from an accidental delete.
+  deletedAt: timestamp("deleted_at"),
 });
 
 export const tasks = pgTable("tasks", {
