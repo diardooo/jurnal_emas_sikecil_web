@@ -27,7 +27,7 @@ export function MeasurementDialog() {
   const addGrowthRecord = useAppStore((s) => s.addGrowthRecord);
 
   const [open, setOpen] = useState(false);
-  const [date, setDate] = useState("2026-06-19");
+  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [weight, setWeight] = useState("");
   const [height, setHeight] = useState("");
   const [headCirc, setHeadCirc] = useState("");
@@ -94,7 +94,6 @@ export function MeasurementDialog() {
                 type="number"
                 step="0.1"
                 inputMode="decimal"
-                placeholder="8.9"
                 value={weight}
                 onChange={(e) => setWeight(e.target.value)}
               />
@@ -106,7 +105,6 @@ export function MeasurementDialog() {
                 type="number"
                 step="0.1"
                 inputMode="decimal"
-                placeholder="71"
                 value={height}
                 onChange={(e) => setHeight(e.target.value)}
               />
@@ -118,7 +116,6 @@ export function MeasurementDialog() {
                 type="number"
                 step="0.1"
                 inputMode="decimal"
-                placeholder="44.8"
                 value={headCirc}
                 onChange={(e) => setHeadCirc(e.target.value)}
               />

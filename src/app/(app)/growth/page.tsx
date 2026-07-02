@@ -79,9 +79,12 @@ export default function GrowthPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {metricMeta.map((m) => {
           const val = latest ? valueOf(latest, m.key) : undefined;
+          // Classify against the age WHEN the measurement was taken, not the
+          // child's current age — otherwise a valid past-dated entry is judged
+          // against a standard for an older age and shows false stunting/etc.
           const status =
-            val != null
-              ? classifyWho(m.key, age.months, val, child.gender)
+            val != null && latest
+              ? classifyWho(m.key, latest.ageMonths, val, child.gender)
               : undefined;
           return (
             <Card key={m.key}>
@@ -101,6 +104,7 @@ export default function GrowthPage() {
                 {status?.percentile != null && (
                   <p className="mt-1 text-[11px] font-medium text-muted-foreground">
                     Persentil ke-{Math.round(status.percentile)} • Z {status.z!.toFixed(1)}
+                    {latest && ` • pada usia ${latest.ageMonths} bln`}
                   </p>
                 )}
               </CardContent>
