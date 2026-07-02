@@ -5,6 +5,18 @@
 export const FREE_CHILD_LIMIT = 1; // Free: 1 child; Premium: unlimited
 export const FREE_COACH_DAILY_LIMIT = 3; // Free: 3 AI Coach Q/day; Premium: COACH_DAILY_LIMIT
 
+/**
+ * Daily upload quota (JES-111) — abuse control, not an upsell lever (uploads are
+ * already Premium-gated per purpose). Both tiers get a generous ceiling; Premium
+ * higher. Enforced server-side in /api/upload via `checkUploadQuota`.
+ */
+export const UPLOAD_DAILY_LIMIT = { free: 20, premium: 200 } as const;
+/** Per-user per-day byte ceiling (bytes). Caps storage-bombing independent of count. */
+export const UPLOAD_DAILY_BYTES_CAP = {
+  free: 50 * 1024 * 1024, // 50 MB/day
+  premium: 500 * 1024 * 1024, // 500 MB/day
+} as const;
+
 /** Features locked to Premium (for upsell copy). */
 export const PREMIUM_FEATURES = [
   "Upload foto (jurnal, milestone, profil)",

@@ -124,6 +124,22 @@ export default defineConfig({
           functions: 100,
           lines: 100,
         },
+        // JES-111 — pure upload abuse-control (daily quota decision) + moderation
+        // callback signature verification & status mapping. The upload route +
+        // callback route wiring is exercised by the pglite integration suite;
+        // these pure modules are the safety-critical core, locked at 100%.
+        "src/lib/upload-quota.ts": {
+          statements: 100,
+          branches: 100,
+          functions: 100,
+          lines: 100,
+        },
+        "src/lib/upload-moderation.ts": {
+          statements: 100,
+          branches: 100,
+          functions: 100,
+          lines: 100,
+        },
       },
     },
   },

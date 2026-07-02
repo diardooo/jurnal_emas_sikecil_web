@@ -33,7 +33,7 @@ export const INCOMING_TRANSFORM = "q_auto,c_limit,w_2400,h_2400";
 export async function uploadImage(
   file: Blob,
   opts: { folder?: string } = {},
-): Promise<{ url: string }> {
+): Promise<{ url: string; publicId: string }> {
   const cloud = process.env.CLOUDINARY_CLOUD_NAME!;
   const apiKey = process.env.CLOUDINARY_API_KEY!;
   const apiSecret = process.env.CLOUDINARY_API_SECRET!;
@@ -59,6 +59,6 @@ export async function uploadImage(
     const body = await res.text().catch(() => "");
     throw new Error(`Cloudinary gagal (${res.status}): ${body.slice(0, 200)}`);
   }
-  const data = (await res.json()) as { secure_url: string };
-  return { url: data.secure_url };
+  const data = (await res.json()) as { secure_url: string; public_id: string };
+  return { url: data.secure_url, publicId: data.public_id };
 }

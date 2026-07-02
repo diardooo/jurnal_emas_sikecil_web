@@ -194,6 +194,42 @@ export const journalEntries = pgTable("journal_entries", {
 });
 
 /**
+ * Uploaded media ledger + moderation state (JES-111). One row per stored
+ * Cloudinary asset. `status` starts `pending` when async moderation is enabled
+ * (hide until a signed moderation-callback approves it); uploads made while
+ * moderation is off are recorded `approved` immediately. `publicId` is the
+ * Cloudinary public_id — unique, and the key the callback uses to find the row.
+ */
+export const mediaAssets = pgTable("media_assets", {
+  id: id(),
+  userId: userId(),
+  publicId: text("public_id").notNull().unique(),
+  url: text("url").notNull(),
+  purpose: text("purpose").notNull().default(""),
+  status: text("status").notNull().default("pending"), // pending | approved | rejected
+  moderationKind: text("moderation_kind"),
+  createdAt: createdAt(),
+});
+
+/**
+ * Per-user daily upload counter (JES-111) — abuse/quota control, same shape as
+ * `coachUsage`. One row per user+day; `count` and `bytes` accumulate. Unique(user,
+ * date) enables an atomic upsert. User-scoped, not child-scoped.
+ */
+export const uploadUsage = pgTable(
+  "upload_usage",
+  {
+    id: id(),
+    userId: userId(),
+    date: date("date").notNull(),
+    count: integer("count").notNull().default(0),
+    bytes: integer("bytes").notNull().default(0),
+    createdAt: createdAt(),
+  },
+  (t) => [unique("upload_usage_user_date").on(t.userId, t.date)],
+);
+
+/**
  * User-defined task/habit categories (additive — defaults still ship in code).
  * Only *custom* categories are persisted here; on hydrate they merge with the
  * built-in defaults. User-scoped, not child-scoped.

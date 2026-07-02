@@ -14,6 +14,7 @@ export const id = {
   "upload.tooLarge": "Ukuran maksimum {mb} MB",
   "upload.notImageType": "Hanya file gambar",
   "upload.notImage": "Berkas bukan gambar yang valid (JPG/PNG/GIF/WebP)",
+  "upload.quota": "Batas unggah foto harian sudah tercapai. Coba lagi besok.",
 } as const;
 
 export type Messages = typeof id;
