@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { getUser, unauthorized } from "@/lib/api";
 import { cloudinaryConfigured, uploadImage } from "@/lib/cloudinary";
 import { isPremium, premiumRequired } from "@/lib/plan";
+import { sniffImageMime } from "@/lib/image-sniff";
+import { isPremiumPurpose, resolveUploadFolder } from "@/lib/upload-policy";
 
 export const runtime = "nodejs";
 const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
-// Photo uploads that are Premium-only. Profile & child photos stay free.
-const PREMIUM_PURPOSES = new Set(["journal", "milestone"]);
 
 /** Authenticated image upload → Cloudinary. `purpose` decides Premium gating. */
 export async function POST(req: NextRequest) {
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
 
   // Journal & milestone photos are Premium; profile/child photos are free.
   const purpose = String(form?.get("purpose") ?? "");
-  if (PREMIUM_PURPOSES.has(purpose) && !(await isPremium(user.id))) {
+  if (isPremiumPurpose(purpose) && !(await isPremium(user.id))) {
     return premiumRequired("Foto jurnal & milestone khusus Premium. Upgrade ke Emas untuk menambahkan foto.");
   }
 
@@ -33,8 +33,17 @@ export async function POST(req: NextRequest) {
   if (file.size > MAX_BYTES) return NextResponse.json({ error: "Ukuran maksimum 5 MB" }, { status: 400 });
   if (!file.type.startsWith("image/")) return NextResponse.json({ error: "Hanya file gambar" }, { status: 400 });
 
+  // Content-type is client-set and spoofable — verify the actual bytes are a
+  // real image before sending anything to Cloudinary.
+  const head = new Uint8Array(await file.slice(0, 16).arrayBuffer());
+  if (!sniffImageMime(head)) {
+    return NextResponse.json({ error: "Berkas bukan gambar yang valid (JPG/PNG/GIF/WebP)" }, { status: 400 });
+  }
+
   try {
-    const folder = String(form?.get("folder") ?? `jurnal-emas/${user.id}`);
+    // Folder is derived server-side from the session user + purpose — the client
+    // cannot choose it (no cross-user namespace / path traversal).
+    const folder = resolveUploadFolder(user.id, purpose);
     const { url } = await uploadImage(file, { folder });
     return NextResponse.json({ url });
   } catch (e) {

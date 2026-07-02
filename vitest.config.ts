@@ -71,6 +71,19 @@ export default defineConfig({
           functions: 100,
           lines: 100,
         },
+        // JES-110 — pure upload guards (magic-byte sniff + server-derived folder).
+        "src/lib/image-sniff.ts": {
+          statements: 100,
+          branches: 100,
+          functions: 100,
+          lines: 100,
+        },
+        "src/lib/upload-policy.ts": {
+          statements: 100,
+          branches: 100,
+          functions: 100,
+          lines: 100,
+        },
       },
     },
   },

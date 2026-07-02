@@ -21,6 +21,15 @@ function sign(params: Record<string, string>, secret: string) {
   return createHash("sha1").update(toSign + secret).digest("hex");
 }
 
+/**
+ * Incoming transformation applied BEFORE the asset is stored:
+ *  - `q_auto` forces a re-encode of every upload, which drops embedded metadata
+ *    (EXIF/GPS/IPTC) — protecting a child's home location from leaking in a photo;
+ *  - `c_limit,w_2400,h_2400` caps runaway dimensions (bandwidth/storage at scale)
+ *    without ever upscaling.
+ */
+export const INCOMING_TRANSFORM = "q_auto,c_limit,w_2400,h_2400";
+
 export async function uploadImage(
   file: Blob,
   opts: { folder?: string } = {},
@@ -31,13 +40,15 @@ export async function uploadImage(
   const folder = opts.folder ?? "jurnal-emas";
   const timestamp = Math.floor(Date.now() / 1000).toString();
 
-  const signature = sign({ folder, timestamp }, apiSecret);
+  // Every signed param (except file/api_key) must be part of the signature.
+  const signature = sign({ folder, timestamp, transformation: INCOMING_TRANSFORM }, apiSecret);
 
   const form = new FormData();
   form.append("file", file);
   form.append("api_key", apiKey);
   form.append("timestamp", timestamp);
   form.append("folder", folder);
+  form.append("transformation", INCOMING_TRANSFORM);
   form.append("signature", signature);
 
   const res = await fetch(`https://api.cloudinary.com/v1_1/${cloud}/image/upload`, {
