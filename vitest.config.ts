@@ -114,6 +114,16 @@ export default defineConfig({
           functions: 100,
           lines: 100,
         },
+        // JES-114 — Trash retention window. `purgeCutoff` governs permanent data
+        // destruction, so it's locked at 100% like the other pure safety modules.
+        // The soft-delete route/factory paths are exercised by the pglite
+        // integration suite (api.ts threshold above), not thresholded per-file.
+        "src/lib/retention.ts": {
+          statements: 100,
+          branches: 100,
+          functions: 100,
+          lines: 100,
+        },
       },
     },
   },
